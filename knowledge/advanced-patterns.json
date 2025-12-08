@@ -679,7 +679,12 @@
           "manifest.json": "Studio Pro manifest"
         },
         "entry_point_pattern": "import { ExtensionContext } from '@mendix/extensions-api';\n\nexport function activate(context: ExtensionContext) {\n  context.subscriptions.push(\n    context.commands.registerCommand('myExt.action', () => {\n      context.showInformationMessage('Extension activated!');\n    })\n  );\n}",
-        "capabilities": ["Custom commands", "Dockable panels", "WebView-based UI", "Model access (limited)"],
+        "capabilities": [
+          "Custom commands",
+          "Dockable panels",
+          "WebView-based UI",
+          "Model access (limited)"
+        ],
         "debugging": "Launch via VS Code Debug configuration",
         "source": "docs.mendix.com/apidocs-mxsdk/extensibility-api/web-extensibility-api"
       },
@@ -687,10 +692,7 @@
         "pattern": "Studio Pro C# Extension Development (.NET)",
         "description": "Create deep integrations with Studio Pro using .NET API",
         "version_compatibility": "Studio Pro 10.18+, 11.x",
-        "prerequisites": [
-          ".NET SDK 8.0+",
-          "NuGet: Mendix.StudioPro.ExtensionsAPI"
-        ],
+        "prerequisites": [".NET SDK 8.0+", "NuGet: Mendix.StudioPro.ExtensionsAPI"],
         "csproj_setup": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageReference Include=\"Mendix.StudioPro.ExtensionsAPI\" Version=\"*\" />\n  </ItemGroup>\n</Project>",
         "manifest_json": "{\n  \"name\": \"MyExtension\",\n  \"version\": \"1.0.0\",\n  \"minStudioProVersion\": \"10.18.0\",\n  \"extensionApiVersion\": \"1.0.0\",\n  \"entryPoint\": \"MyExtension.dll\"\n}",
         "entry_point_pattern": "using Mendix.StudioPro.ExtensionsAPI;\n\npublic class MyExtension : IExtension\n{\n    public void Activate(IExtensionContext context)\n    {\n        var menuService = context.GetService<IMenuService>();\n        // Add menu items, register commands\n    }\n    public void Deactivate() { }\n}",

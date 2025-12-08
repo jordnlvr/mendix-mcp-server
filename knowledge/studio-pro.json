@@ -1,11 +1,7 @@
 {
   "topic": "Mendix Studio Pro 10.23+ and 11.0+",
   "description": "Complete reference for Mendix Studio Pro including Mendix 11 features, domain modeling, microflows, pages, security, and breaking changes. Covers all aspects of visual development in Mendix's desktop IDE.",
-  "mendix_versions": [
-    "10.24 (LTS)",
-    "11.4.0",
-    "11.5.0 (latest - Nov 25, 2025)"
-  ],
+  "mendix_versions": ["10.24 (LTS)", "11.4.0", "11.5.0 (latest - Nov 25, 2025)"],
   "last_updated": "2025-12-01",
   "official_docs": [
     "https://docs.mendix.com/releasenotes/studio-pro/11.0/",
@@ -68,10 +64,7 @@
       "description": "Manually fetch changes from version control server without applying to local copy",
       "impact": "Better inspection of server-side changes before pulling",
       "version": "11.4.0+",
-      "access": [
-        "Version Control menu → Fetch submenu",
-        "Changes pane → Fetch icon button"
-      ]
+      "access": ["Version Control menu → Fetch submenu", "Changes pane → Fetch icon button"]
     },
     {
       "feature": "OQL UPDATE Association Support (11.4.0)",
@@ -220,13 +213,7 @@
         "use_when": "Need to store data permanently, support CRUD operations, define associations",
         "storage": "Database table with columns per attribute",
         "performance": "Fast for indexed queries, slower for large unindexed datasets",
-        "capabilities": [
-          "Full CRUD",
-          "Associations",
-          "Events",
-          "Validation",
-          "Security rules"
-        ],
+        "capabilities": ["Full CRUD", "Associations", "Events", "Validation", "Security rules"],
         "example": "Customer, Order, Product entities"
       },
       {
@@ -279,11 +266,7 @@
         "storage": "Foreign key in child table pointing to parent",
         "delete_behavior": "Delete parent can cascade delete children or prevent deletion",
         "performance": "Excellent - single foreign key lookup",
-        "use_cases": [
-          "Customer → Orders",
-          "Order → OrderLines",
-          "Department → Employees"
-        ],
+        "use_cases": ["Customer → Orders", "Order → OrderLines", "Department → Employees"],
         "best_practice": "Most common pattern, use as default unless many-to-many needed",
         "ownership": "Child owns the association (foreign key in child table)"
       },
@@ -293,11 +276,7 @@
         "storage": "Join table with two foreign keys (automatically created by Mendix)",
         "delete_behavior": "Delete either side removes join table entries",
         "performance": "Good but requires join table lookup",
-        "use_cases": [
-          "Student ↔ Course",
-          "Product ↔ Category",
-          "User ↔ Role"
-        ],
+        "use_cases": ["Student ↔ Course", "Product ↔ Category", "User ↔ Role"],
         "best_practice": "Use when entities truly have bidirectional many relationship",
         "ownership": "Neither owns - Mendix creates System.Association table"
       },
@@ -307,11 +286,7 @@
         "storage": "Foreign key in child table with unique constraint",
         "delete_behavior": "Similar to one-to-many but enforces uniqueness",
         "performance": "Excellent - single foreign key with unique index",
-        "use_cases": [
-          "User → UserProfile",
-          "Order → Invoice",
-          "Employee → EmployeeDetail"
-        ],
+        "use_cases": ["User → UserProfile", "Order → Invoice", "Employee → EmployeeDetail"],
         "best_practice": "Use when truly one-to-one. Consider embedding attributes if always loaded together",
         "ownership": "Child owns the association"
       },
@@ -321,11 +296,7 @@
         "storage": "Foreign key in same table",
         "delete_behavior": "Must handle carefully to avoid orphans",
         "performance": "Good but complex recursive queries can be slow",
-        "use_cases": [
-          "Employee → Manager",
-          "Category → ParentCategory",
-          "Task → SubTask"
-        ],
+        "use_cases": ["Employee → Manager", "Category → ParentCategory", "Task → SubTask"],
         "best_practice": "Limit depth, consider materialized path pattern for deep hierarchies",
         "ownership": "Self-referencing foreign key"
       }
@@ -684,11 +655,7 @@
       ],
       "member_access": {
         "description": "Control visibility and editability of individual attributes",
-        "options": [
-          "Read",
-          "Write",
-          "None"
-        ],
+        "options": ["Read", "Write", "None"],
         "best_practice": "Hide sensitive attributes from roles that shouldn't see them"
       }
     },
@@ -1054,11 +1021,7 @@
           },
           "system_activities": {
             "description": "Automated activities executed by the system",
-            "types": [
-              "Call microflow",
-              "Call workflow",
-              "Generate document"
-            ]
+            "types": ["Call microflow", "Call workflow", "Generate document"]
           },
           "decisions": {
             "description": "Branching logic based on expressions",
@@ -1162,12 +1125,7 @@
             "activity": "Call REST service activity in microflow",
             "request": "Configure URL, method, headers, body",
             "response": "Map to Mendix entities (import mapping) or handle as string",
-            "authentication": [
-              "Headers",
-              "Basic auth",
-              "OAuth tokens",
-              "API keys"
-            ],
+            "authentication": ["Headers", "Basic auth", "OAuth tokens", "API keys"],
             "error_handling": "Handle HTTP errors, timeouts, connection failures"
           }
         },
@@ -1177,12 +1135,7 @@
             "setup": "Right-click module → Add other → Published OData Service",
             "entities": "Select which entities to expose",
             "capabilities": "Query ($filter, $select, $expand), pagination, sorting",
-            "use_cases": [
-              "Business intelligence",
-              "Reporting",
-              "Data exports",
-              "Excel integration"
-            ]
+            "use_cases": ["Business intelligence", "Reporting", "Data exports", "Excel integration"]
           },
           "consumed_odata": {
             "description": "Consume external OData services",
@@ -1280,17 +1233,8 @@
         "deployment_options": {
           "mendix_cloud": {
             "description": "Mendix-managed cloud platform (recommended)",
-            "environments": [
-              "Free sandbox (development)",
-              "Licensed: Dev/Test/Accept/Production"
-            ],
-            "features": [
-              "Auto-scaling",
-              "Backups",
-              "Monitoring",
-              "Logging",
-              "Metrics"
-            ],
+            "environments": ["Free sandbox (development)", "Licensed: Dev/Test/Accept/Production"],
+            "features": ["Auto-scaling", "Backups", "Monitoring", "Logging", "Metrics"],
             "deployment": "One-click from Studio Pro or Developer Portal",
             "regions": "Multiple regions available (EU, US, Asia-Pacific)"
           },
@@ -1321,11 +1265,7 @@
         "environment_configuration": {
           "constants": {
             "description": "Configuration values that differ per environment",
-            "examples": [
-              "API URLs",
-              "Feature flags",
-              "Credentials"
-            ],
+            "examples": ["API URLs", "Feature flags", "Credentials"],
             "best_practice": "Never hardcode - use constants and set per environment"
           },
           "scheduled_events": {
@@ -1334,22 +1274,14 @@
           },
           "runtime_settings": {
             "description": "JVM and runtime configuration",
-            "examples": [
-              "Memory settings",
-              "Log levels",
-              "Custom settings"
-            ]
+            "examples": ["Memory settings", "Log levels", "Custom settings"]
           }
         },
         "cicd_patterns": {
           "mendix_build_api": {
             "description": "Build deployment packages via API",
             "usage": "Jenkins, GitHub Actions, Azure DevOps, GitLab CI",
-            "steps": [
-              "Create package from revision",
-              "Wait for build",
-              "Deploy to environment"
-            ]
+            "steps": ["Create package from revision", "Wait for build", "Deploy to environment"]
           },
           "platform_sdk": {
             "description": "Programmatic project and deployment management",
@@ -1380,11 +1312,7 @@
               "Oracle 23",
               "SAP HANA"
             ],
-            "dropped_11_4": [
-              "SQL Server 2019",
-              "MySQL 8.0",
-              "MariaDB 10.5"
-            ]
+            "dropped_11_4": ["SQL Server 2019", "MySQL 8.0", "MariaDB 10.5"]
           },
           "migrations": {
             "automatic": "Mendix handles schema changes automatically",
@@ -1394,34 +1322,17 @@
         },
         "monitoring_and_observability": {
           "mendix_cloud": {
-            "built_in": [
-              "Application metrics",
-              "Trends",
-              "Logs",
-              "Alerts"
-            ],
+            "built_in": ["Application metrics", "Trends", "Logs", "Alerts"],
             "access": "Developer Portal → Environments → Metrics/Logs"
           },
           "external_apm": {
-            "supported": [
-              "Datadog",
-              "New Relic",
-              "Dynatrace",
-              "Application Insights"
-            ],
+            "supported": ["Datadog", "New Relic", "Dynatrace", "Application Insights"],
             "opentelemetry": "Mendix 11 supports OpenTelemetry for distributed tracing",
             "setup": "Configure APM agent in runtime settings"
           },
           "logging": {
             "log_nodes": "Create module-specific log nodes",
-            "levels": [
-              "Trace",
-              "Debug",
-              "Info",
-              "Warning",
-              "Error",
-              "Critical"
-            ],
+            "levels": ["Trace", "Debug", "Info", "Warning", "Error", "Critical"],
             "best_practice": "Log key business events, not just errors"
           }
         },
@@ -1498,12 +1409,7 @@
           "data_containers": {
             "data_view": {
               "purpose": "Display/edit single object",
-              "data_source": [
-                "Context",
-                "Microflow",
-                "Nanoflow",
-                "Listen to widget"
-              ],
+              "data_source": ["Context", "Microflow", "Nanoflow", "Listen to widget"],
               "use_for": "Detail pages, forms, edit screens"
             },
             "list_view": {
@@ -1513,12 +1419,7 @@
             },
             "data_grid": {
               "purpose": "Tabular data display with sorting/filtering",
-              "features": [
-                "Column sorting",
-                "Search",
-                "Pagination",
-                "Export"
-              ],
+              "features": ["Column sorting", "Search", "Pagination", "Export"],
               "use_for": "Admin screens, data management, reporting"
             },
             "template_grid": {
@@ -1627,11 +1528,7 @@
         "security_levels": {
           "app_security": {
             "description": "Enable/configure security at application level",
-            "modes": [
-              "Off (development only)",
-              "Prototype/demo",
-              "Production"
-            ],
+            "modes": ["Off (development only)", "Prototype/demo", "Production"],
             "production_requirements": [
               "All user roles defined",
               "All access rules configured",
@@ -1641,12 +1538,7 @@
           "module_roles": {
             "description": "Define roles within a module",
             "purpose": "Logical grouping of permissions specific to module functionality",
-            "examples": [
-              "User",
-              "Manager",
-              "Administrator",
-              "Anonymous"
-            ],
+            "examples": ["User", "Manager", "Administrator", "Anonymous"],
             "best_practice": "Create module roles that match business roles"
           },
           "user_roles": {
@@ -1670,19 +1562,11 @@
               "[Status = 'Active']",
               "[Module.Entity_Role/System.UserRole = '[%UserRole_Manager%]']"
             ],
-            "tokens": [
-              "[%CurrentUser%]",
-              "[%CurrentDateTime%]",
-              "[%UserRole_X%]"
-            ]
+            "tokens": ["[%CurrentUser%]", "[%CurrentDateTime%]", "[%UserRole_X%]"]
           },
           "attribute_access": {
             "description": "Control which attributes are readable/writable",
-            "options": [
-              "None",
-              "Read-only",
-              "Read/Write"
-            ]
+            "options": ["None", "Read-only", "Read/Write"]
           }
         },
         "page_access": {
@@ -2015,11 +1899,7 @@
             "Alert on failures",
             "Dashboard for background job status"
           ],
-          "tools": [
-            "Mendix metrics",
-            "Application logs",
-            "Custom monitoring entity"
-          ]
+          "tools": ["Mendix metrics", "Application logs", "Custom monitoring entity"]
         },
         "cloud_considerations": {
           "single_instance": {
@@ -2082,10 +1962,7 @@
           "features": {
             "breakpoints": {
               "description": "Pause execution at specific point",
-              "types": [
-                "Standard breakpoint",
-                "Conditional breakpoint"
-              ],
+              "types": ["Standard breakpoint", "Conditional breakpoint"],
               "usage": "Click gutter next to activity"
             },
             "stepping": {
@@ -2169,11 +2046,7 @@
           },
           "slow_pages": {
             "symptom": "Page takes long to load",
-            "causes": [
-              "Complex data source",
-              "Too many widgets",
-              "Large lists"
-            ],
+            "causes": ["Complex data source", "Too many widgets", "Large lists"],
             "fix": "Optimize data source, pagination, lazy loading"
           },
           "transaction_timeout": {
@@ -2201,11 +2074,7 @@
           "error_handler": {
             "description": "Catch errors in microflows",
             "setup": "Add error handler flow from activity",
-            "options": [
-              "Rollback",
-              "Continue",
-              "Custom handling"
-            ],
+            "options": ["Rollback", "Continue", "Custom handling"],
             "access_error": "$latestError variable with details"
           },
           "validation_feedback": {
@@ -2216,11 +2085,7 @@
           "custom_error_pages": {
             "description": "User-friendly error pages",
             "setup": "Navigation → Error pages",
-            "types": [
-              "404 Not Found",
-              "403 Forbidden",
-              "500 Internal Error"
-            ]
+            "types": ["404 Not Found", "403 Forbidden", "500 Internal Error"]
           }
         },
         "monitoring_checklist": {
@@ -2316,82 +2181,47 @@
           "administration": {
             "name": "Administration",
             "purpose": "User management, account administration",
-            "includes": [
-              "User overview",
-              "Account creation",
-              "Password management"
-            ]
+            "includes": ["User overview", "Account creation", "Password management"]
           },
           "atlas_core": {
             "name": "Atlas_Core",
             "purpose": "Design system foundation",
-            "includes": [
-              "Layout templates",
-              "Building blocks",
-              "Styling"
-            ]
+            "includes": ["Layout templates", "Building blocks", "Styling"]
           },
           "community_commons": {
             "name": "Community Commons",
             "purpose": "Utility functions library",
-            "includes": [
-              "String operations",
-              "Date functions",
-              "List utilities",
-              "Regex"
-            ]
+            "includes": ["String operations", "Date functions", "List utilities", "Regex"]
           },
           "encryption": {
             "name": "Encryption",
             "purpose": "Data encryption capabilities",
-            "includes": [
-              "AES encryption",
-              "Key management",
-              "Hashing"
-            ]
+            "includes": ["AES encryption", "Key management", "Hashing"]
           },
           "mx_model_reflection": {
             "name": "MxModelReflection",
             "purpose": "Runtime model introspection",
-            "includes": [
-              "Entity metadata",
-              "Microflow discovery",
-              "Dynamic processing"
-            ]
+            "includes": ["Entity metadata", "Microflow discovery", "Dynamic processing"]
           },
           "email": {
             "name": "Email Connector",
             "purpose": "Send/receive emails",
-            "includes": [
-              "SMTP configuration",
-              "Templates",
-              "Attachments"
-            ]
+            "includes": ["SMTP configuration", "Templates", "Attachments"]
           },
           "excel_importer": {
             "name": "Excel Importer",
             "purpose": "Import data from Excel files",
-            "includes": [
-              "Template mapping",
-              "Validation",
-              "Batch import"
-            ]
+            "includes": ["Template mapping", "Validation", "Batch import"]
           },
           "deep_link": {
             "name": "Deep Link",
             "purpose": "Custom URL routing",
-            "includes": [
-              "Deep link handlers",
-              "Parameter passing"
-            ]
+            "includes": ["Deep link handlers", "Parameter passing"]
           },
           "push_notifications": {
             "name": "Push Notifications Connector",
             "purpose": "Mobile push notifications",
-            "includes": [
-              "FCM/APNS",
-              "Topic subscriptions"
-            ]
+            "includes": ["FCM/APNS", "Topic subscriptions"]
           }
         },
         "recommended_widgets": {
@@ -2482,7 +2312,11 @@
             "language": "C#",
             "framework": ".NET 8.0+",
             "nuget": "Mendix.StudioPro.ExtensionsAPI",
-            "use_cases": ["Deep model access", "File system operations", "Native Windows integration"]
+            "use_cases": [
+              "Deep model access",
+              "File system operations",
+              "Native Windows integration"
+            ]
           }
         },
         "development_mode": {

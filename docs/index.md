@@ -74,13 +74,23 @@ AI: Based on the knowledge base, here are the patterns:
 
 ## Navigation
 
-- **[Getting Started](getting-started)** - Installation and setup
-- **[Architecture](architecture)** - How everything fits together
-- **[Tools Reference](tools)** - All available MCP tools
-- **[Knowledge Base](knowledge-base)** - What's in the brain
-- **[Self-Learning](self-learning)** - How it grows smarter
-- **[Beast Mode](beast-mode)** - Exhaustive research protocol
-- **[Maintenance](maintenance)** - Keeping it current
+| Guide | Description |
+|-------|-------------|
+| [🚀 Getting Started](./getting-started.md) | Installation and setup |
+| [🏗️ Architecture](./architecture.md) | How everything fits together |
+| [🔧 Tools Reference](./tools.md) | All 13 available MCP tools |
+| [🧠 Knowledge Base](./knowledge-base.md) | What's in the brain |
+| [📚 Self-Learning](./self-learning.md) | How it grows smarter |
+| [🔥 Beast Mode](./beast-mode.md) | Exhaustive research protocol |
+| [🛠️ Maintenance](./maintenance.md) | Keeping it current |
+
+## Additional Resources
+
+| Resource | Description |
+|----------|-------------|
+| [📋 Installation Guide](./INSTALLATION.md) | Detailed installation steps |
+| [📖 User Guide](./USER-GUIDE.md) | Complete usage documentation |
+| [🔬 Research Protocol](./RESEARCH-PROTOCOL.md) | How auto-research works |
 
 ---
 

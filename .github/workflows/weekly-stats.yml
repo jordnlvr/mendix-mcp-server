@@ -66,7 +66,7 @@ jobs:
           echo "report=$(cat weekly-report.json | jq -c)" >> $GITHUB_OUTPUT
 
       - name: 📝 Create issue with report
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const report = ${{ steps.report.outputs.report }};

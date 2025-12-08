@@ -110,17 +110,17 @@ In your AI chat:
 
 ## 📚 Available Tools
 
-| Tool                     | Description                                              |
-| ------------------------ | -------------------------------------------------------- |
-| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic           |
-| `analyze_project`        | Analyze a `.mpr` file or extracted project directory     |
-| `get_best_practice`      | Get recommendations for specific scenarios               |
-| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)          |
-| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)            |
-| `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge                 |
-| `harvest_status`         | Check harvest status and available sources               |
-| `hello`                  | Get a welcome screen with status and examples            |
-| `beast_mode`             | 🔥 **NEW!** Get the exhaustive research protocol prompt  |
+| Tool                     | Description                                             |
+| ------------------------ | ------------------------------------------------------- |
+| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic          |
+| `analyze_project`        | Analyze a `.mpr` file or extracted project directory    |
+| `get_best_practice`      | Get recommendations for specific scenarios              |
+| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)         |
+| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)           |
+| `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge                |
+| `harvest_status`         | Check harvest status and available sources              |
+| `hello`                  | Get a welcome screen with status and examples           |
+| `beast_mode`             | 🔥 **NEW!** Get the exhaustive research protocol prompt |
 
 ---
 
@@ -139,11 +139,11 @@ When enabled (it's embedded in every query!), Beast Mode mandates:
 
 ### Key Gold Mine Sources
 
-| Source | Why It's Critical |
-|--------|-------------------|
-| `github.com/mendix/sdk-demo` | Has schema extraction patterns! |
-| `npm search mendixmodelsdk` | Find packages that USE the SDK - real implementations |
-| `web.archive.org/web/*/docs.mendix.com/*` | Old/removed documentation |
+| Source                                    | Why It's Critical                                     |
+| ----------------------------------------- | ----------------------------------------------------- |
+| `github.com/mendix/sdk-demo`              | Has schema extraction patterns!                       |
+| `npm search mendixmodelsdk`               | Find packages that USE the SDK - real implementations |
+| `web.archive.org/web/*/docs.mendix.com/*` | Old/removed documentation                             |
 
 ### Get the Full Prompt
 

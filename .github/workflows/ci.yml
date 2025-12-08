@@ -52,7 +52,7 @@ jobs:
           import KnowledgeManager from './src/core/KnowledgeManager.js';
           
           const km = new KnowledgeManager('./knowledge');
-          await km.loadKnowledgeBase();
+          await km.load();
           
           const engine = new SearchEngine();
           engine.indexKnowledgeBase(km.knowledgeBase);

@@ -9,13 +9,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 
-- Web documentation auto-fetching
-- Knowledge base expansion
-- Additional Mendix SDK patterns
+- GitHub Actions CI/CD pipeline
+- More community resources integration
 
 ---
 
-## [2.5.3] - 2025-01-07
+## [2.6.0] - 2025-12-08
+
+### Added
+
+- **Usage Analytics** (`src/utils/Analytics.js`): Local telemetry tracking
+  - Tool usage counts and patterns
+  - Popular topics and query analysis
+  - Daily/hourly usage trends
+  - New `get_usage_analytics` MCP tool for insights
+  - Data stored locally in `data/analytics.json`
+
+- **Deep Mendix 10/11 Knowledge** (~140KB new content):
+  - `harvested-mendix-10-11.json`: Comprehensive Mendix 10/11 features
+  - `workflows-complete.json`: Complete workflow documentation
+  - `mobile-complete.json`: Native mobile development patterns
+
+- **Test Suite** (4 test files):
+  - `tests/analytics.test.js`: Analytics tracking tests
+  - `tests/knowledge-manager.test.js`: Knowledge base tests
+  - `tests/search-engine.test.js`: Search functionality tests
+  - `tests/quality-scorer.test.js`: Quality scoring tests
+
+- **Harvest Scripts** (`scripts/harvest-mendix-docs.js`):
+  - Automated Mendix documentation fetching
+  - Extracts structured content from docs.mendix.com
+
+### Changed
+
+- Total knowledge base now **~700KB** across 20 JSON files
+- Analytics integrated into all major tools (query, search, best-practice, analyze)
+
+---
+
+## [2.5.3] - 2025-12-08
 
 ### Added
 

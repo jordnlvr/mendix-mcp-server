@@ -188,6 +188,7 @@ Make Mendix Expert available as a ChatGPT Custom GPT with public internet access
 **Full setup guide:** [docs/CHATGPT-SETUP.md](docs/CHATGPT-SETUP.md)
 
 Quick steps:
+
 1. Run `.\start-chatgpt-api.ps1` - starts server and shows public URL
 2. Create a Custom GPT at chat.openai.com
 3. Go to Configure → Actions → Import from URL

@@ -1,0 +1,1552 @@
+{
+  "_metadata": {
+    "harvested": "2025-12-08T20:14:40.949Z",
+    "source": "docs.mendix.com",
+    "version": "mendix-10-11",
+    "totalEntries": 23,
+    "categories": [
+      "refguide",
+      "howto",
+      "releasenotes",
+      "devops",
+      "apidocs"
+    ]
+  },
+  "refguide": [
+    {
+      "topic": "Workflows",
+      "category": "workflows",
+      "url": "https://docs.mendix.com/refguide/workflows/",
+      "title": "Workflows",
+      "description": "",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Workflows"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "When to Use Workflows"
+        },
+        {
+          "level": 2,
+          "text": "When Not to Use Workflows"
+        },
+        {
+          "level": 2,
+          "text": "Mendix Workflow Use Cases"
+        },
+        {
+          "level": 2,
+          "text": "Workflow Elements"
+        },
+        {
+          "level": 2,
+          "text": "Workflow Variables"
+        },
+        {
+          "level": 2,
+          "text": "Workflow-Specific Activities in Microflows"
+        },
+        {
+          "level": 2,
+          "text": "Workflow-Specific On-Click Events on Pages"
+        },
+        {
+          "level": 2,
+          "text": "Workflow Commons Module"
+        },
+        {
+          "level": 2,
+          "text": "Workflow Engine"
+        },
+        {
+          "level": 2,
+          "text": "Keyboard Support"
+        },
+        {
+          "level": 2,
+          "text": "Read More"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Workflows Last modified: March 28, 2025 Introduction This document provides a general introduction to workflows, including the reasons why organizations adopt workflow processes, when and when not to use workflows, and a few Mendix workflow business use cases. For instructions on how to perform Mendix workflow basic functions, see Performing Workflow Basic Functions . Workflow is a visual language that allows you to build extendable processes. In Mendix Studio Pro, it is fully integrated with other visual editors, such as the microflow editor and page editor. Implementing workflow processes is beneficial for organizations that would like to enhance operational efficiency, ensure compliance with regulations, and mitigate risks. Below are the key reasons why organizations adopt workflow processes: Compliance management: Ensuring adherence to local rules, regulations, and laws. Helping to document any available data, including actions taken and decisions made. This helps to provide a clear audit trail. Performance improvement: Improving key performance indicators (KPIs) by identifying and addressing bottlenecks. Reducing the time to complete tasks and minimizing overdue penalties. Enhancing the quality and efficiency of operations, which improves work satisfaction. Risk reduction: Preventing overdue penalties by streamlining processes. Anticipating potential bottlenecks that could impact KPIs or introduce additional risks. Avoiding overwork and stress among users and teams, thus maintaining compliance and productivity. For more information on when and when not to use workflows, see the When to Use Workflows? and When Not to Use Workflows sections below. For information on Mendix workflow use cases, see the Mendix Workflow Use Cases section below. When to Use Workflows Automating a process with workflows is the most effective when the process meets specific criteria, ensuring smooth execution and optimization. Below are the criteria that a process should meet to be successfully implemented with workflows: Well-defined and known – the process is clearly understood and documented. Repeatable nature – the process involves tasks that are performed regularly or in a cyclical manner. High frequency of execution – the process occurs frequently, requiring consistent handling. Involvement of multiple participants – the process requires collaboration among different individuals or departments. Combination of human and automated tasks – the process involves a mix of activities that can be performed both by humans and automated systems. Stability – the process remains relatively unchanged over time, with minimal variations. Series of activities – it comprises a sequence of interconnected steps or actions. Longer duration – the process spans a significant period, ranging from hours to months. When Not to Use Workflows While workflow processes offer numerous benefits, they may not always be the ideal solution for every scenario. Below are situations where the use of workflows might not be appropriate: Lack of applicability – if not MOST of the criteria outlined in the section above are met, it may not be a suitable use case for workflow implementation. High degree of collaboration and interaction – processes characterized by extensive collaboration and interaction among individuals, where no clear path can be defined, may not align well with workflow structures. Dynamic or unpredictable work – processes that involve dynamic or unknown elements, or where individuals require a high degree of freedom to decide their next actions, may not fit within the constraints of a workflow. Outcome-driven processes – processes focused more on achieving specific outcomes rather than following a predefined series of steps may not be best suited for workflow implementation. It might be beneficial to consider alternative approaches, such as utilizing multiple smaller workflows that are loosely coupled with other logic. Mendix Workflow Use Cases Mendix provides a development platform which supports multiple editors. This enables the integration of workflows into broader application design. With Mendix, you can keep workflows focused on representing your business processes, while using the other logic (such as microflows and nanoflows) for more technical implementations. The table below presents a few use cases that are a good fit for Mendix workflows: Use case Description Supply chain management in regulated industries Companies in highly regulated process industries can use Mendix workflows to manage supply chain changes, such as changes in packaging, weight, and other conditions. Mendix workflows validate and assess the impact of these changes at each stage, ensuring smooth adaptation to evolving requirements. Migration from dedicated BPM platforms Customers can transition from dedicated BPM platforms to Mendix to reduce cost, simplify maintenance, enhance user experience, and accelerate time-to-value. Maintenance plan approval For customers ...",
+      "harvested": "2025-12-08T20:11:41.328Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Workflow Elements",
+      "category": "workflows",
+      "url": "https://docs.mendix.com/refguide/workflow-elements/",
+      "title": "Workflow Elements",
+      "description": "",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Workflow Elements"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Workflow Parameters"
+        },
+        {
+          "level": 2,
+          "text": "General"
+        },
+        {
+          "level": 2,
+          "text": "User Tasks"
+        },
+        {
+          "level": 2,
+          "text": "Events"
+        },
+        {
+          "level": 2,
+          "text": "System Actions"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Workflow Elements Last modified: October 7, 2025 Introduction A workflow is composed of elements that you can drag on a path from the Toolbox or that you can see in the working area of the editor. Below is a categorized overview of all elements. The following categories are used: Parameters General User tasks Events System actions Workflow Parameters A workflow parameter is input data for your workflow. The WorkflowContext parameter is a business-related data that travels through the workflow: General Elements in the general category help you control the workflow path, for example, add parallel paths or end them. The elements of this category are described in the table below: Graphic Element Description Start event The starting point of a workflow. Workflows are triggered either by the Call workflow on-click event on pages or by the Call workflow activity in microflows. Click the start event to open workflow properties . Annotation An annotation is an element that can be used to put comments to a flow. For example, you can add a comment for your team that one of the user tasks needs to be changed later. You can add annotations to the workflow or to individual activities. To add the annotation to the workflow, drag and drop the annotation in the editor's working area. To add the annotation to the activity, drag and drop it inside the activity. Decision Makes a choice based on a condition and follows one and only one of the outgoing paths. Parallel split Adds two parallel paths to your workflow. Jump Allows you to jump to other activities in the workflow. Wait for notification Allows you to suspend a workflow’s execution until the workflow is notified. End event Ends the path of the workflow. You can add customized activities to this section if you use the Expose as a workflow action setting in microflows. For more information see the Expose as Workflow Action section in Microflow Properties . User Tasks Elements in this category allow you to assign certain tasks to users. The elements of this category are described in the table below: Graphic Element Description User task A central element in a workflow that allows you to assign a task to a certain user or a group of users using filters or microflows. Multi-user task A central element in a workflow that allows you assign a task to multiple users. Each user performs the same task. The outcomes from all individual tasks will be aggregated into a single multi-user task outcome based on the completion condition . Events The elements of this category are described in the table below: Graphic Element Description Timer Allows you to configure a certain duration or a specific date and time in a workflow. It can be used as a standalone activity on a workflow path or as a Boundary Event attached to another workflow activity. System Actions Elements in this category allow you to call a microflow or another workflow. The elements of this category are described in the table below: Graphic Element Description Call microflow Calls a selected microflow. Call workflow Calls a selected workflow. Feedback Was this page helpful? Yes No Glad to hear it! Thank you for your response. Sorry to hear that. Please tell us how we can improve .",
+      "harvested": "2025-12-08T20:11:43.656Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Workflow Engine",
+      "category": "workflows",
+      "url": "https://docs.mendix.com/refguide/workflow-engine/",
+      "title": "Workflow Engine",
+      "description": "Introduction The Mendix Workflow Engine is the Mendix Runtime engine to execute workflows. This document describes how the engine works, how you can interact with the engine, and what information it stores. This gives you a better understanding on how you can develop with Mendix workflows.\nWorkflow Data in the Mendix Database In the domain model of the System module, there are several Workflow Engine-related entities:\nThese entities are populated by the Workflow Engine, some on the start of the app, others – while running workflows.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Workflow Engine"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Workflow Data in the Mendix Database"
+        },
+        {
+          "level": 3,
+          "text": "Definition-Related Entities"
+        },
+        {
+          "level": 3,
+          "text": "Instance-Related Entities"
+        },
+        {
+          "level": 4,
+          "text": "System.Workflow"
+        },
+        {
+          "level": 4,
+          "text": "System.WorkflowUserTask"
+        },
+        {
+          "level": 4,
+          "text": "System.WorkflowUserTaskOutcome"
+        },
+        {
+          "level": 3,
+          "text": "Action-Related Entities"
+        },
+        {
+          "level": 2,
+          "text": "Workflow Execution"
+        },
+        {
+          "level": 3,
+          "text": "Instantiation"
+        },
+        {
+          "level": 3,
+          "text": "Execution"
+        },
+        {
+          "level": 4,
+          "text": "When Are Workflows Queued for Execution?"
+        },
+        {
+          "level": 4,
+          "text": "Task Queues"
+        },
+        {
+          "level": 4,
+          "text": "Microflow Executions and Transaction Scopes"
+        },
+        {
+          "level": 4,
+          "text": "Boundary Events"
+        },
+        {
+          "level": 4,
+          "text": "Measures Against Endless Loops"
+        },
+        {
+          "level": 4,
+          "text": "Workflow States"
+        },
+        {
+          "level": 3,
+          "text": "User Tasks in Workflows"
+        },
+        {
+          "level": 4,
+          "text": "Task Inbox"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Workflow Engine Last modified: August 14, 2025 Introduction The Mendix Workflow Engine is the Mendix Runtime engine to execute workflows. This document describes how the engine works, how you can interact with the engine, and what information it stores. This gives you a better understanding on how you can develop with Mendix workflows. Workflow Data in the Mendix Database In the domain model of the System module, there are several Workflow Engine-related entities: These entities are populated by the Workflow Engine, some on the start of the app, others – while running workflows. The entities can be divided into the following groups: Definition-related entities (populated when the app starts) Instance-related entities (populated while running workflows) Action-related entities (that fulfill a specific action) The Workflow Engine stores the state of the workflow instances in the database. It also uses a couple of internal, hidden entities to store the details about the workflow execution progress. These entities are not described in this document, but can be seen when exploring the tables in the database. These entities are hidden intentionally as they should not be used outside the Workflow Engine, for example, to be displayed in pages or used in microflows. Definition-Related Entities Objects of definition-related entities are created automatically by the Workflow Engine when the app is started and are based on the app’s model. The following entities are definition-related: System.WorkflowDefinition – It represents your workflow in the database. This entity gets one object per workflow as defined in your app in Studio Pro. System.WorkflowUserTaskDefinition – It represents your user tasks and system activities in the database. This entity gets one object per user task/system activity inside a workflow as defined in the app in Studio Pro. When a workflow, a user task, or a system activity is deleted from the app, the object remains in the database (you will still be able to create reports with it), however, its attribute IsObsolete is set to true . Instance-related entities refer to definition-related entities. When there are no objects of instance-related entities and the IsObsolete attribute is set to true , the app administrator may delete the corresponding object. Mendix does not provide out-of-the-box ways to automatically clean up definition-related entity instances, you need to build this logic yourself. Security-wise, only users with the Administrator role can access definition-related entities. Instance-Related Entities The Workflow Engine stores execution data in regular entities. The purpose of these entities is to store the state during workflow execution. Only users who are involved in the workflow process have access to these entities. The main purpose of the workflow data is to handle the tasks and process execution and it is unaware of the business context it is running in. All workflow data is aimed at supporting the Workflow Engine. Business context can be added by a developer via the context entity. System.Workflow It represents a running workflow, that is, a workflow instance. As soon as the workflow is initiated (using the Call workflow activity in microflows, a client action, or using the corresponding Java API), an object of this entity is created. The Name and Description attributes are populated based on the properties defined in the workflow . The DueDate attribute is based on the configured Due date workflow property . The StartTime attribute is set to the current time. The State attribute is set to InProgress . The System.Workflow_WorkflowDefinition association is set to the corresponding System.WorkflowDefinition object. The System.owner is set to the user initiating the workflow. During the execution of the workflow, some of the attributes and associations of the workflow may change as the Workflow Engine uses System.Workflow entity to store the current state of the workflow. For more information on different states, see the Workflow Execution section below. When a workflow instance finishes, the object stays in the database. Removing completed and aborted instances from the workflow entity should be done by the app operator. Security-wise, users with the Administrator role can access all instances. Other users can access them only when they are an assigned or a targeted user in one of the associated System.WorkflowUserTask instances (you can set that in the access rules of the System.Workflow entity). If other users need to access the System.Workflow data, the app developer needs to set state-change event in App Settings or in workflow properties to copy the data to other entities with more specific security constraints (For an example, see the OCh_Workflow_State microflow in the Workflow Commons module). For an app developer, it is allowed to change the Name , Description , and DueDate attributes of System.Workflow instances. Other attributes or outgoing associations should not...",
+      "harvested": "2025-12-08T20:11:45.613Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Workflow Activities",
+      "category": "workflows",
+      "url": "https://docs.mendix.com/refguide/workflow-activities/",
+      "title": "Workflow Activities",
+      "description": "",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Workflow Activities"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Read More"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Workflow Activities Last modified: August 12, 2025 These activities can only be used in microflows. Introduction The activities described in this document are in the Workflow Activities section of the Toolbox . The following are the workflow activities you can use in your microflow: Apply jump-to option – allows the workflow to continue from the selected workflow activity Call workflow – calls a workflow Change workflow state – allows you to add Abort , Continue , Pause , Restart , and Resume operations to a workflow and control workflow instances Complete user task – sets which outcome the specified user task should follow Generate jump-to options – generates a list of workflow activities as possible next steps where the workflow can jump to Retrieve workflow activity records – retrieves a list of System.WorkflowActivityRecord objects sorted by activity start time Retrieve workflow context – retrieves the workflow context entity Retrieve workflows – retrieve a list of System.Workflow objects associated with the given workflow context object Show user task page – opens a user task page specified in user task properties Show workflow admin page – opens a workflow overview page Lock workflow – locks the selected workflow Unlock workflow – unlocks the selected workflow Notify workflow – notifies the workflow that is suspended on the Wait for notification activity Read More Activities Feedback Was this page helpful? Yes No Glad to hear it! Thank you for your response. Sorry to hear that. Please tell us how we can improve .",
+      "harvested": "2025-12-08T20:11:48.190Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Template Grid",
+      "category": "ui",
+      "url": "https://docs.mendix.com/refguide/template-grid/",
+      "title": "Template Grid",
+      "description": "The template grid widget is a Dojo widget.\nThis widget is not supported on native mobile pages. Mendix recommends that you use the Gallery or List View instead to display data. See the Mendix React Client&#39;s Migration Guide.\nThis widget is not supported in the React client. To upgrade it to the recommended React widget (Data Grid 2), see the Mendix React Client&#39;s Migration Guide.\nIf you switch to the React client, the widget will not appear in the Toolbox.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Template Grid"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Components"
+        },
+        {
+          "level": 3,
+          "text": "Control Bar"
+        },
+        {
+          "level": 3,
+          "text": "Search Bar"
+        },
+        {
+          "level": 2,
+          "text": "Properties"
+        },
+        {
+          "level": 3,
+          "text": "Common Section"
+        },
+        {
+          "level": 3,
+          "text": "Data Source Properties"
+        },
+        {
+          "level": 4,
+          "text": "Type"
+        },
+        {
+          "level": 3,
+          "text": "Design Properties Section"
+        },
+        {
+          "level": 3,
+          "text": "General Section"
+        },
+        {
+          "level": 4,
+          "text": "Show Control Bar"
+        },
+        {
+          "level": 4,
+          "text": "Show Paging Bar"
+        },
+        {
+          "level": 4,
+          "text": "Number of Rows"
+        },
+        {
+          "level": 4,
+          "text": "Number of Columns"
+        },
+        {
+          "level": 4,
+          "text": "Style Template"
+        },
+        {
+          "level": 4,
+          "text": "Selection Mode"
+        },
+        {
+          "level": 4,
+          "text": "Select First"
+        },
+        {
+          "level": 4,
+          "text": "Default Button Trigger"
+        },
+        {
+          "level": 4,
+          "text": "Refresh Time (in Seconds)"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Template Grid Last modified: November 5, 2025 The template grid widget is a Dojo widget. This widget is not supported on native mobile pages. Mendix recommends that you use the Gallery or List View instead to display data. See the Mendix React Client's Migration Guide . This widget is not supported in the React client . To upgrade it to the recommended React widget ( Data Grid 2 ), see the Mendix React Client's Migration Guide . If you switch to the React client , the widget will not appear in the Toolbox . The Dojo client is deprecated and will be removed in Mendix 12. It continues receiving security and stability updates until the end of support of Mendix 11.24. Introduction A template grid shows a list of objects in a tile view. For example, a template grid can show a list of employees with their profile pictures. Using controls provided by the template grid you can browse, search, and manipulate those objects: The template grid has a lot in common with a data grid . The main difference is that the objects are shown in templates instead of rows. Components Control Bar For more information, see Control Bar . Search Bar Search Bar is only available for Database data source . For more information on a search bar and its settings, see Search Bar . Properties An example of template grid properties is represented in the image below: Template grid properties consist of the following sections: Common Data source Design Properties General Visibility Common Section The rows of the template grid can be sorted using the Sort order property. It is only available for Database data sources . For more information on sorting, see Sort Order . For more information on properties in this section, see the Common Section section in Properties Common in the Page Editor . Data Source Properties The data source determines which objects will be shown in the template grid. For general information about data sources, see Data Sources . Type The template grid supports the following types of data sources: Database source – objects are retrieved directly form the database Microflow source – calculates the list of objects by executing a microflow Association source – follows an association to get to objects The database source retrieves objects from the database and supports searching and sorting. Design Properties Section The Design Properties allow you to change spacing and alignment of the widget and hide it on phone, tablet, or desktop, if needed. Design properties may vary depending on the type of the widget. For example, for the text widget you can change its font weight, color, alignment, and letter case. General Section Show Control Bar This property indicates whether the control bar will be visible in the end-user interface. The control bar also includes the paging buttons. Even if the control bar is invisible there can still be a default button that is triggered by (double) clicking a row. See the property 'Default button trigger' and grid buttons for more information. Default: True Show Paging Bar With this property, you can change the way the paging bar is shown. Value Description Yes (with total count) The paging bar is shown, including the Go to last page button and the total count of objects. Yes (without total count) The paging bar is shown (except for the Go to last page button). Also, the total count of objects is not shown, as page numbers are shown instead. No The paging buttons are not shown. Default: Yes (with total count) Hiding the control bar also hides the paging buttons. For details, see Show Control Bar . Number of Rows With this property you can change the number of rows of templates that will be shown on one page. Default: 3 Number of Columns With this property you can change the number of templates that will be shown next to each other in one row. Default: 2 Style Template The style template property allows you to choose from three different styling of the template grid. These stylings depend on your theme package. Selection Mode The selection mode determines whether and how the user can select items in the grid. Value Description No selection The user cannot select items. Single selection (default) The user can select a single item by clicking on it. Clicking another item will make that item the selection. Single selection and maintain The user can select one item at a time by clicking on it. Users cannot deselect an item. By default the first item will be selected and removing a selected item will autoselect a subsequent item. Multi-selection The user can select multiple items by clicking the first one and holding the 'Ctrl' key while clicking on other items. Simply clicking an item will deselect all items and make the clicked item the selection. Simple multi-selection The user can select multiple items by simply clicking on them. Select First This property indicates whether the first item will be selected initially. This is especially useful if there is a data view listening to this grid. Default: Fals...",
+      "harvested": "2025-12-08T20:12:13.607Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "List View",
+      "category": "ui",
+      "url": "https://docs.mendix.com/refguide/list-view/",
+      "title": "List View",
+      "description": "Introduction A list view shows a list of objects. For example, you can display a list of all profiles:\nEach object is shown using a template. This template is defined by placing widgets inside the list view&#39;s drop-zone. The list of objects shown is determined by a data source.\nThe list view provides its own scrolling behavior in native apps. Consequently, you cannot place a list view inside a scroll view in native apps.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "List View"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Properties"
+        },
+        {
+          "level": 3,
+          "text": "Common Section"
+        },
+        {
+          "level": 3,
+          "text": "Data Source Section"
+        },
+        {
+          "level": 4,
+          "text": "Type"
+        },
+        {
+          "level": 3,
+          "text": "Design Properties Section"
+        },
+        {
+          "level": 3,
+          "text": "General Section"
+        },
+        {
+          "level": 4,
+          "text": "Editable"
+        },
+        {
+          "level": 4,
+          "text": "On Click"
+        },
+        {
+          "level": 4,
+          "text": "Page Size"
+        },
+        {
+          "level": 4,
+          "text": "Scroll Direction"
+        },
+        {
+          "level": 4,
+          "text": "Number of Columns"
+        },
+        {
+          "level": 4,
+          "text": "Pull Down Action"
+        },
+        {
+          "level": 3,
+          "text": "Templates Section"
+        },
+        {
+          "level": 3,
+          "text": "Visibility Section"
+        },
+        {
+          "level": 2,
+          "text": "Performing Specific Actions"
+        },
+        {
+          "level": 2,
+          "text": "Read More"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "List View Last modified: March 28, 2025 Introduction A list view shows a list of objects. For example, you can display a list of all profiles: Each object is shown using a template. This template is defined by placing widgets inside the list view's drop-zone. The list of objects shown is determined by a data source . The list view provides its own scrolling behavior in native apps. Consequently, you cannot place a list view inside a scroll view in native apps. Furthermore, you cannot place input widgets below a list view in native apps. To address this issue, you can use the repeater widget from Native Mobile Resources instead. Properties An example of list view properties is represented in the image below: List view properties consist of the following sections: Common Data source Design Properties General Templates Visibility Common Section The rows of the list view can be sorted using the Sort order property. It is only available for Database data sources . For more information on sorting, see Sort Order . To specify which attributes to use when searching, configure the search attributes property. It is only available for Database data sources . For more information on properties in this section, see the Common Section section in Properties Common in the Page Editor . Data Source Section The data source determines which objects will be shown in a list view. For general information on data sources, see Data Sources . Type The list view supports the following types of data sources: Database source – objects are retrieved directly form the database. The database source can be used in offline applications. Microflow source – calculates the list of objects by executing a microflow Nanoflow source – calculates the list of objects by executing a nanoflow Association source – follows an association to get to objects The database source retrieves objects from the database and supports searching and sorting. Searching is not supported on native mobile pages. Design Properties Section The Design Properties allow you to change spacing and alignment of the widget and hide it on phone, tablet, or desktop, if needed. Design properties may vary depending on the type of the widget. For example, for the text widget you can change its font weight, color, alignment, and letter case. General Section Editable If this property is set to Yes , items in the list view can be edited. The changes made to list view items can be saved with a Save button and reverted with a Cancel button. On click and Page size properties are not displayed to avoid confusion about what changes are saved or reverted. On Click An on-click event defines what action is performed when a user clicks a list view row. For more information on on-click events, see On Click Event . Page Size The number of rows displayed on the page; after the indicated limit is reached, the Load more... button is displayed on the page. The Load more button is not visible on native mobile pages. The list view will automatically load new items, when the last of the currently loaded items is shown. Scroll Direction The scroll direction property is only supported on native mobile pages. This property determines whether the list view lays out its items vertically (default) or horizontally. Number of Columns The number of columns property is only supported on native mobile pages. With this property you can change the number of items that will be shown next to each other in one row. If you set the scroll direction property to horizontal, this property determines the number of items per column. Pull Down Action The number of columns property is only supported on native mobile pages. The pull down action defines what action is performed when you drag downwards on a list view. Its common behavior is to update the contents of the list view by synchronizing data. Templates Section Templates are not supported on native mobile pages. If the entity that is connected to the list view has specializations, you can optionally specify templates for each specialization. For each row in the list view the most specific template is shown. The different templates can be selected by clicking the extra header that appears when a specialization template is added. Let us say you have an entity Vehicle and two specializations thereof: Bicycle and Car. And there is a specialization of Car called SportsCar. You create a list view that is connected to Vehicle. With the templates property of the list view you specify what template to show for arbitrary Vehicles. For the specializations Bicycle and Car you create separate templates to show them. Now if there is a row of type Bicycle the template specific for bicycles will be shown. A row of type Car will be shown in the template for Car. A row of type SportsCar is shown in the template for Car. There is no template specific for sports cars (in this example) and Car is the 'closest' generalization for which there is a template. Visibility Section Visibility determi...",
+      "harvested": "2025-12-08T20:12:15.434Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "External Entities (OData)",
+      "category": "integration",
+      "url": "https://docs.mendix.com/refguide/external-entities/",
+      "title": "External Entities",
+      "description": "Introduction External entities can be added to the domain model through the Integration pane. They are displayed as purple entity containers in the domain model. External entities represent the link to the entities that are made available through OData services registered in the Catalog.\nThe published entities are maintained and updated in the originating app. You can consume these through external entities in your app development. When the app uses the data, it retrieves it from the originating app.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "External Entities"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Adding an External Entity to an App"
+        },
+        {
+          "level": 2,
+          "text": "Properties of External Entities"
+        },
+        {
+          "level": 3,
+          "text": "General"
+        },
+        {
+          "level": 3,
+          "text": "Attributes"
+        },
+        {
+          "level": 4,
+          "text": "Edit Attribute"
+        },
+        {
+          "level": 3,
+          "text": "Associations"
+        },
+        {
+          "level": 3,
+          "text": "Association Properties"
+        },
+        {
+          "level": 3,
+          "text": "Documentation"
+        },
+        {
+          "level": 2,
+          "text": "Authentication"
+        },
+        {
+          "level": 3,
+          "text": "Publishers: Setting Authentication Method"
+        },
+        {
+          "level": 3,
+          "text": "Consuming External Entities with Authentication"
+        },
+        {
+          "level": 2,
+          "text": "External Entity Limitations"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "External Entities Last modified: April 28, 2025 Introduction External entities can be added to the domain model through the Integration pane . They are displayed as purple entity containers in the domain model. External entities represent the link to the entities that are made available through OData services registered in the Catalog . The published entities are maintained and updated in the originating app. You can consume these through external entities in your app development. When the app uses the data, it retrieves it from the originating app. External entities can be used like local entities. However, as the entities are maintained in the originating apps, not all properties can be changed in the consuming app. Adding an External Entity to an App To add an external entity to your app model, follow these steps: In your app, open the domain model of the module you want to add an external entity to, and use the Integration pane to search for the entity you want to use. In the Catalog , an OData service may be registered multiple times with different version numbers or deployed to different environments, all publishing the entity that you may want to use. Search the Catalog first and find the one most relevant to the requirements for your app. Drag the entity into the domain model. The entity and its attributes are then added to your app and some documents are added in the App Explorer : A Consumed OData Service document that contains details of the OData service and the metadata. The logo displayed identifies the originating app of the service. A Location constant that specifies the URL of the service. Any enumeration that is used as the type for any of the attributes of the entity. When you drag an entity that is associated with an entity from the same service already in your domain model, the association will be displayed and established between the entities. For more information on associations between external entities, see Associations . For more information, see Consumed OData Service . The consumed entities of the current app are listed in the Used in this app section of the Integration pane: When a new version of a consumed service becomes available in the Catalog, this will be indicated in the Integration pane by an update arrow next to the service name. For more information, see the Updating or Switching a Consumed OData Service section in Consumed OData Service . You can make local changes to the properties of external entities that only affect how the data is used and presented in the consuming app. All other properties are defined in the originating app and cannot be changed. When multiple external entities from the same OData service are used in a module or app, associations between the entities (made in the originating app) will automatically be made in the local module. If you delete an external entity from the domain model, the service documents remain in the App Explorer list and the service remains listed in the Integration pane. You can delete the two service documents if you are no longer going to use any entities from the consumed service. For more information on using published OData services and entities through the Catalog, see Consume Registered Assets . Properties of External Entities Compared to local entities, external entities have a limited number of properties that can be changed. The rest of the properties are defined in the originating app and are, therefore, read-only. Changes that are made to the properties of external entities are made only in the consuming app. The originating app will not be affected by the changes. General This group displays the general properties of the external entity. These values are defined in the originating app, so you cannot edit them. The values that you can edit will only apply to the local app: Name – the name of the entity in the local app From service – shows the service from which this entity originates Original name – shows the name of the entity as defined in the originating app Capabilities - indicates whether the service supports creating, reading, updating, and/or deleting objects Create and change locally - when switched off, the app can only create and update objects when the server supports it; when switched on, the app can create and update objects, but will not be able to send them to the server Persistable – indicates if this a persistable external entity, which means the originating app allows retrieving (reading) objects Summary – shows the description for the entity in the originating app (shown only when there is a description) Attributes The attributes that have been published in the OData service for the external entity are listed here. You can choose to remove attributes that the app does not need. All changes that are made to the attributes and the attribute list are applied to the local instance of the entity. As they are consumed, the changes will not affect the metadata of the consumed service that the entity i...",
+      "harvested": "2025-12-08T20:12:54.552Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Consumed REST Services",
+      "category": "integration",
+      "url": "https://docs.mendix.com/refguide/consumed-rest-services/",
+      "title": "Consumed REST Service",
+      "description": "Presents an overview of consumed REST services and JSON in Mendix.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Consumed REST Service"
+        },
+        {
+          "level": 2,
+          "text": "Consumed REST Services"
+        },
+        {
+          "level": 2,
+          "text": "Read More"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Consumed REST Service Last modified: June 5, 2025 Consumed REST Services Mendix offers different features which allow you to interact with any REST API. You can use them to build and test your REST requests or create data structures in your project. Read More Consumed REST Service , an overview on how to Consume a REST Service document Import an OpenAPI/Swagger contract , instructions on how to create a Consumed REST Service from an OpenAPI/Swagger contract Call REST Service , a description of the microflow action Use Call REST Service Action in a Microflow , instructions on how to use the Call REST Service action in a microflow HttpRequest and HttpResponse System Entities , an overview of these system entities in your domain model Feedback Was this page helpful? Yes No Glad to hear it! Thank you for your response. Sorry to hear that. Please tell us how we can improve .",
+      "harvested": "2025-12-08T20:12:57.073Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Published REST Services",
+      "category": "integration",
+      "url": "https://docs.mendix.com/refguide/published-rest-services/",
+      "title": "Published REST Services",
+      "description": "An overview of published REST services from Mendix apps",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Published REST Services"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Published REST Service"
+        },
+        {
+          "level": 2,
+          "text": "Authentication"
+        },
+        {
+          "level": 2,
+          "text": "Documentation"
+        },
+        {
+          "level": 2,
+          "text": "Logging"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Published REST Services Last modified: March 28, 2025 Introduction Add a published REST service to expose your entities and microflows to other apps using the REST standard. Published REST Service Expose an entity via REST by right-clicking the entity in the domain model and selecting Expose as REST resource . To publish a microflow as a REST operation, right-click anywhere in the editor and select Publish as REST service operation . For an overview of the available options when you add a published service, see Published REST Service . Authentication Published REST services can be secured with basic authentication, active session authentication, and custom authentication. Basic and active session authentication are the default and are automatically applied when you set the security level of your app to Prototype / demo or Production . If you do not want basic authentication, there are three options: You can use no authentication for specific published REST services. When you allow anonymous users to your app, published REST services become available without authentication. This only applies if the anonymous user has been selected for the allowed roles for the published service, and Username and password has been selected as the authentication method. You can implement custom authentication using a microflow . Web service users cannot access REST services. For more details, see Published REST Routing and the Requires Authentication section in Published REST Service . Documentation Every published REST service is automatically documented. This documentation is available in the app under http://yourapp.com/rest-doc/ . Each service has an interactive documentation page using Swagger UI . You can interact with the service to see how it behaves. The documentation of the services is available in the OpenAPI 3.0 and OpenAPI 2.0 formats, which is readable by many systems and tools. It contains JSON Schemas for the messages definitions. Logging To log detailed information about interaction with your published REST service, set the log level of the REST Publish log node to Trace . Feedback Was this page helpful? Yes No Glad to hear it! Thank you for your response. Sorry to hear that. Please tell us how we can improve .",
+      "harvested": "2025-12-08T20:12:58.947Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Call REST Action",
+      "category": "integration",
+      "url": "https://docs.mendix.com/refguide/call-rest-action/",
+      "title": "Call REST Service",
+      "description": "This activity can only be used in microflows. Introduction The Call REST service activity can be used to call a REST endpoint. You can specify the location and how the response of the REST call should be handled.\nProperties An example of the Call REST service activity&#39;s properties is represented in the image below:\nThere are two sets of properties for this activity, those in the dialog box on the left, and those in the properties pane on the right.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Call REST Service"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Properties"
+        },
+        {
+          "level": 2,
+          "text": "Action Section"
+        },
+        {
+          "level": 2,
+          "text": "General Tab"
+        },
+        {
+          "level": 3,
+          "text": "Location"
+        },
+        {
+          "level": 4,
+          "text": "String Template"
+        },
+        {
+          "level": 4,
+          "text": "Parameters"
+        },
+        {
+          "level": 3,
+          "text": "HTTP Method"
+        },
+        {
+          "level": 3,
+          "text": "Use Timeout on Request"
+        },
+        {
+          "level": 3,
+          "text": "Timeout (s)"
+        },
+        {
+          "level": 3,
+          "text": "Proxy Configuration"
+        },
+        {
+          "level": 3,
+          "text": "Client certificate"
+        },
+        {
+          "level": 2,
+          "text": "HTTP Headers Tab"
+        },
+        {
+          "level": 3,
+          "text": "Use HTTP Authentication"
+        },
+        {
+          "level": 3,
+          "text": "User Name"
+        },
+        {
+          "level": 3,
+          "text": "Password"
+        },
+        {
+          "level": 3,
+          "text": "Custom HTTP Headers"
+        },
+        {
+          "level": 2,
+          "text": "Request Tab"
+        },
+        {
+          "level": 3,
+          "text": "Export Mapping for the Entire Request"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Call REST Service Last modified: March 28, 2025 This activity can only be used in microflows. Introduction The Call REST service activity can be used to call a REST endpoint. You can specify the location and how the response of the REST call should be handled. Properties An example of the Call REST service activity's properties is represented in the image below: There are two sets of properties for this activity, those in the dialog box on the left, and those in the properties pane on the right. The Call REST service properties pane consists of the following sections: Action Common Action Section The Action section of the properties pane shows the action associated with this activity. You can open a dialog box to configure this action by clicking the ellipsis ( … ) next to the action. You can also open the dialog box by double-clicking the activity, or right-clicking the activity and selecting Properties . The properties dialog box consists of four tabs: General HTTP Headers Request Response General Tab Location The Location property defines the REST endpoint to be called. The location needs to be entered using a string template which must result in a valid URL string. String Template The template for the location can contain parameters that are written as a number between braces (for example, {1} ). The first parameter has the number 1 , the second 2 , etc. You can escape the opening brace ( { ), by using a double opening brace ( {{ ). Parameters For each parameter in the template, you can specify its value using a microflow expression resulting in a string value. This value will be inserted at the position of the parameter. HTTP Method The HTTP method property defines the HTTP method to use when calling a REST endpoint. The possible values are: GET, POST, PUT, PATCH, DELETE, HEAD, and OPTIONS. Use Timeout on Request Set Use timeout on request to Yes to be able specify how long the Call REST service activity should wait for the REST endpoint to respond. It is recommended that you keep this set to Yes . Most cloud infrastructure services (including those used by Mendix Cloud) will close HTTP connections automatically if there is no traffic for a few minutes, even if your activity is still waiting for a response. This means that, if your activity calls a web service which takes a long time to respond, the connection may be closed without the activity being aware of this, and your activity will not receive a response. Under these circumstances, if Use timeout on request is set to No , your activity will get stuck waiting indefinitely for data to arrive. Default value: Yes Timeout (s) If the REST endpoint has not responded after the number of seconds in Timeout (s) , an exception will occur and the microflow will roll back or go into your custom error handler. Default value: 300 seconds Proxy Configuration In almost all cases, you can ignore this setting. Use app settings is a good default value. For more information about app settings, see the Proxy Settings section of Runtime Customization . If desired, you can configure whether to use a proxy for the request. These are the choices: Use app settings – use whatever settings are defined at the app level (default) Override – override the app-level settings for this action No proxy – do not use a proxy for this action, even if there is a proxy configured at the app level When you select Override , you can configure dynamically whether to use a proxy. You then supply the host, port, username, and password settings for the proxy. Client certificate In most cases, the default Use app settings can be used. However, you can specify a client certificate to use for the request by selecting Override . The options are: Use app settings (default) – use the settings that are defined at the app level Override – override the app-level settings for this action When you select Override , you can configure which client certificate will be used. Click Edit to specify the Client certificate identifier . This identifier can be set in different places, depending on where you deploy the app: When you deploy the app in Mendix Cloud, set the Client certificate identifier in the app and the Web Service Call name in Mendix Cloud to the same value to use a specific client certificate for this REST call. When you deploy the app elsewhere, the identifier is set in the custom setting ClientCertificateUsages . For testing locally, this can be set as a custom server setting in a Configuration . When this identifier is not set for the environment where your app is deployed (either not pinned or not present in ClientCertificateUsages ), the default settings will be used (as if Use app settings were selected). HTTP Headers Tab Use HTTP Authentication The Use HTTP authentication checkbox defines whether basic authentication (username and password) should be used. User Name The User name property defines the user name that will be used to authenticate over HTTP. The user name needs to be entered u...",
+      "harvested": "2025-12-08T20:13:00.817Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Mendix Client",
+      "category": "runtime",
+      "url": "https://docs.mendix.com/refguide/mendix-client/",
+      "title": "Mendix Client",
+      "description": "Describes the Mendix Client part of the Mendix Runtime and how it functions.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Mendix Client"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Description"
+        },
+        {
+          "level": 3,
+          "text": "Client Core"
+        },
+        {
+          "level": 3,
+          "text": "Widgets"
+        },
+        {
+          "level": 3,
+          "text": "JavaScript Actions"
+        },
+        {
+          "level": 3,
+          "text": "UI Layer"
+        },
+        {
+          "level": 3,
+          "text": "HTTPS Server"
+        },
+        {
+          "level": 3,
+          "text": "Logic"
+        },
+        {
+          "level": 3,
+          "text": "Platform APIs"
+        },
+        {
+          "level": 3,
+          "text": "Client Config"
+        },
+        {
+          "level": 3,
+          "text": "Data API"
+        },
+        {
+          "level": 3,
+          "text": "Object Cache"
+        },
+        {
+          "level": 3,
+          "text": "Offline Storage"
+        },
+        {
+          "level": 3,
+          "text": "State/Sync/Session"
+        },
+        {
+          "level": 4,
+          "text": "State Handling"
+        },
+        {
+          "level": 4,
+          "text": "Synchronization"
+        },
+        {
+          "level": 4,
+          "text": "Session"
+        },
+        {
+          "level": 3,
+          "text": "Runtime Server"
+        },
+        {
+          "level": 2,
+          "text": "Widgets"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Mendix Client Last modified: July 25, 2025 Introduction The Mendix Client runs on the end-user's device and serves as the interface between the end-user and the app. Sometimes it can run completely independently of the Runtime Server and perform all processing locally. Most of the time, it interacts with the Runtime Server to get or update shared data, or perform additional application logic. The above description of the Mendix Client is based on using the Runtime Server of an app running in the cloud. You can also run Mendix locally for testing, which works in a conceptually similar way. The Mendix Client has transitioned to a modern implementation using React. In Mendix 11.0 and above, the React Client is the default for new applications and the legacy Dojo Client is deprecated. The React client replaces Dojo with React for the view layer. This means that widgets based on Dojo will no longer work. You will get consistency errors if your app contains Dojo widgets, or you can choose Migration mode which will allow you to build your app but will replace incompatible widgets with a placeholder. Other components of the Mendix Client are the same in both the React and Dojo client. See Mendix React Client for more information. Description The Mendix Client is a part of every application built with Mendix: both web and mobile. For web applications , the Mendix Client acts as a single page application. This means that all paging is handled by the Mendix Client, rather than being separate pages served using different URLs. The Mendix Dojo Client is bootstrapped by loading a mxui.js script from an HTML page provided by the theme . The Mendix React client is bootstrapped in different way. It loads the index.js file which loads the common.js with the Mendix client. More JavaScript files that contain page, layout, and nanoflow definitions will be loaded after this. For mobile applications , the Mendix Client acts as a React Native application. This means that apps created by Mendix consist of two parts: a wrapper and a bundle . The wrapper is a native iOS or Android application that loads the bundle and exposes platform functionality to it. The bundle includes Client Core, Pluggable Widgets, and application-specific resources like nanoflows and pages. The three supported types of wrappers for mobile applications are as follows: Make It Native app Custom developer apps Native apps The first two of these load a bundle dynamically, while the last one includes a pre-packaged bundle that can be updated later. Here is a chart showing the components of the Mendix Client (for more information on the components, see the sections written beneath the chart): Client Core The Client Core can be seen as the interpreter of the client. It uses the client config and client state to decide how to process a request from the end-user. The client core controls the various processes which need to take place to service the request. These processes include data fetching and manipulation, client-side expressions, and navigation. The client core is mostly written in TypeScript. Mendix apps do not modify the client core, all logic is held in the model. However, each patch version of Mendix comes with its own version of the client core. Widgets Widgets are the fundamental building blocks of the Mendix Client. All the actions which the client takes are controlled by widgets. They are responsible for what is displayed on pages, and how user input is managed. There is a more detailed description of widgets in Widgets , below. JavaScript Actions JavaScript Actions run custom JavaScript, added by the app developer, which are held in the client config. UI Layer The UI layer performs navigation, resource loading, and platform integration. It is responsible for building the page which is presented to the end-user in response to the actions of the Mendix Client, using the correct language and other locale settings. HTTPS Server The HTTPS server serves pages, widgets, and JavaScript actions (held in the model) to the end-user of the app. Logic Logic runs client-side logic, which is defined in the model's nanoflows. Platform APIs Platform APIs are functions of the environment in which the Mendix Client is running. In most cases these will be a function of a mobile device, such as the camera or GPS location. However, they can also include making calls to Mendix Native APIs or browser functions (such as accessing an image file). Client Config Client Config is the static data which is needed by the Mendix Client. For a browser-based client, this data is held online with the Runtime Server. For native mobile apps, this is held locally on the device. The Client Config includes the initial environment (for example, the browser shell page) needed to start the Mendix Client, Cascading Style Sheets (CSS files) which define the app’s theme, and JavaScript files which define client-side logic. Data API The Data API allows the Mendix Client to fetch and manipulate data...",
+      "harvested": "2025-12-08T20:13:02.753Z",
+      "version": "mendix-10-11"
+    }
+  ],
+  "howto": [
+    {
+      "topic": "Atlas UI Guide",
+      "category": "ui",
+      "url": "https://docs.mendix.com/howto/front-end/atlas-ui/",
+      "title": "UI Design",
+      "description": "Presents a list of how-tos to guide you to create customized applications using Atlas UI.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "UI Design"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "UI Design Last modified: March 28, 2025 Introduction Mendix offers Atlas UI, a cross-platform UI framework that gives teams the foundation they need to build engaging, high-quality experiences and brings UX, IT, and business together. See the Atlas 3 site additional information on Atlas. Atlas comes with a default design system which can be fully tailored and extended. New apps are based on this design system. For more information, see the Atlas Design System website. The following how-tos are available here: Get Started — Learn more about Atlas UI and get started on your first customizations. Customize Styling — Customize your styling in deeper ways. Specifically, you will see how our progressive and web apps use SASS (SCSS) and our native mobile apps use JavaScript to create your app's styling. Configure Module-Level Theme Settings — Use module-level theme settings to control theme system behavior. This allows you to control which elements your developers can and cannot use. Create a Company Design System — Create a company design system: a \"UI kit\" which contains all the elements that a team needs to design, realize, and develop a product. Extend Design Properties — Learn the basics of design properties and how to make your own. Atlas UI Kit for Figma — Learn how to set up and use the Atlas UI Kit for Figma. Feedback Was this page helpful? Yes No Glad to hear it! Thank you for your response. Sorry to hear that. Please tell us how we can improve .",
+      "harvested": "2025-12-08T20:13:05.168Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Security Best Practices",
+      "category": "security",
+      "url": "https://docs.mendix.com/howto/security/best-practices-security/",
+      "title": "Implement Best Practices for App Security",
+      "description": "Describes the common aspects you should consider when delivering an application within Mendix Cloud.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Implement Best Practices for App Security"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Implementing Access Rules"
+        },
+        {
+          "level": 2,
+          "text": "Avoiding Injection"
+        },
+        {
+          "level": 2,
+          "text": "Applying Access Restrictions to Unnecessary Request Handlers"
+        },
+        {
+          "level": 2,
+          "text": "Applying Authentication on Services"
+        },
+        {
+          "level": 3,
+          "text": "Turning On API Security"
+        },
+        {
+          "level": 3,
+          "text": "Selecting Authentication Option"
+        },
+        {
+          "level": 4,
+          "text": "Authentication Option 1, Username and Password"
+        },
+        {
+          "level": 4,
+          "text": "Authentication Option 2, Active Session"
+        },
+        {
+          "level": 4,
+          "text": "Authentication Option 3, Custom"
+        },
+        {
+          "level": 3,
+          "text": "Limiting API Access through IP Restrictions and Certificates"
+        },
+        {
+          "level": 2,
+          "text": "Using the Encryption Module When Storing Sensitive Information"
+        },
+        {
+          "level": 2,
+          "text": "Using Credentials in Your App"
+        },
+        {
+          "level": 2,
+          "text": "Using a Third-Party Identity Provider"
+        },
+        {
+          "level": 2,
+          "text": "Applying a Strong Password Policy"
+        },
+        {
+          "level": 2,
+          "text": "Renaming the Administrator User"
+        },
+        {
+          "level": 2,
+          "text": "Using SSL on Consumed Web Services Whenever Possible"
+        },
+        {
+          "level": 2,
+          "text": "Adding HTTP Headers"
+        },
+        {
+          "level": 2,
+          "text": "Maintaining a High Level of App Hygiene"
+        }
+      ],
+      "codeExamples": [
+        "import getCSRFToken from &#34;mx-api/session&#34;;\n\nconst token = getCSRFToken();"
+      ],
+      "content": "Implement Best Practices for App Security Last modified: July 7, 2025 Introduction Security is one of the most important aspects of an application, because misconfiguration or failing security can have large stakeholder consequences. The Mendix Runtime protects your application and data according to your model, and Mendix Cloud handles security at the infrastructure level. This document describes the common aspects you should consider when delivering an application within Mendix Cloud. Implementing Access Rules The Mendix architecture includes the Mendix Client, which can compose its own queries (generated by widgets) and send them to the Mendix Runtime. If the Mendix Runtime were to execute these queries without touching them, the Mendix Client would be able to request data that the user should not be allowed to see. When designing an application, you can specify access rules on an entity (for more information, see How to Create A Secure App ). These access rules are applied whenever a query (received from a client) should be executed, thus they constrain the data returned to the client. For example, users with the \"Customer\" role can only view orders that are associated to the customer of which this user is part. While the data that should be viewable and editable in which role is application-specific, the following best practices are key: Attributes determined by the system (like the status of an order) should never be writable If an anonymous user is allowed to create objects, constrain these objects to the owner (an anonymous user is actually a System.User object created on the fly) Do not set a default rule for read-and-write access – this forces you to think about each attribute that is added to an entity Security constraints should be formed as entity access rules Constraints on widgets in pages should not be used as a measure of security, but can filter out irrelevant data for the context of the page Keep your attributes editable within data views, because if an access rule prohibits write access, your client will display it as non-editable – this way you are aware of the (correct) working of an access rule Avoiding Injection Injection occurs when (user) input can be misused to influence the behavior of a system. Common cases are parameters for queries (to influence the results of database queries) or HTML with JavaScript contents (to influence browser behavior). When using Mendix-native components, there are no concerns about the possibility of injection. Queries (like XPath) are parametrized and therefore always escaped, making SQL-injection impossible. For the other way around, retrieved data shown in the user interface is escaped to the HTML format. When you are building an application, you may use Mendix Marketplace components and external interfaces. Remember that values which originate from user input or other systems should be escaped to avoid injection (and to ensure they are properly display). These are the common cases and best practices: HTML content, usually derived from an HTML editor and displayed using an HTML viewer, format string, or an email client – these are the ways to avoid this abuse: Use the XSSSanitize action from the CommunityCommons Function Library module to strip malicious code from the entered HTML Display the value of an attribute as HTML or using the HTMLEncode function from the Community Commons Function Library module Database connections (for example, using the Database Connector ), where user input is being used within constraints – these are the ways to avoid this abuse: Use prepared statements, which will cause the database-specific connector to take care of escaping the value Sanity-check your user input (for example, use a regular expression to check if your user input only contains alphanumeric characters, spaces, and dashes) Applying Access Restrictions to Unnecessary Request Handlers A Mendix app offers various endpoints that can be used to obtain information about offered services. The paths used by these endpoints end in -doc . By default, access to these endpoints is disabled when deploying to a cloud node. Access restrictions can be configured within the Mendix Portal. They can be found in the Environment details of your cloud node. This is an example of this overview showing the default settings after deploying to a new environment: Examples are the ws-doc or rest-doc endpoints that enumerate all the published web and REST services of the application. An attacker could use this information to discover possible areas to exploit. You can take the following preventative measures: Disable unused endpoints within the Mendix Portal completely by applying a deny all access preset on them Apply IP filtering or client certificate authentication to restrict access Keep the following in mind: If there are other app-specific request handlers that should have an access restriction applied, then click New to add them as additional paths The URLs of test and accept...",
+      "harvested": "2025-12-08T20:13:58.474Z",
+      "version": "mendix-10-11"
+    }
+  ],
+  "releasenotes": [
+    {
+      "topic": "Studio Pro 10 Release Notes",
+      "category": "release_notes",
+      "url": "https://docs.mendix.com/releasenotes/studio-pro/10/",
+      "title": "Mendix Studio Pro Version 10 Release Notes",
+      "description": "The release notes for version 10 of Mendix Studio Pro.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Mendix Studio Pro Version 10 Release Notes"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Mendix Studio Pro Version 10 Release Notes Last modified: August 29, 2024 These are the release notes for Mendix Studio Pro 10: 10.24 10.23 10.22 10.21 10.20 10.19 10.18 10.17 10.16 10.15 10.14 10.13 10.12 10.11 10.10 10.9 10.8 10.7 10.6 10.5 10.4 10.3 10.2 10.1 10.0 Feedback Was this page helpful? Yes No Glad to hear it! Thank you for your response. Sorry to hear that. Please tell us how we can improve .",
+      "harvested": "2025-12-08T20:14:00.332Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Studio Pro 10.0 Specifics",
+      "category": "release_notes",
+      "url": "https://docs.mendix.com/releasenotes/studio-pro/10.0/",
+      "title": "10.0",
+      "description": "The release notes for Mendix Studio Pro 10.0 (including all patches) with details on new features, bug fixes, and known issues.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "10.0"
+        },
+        {
+          "level": 2,
+          "text": "10.0.0 General Availability"
+        },
+        {
+          "level": 3,
+          "text": "New Features"
+        },
+        {
+          "level": 3,
+          "text": "Improvements"
+        },
+        {
+          "level": 4,
+          "text": "Performance Improvements"
+        },
+        {
+          "level": 4,
+          "text": "Other Improvements"
+        },
+        {
+          "level": 3,
+          "text": "Deprecations"
+        },
+        {
+          "level": 3,
+          "text": "Breaking Changes"
+        },
+        {
+          "level": 4,
+          "text": "Various Breaking Changes"
+        },
+        {
+          "level": 4,
+          "text": "Generated Code Changes"
+        },
+        {
+          "level": 3,
+          "text": "Known Issues"
+        },
+        {
+          "level": 2,
+          "text": "10.0.0 Betas"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "10.0 Last modified: May 2, 2025 For details on upgrading to Studio Pro 10, see Upgrading from Mendix Studio Pro 9 to 10 . 10.0.0 General Availability Release date: June 27, 2023 Go to Marketplace For more information on this release, see the Mendix Release 10.0 – A New Era! blog post. New Features Mendix Solutions Kit is now released for general availability (GA). This release provides capabilities for protected add-on and solution modules that allow you to have more control over what can be changed in the modules you distribute. In addition, this release includes solution lifecycle management, which enables creating and distributing adaptable solutions to customers so that the consumed solutions can easily be upgraded when you release the next version. The Machine Learning Kit is now released for GA. A Mendix Event Broker license is now available for all customers. We renamed MxAssist Performance Bot to Best Practice Bot . Previously, MxAssist Performance Bot functioned as a virtual co-developer bot, assisting developers in enhancing their app's performance by evaluating the app model against Mendix's performance best practices in Mendix Studio Pro. Throughout releases of Mendix 10, MxAssist Best Practice Bot will be expanded to give additional types of Mendix best practices, such as security or naming conventions. This bot will identify development anti-patterns during the app development cycle, locate these anti-patterns, and provide suggestions on how to refactor the app model based on the Mendix best practice. Page URLs got a major overhaul to support new functionality. Studio Pro now supports multiple page parameters, using attributes other than Id in the URL, and placing the variable segment (or segments) at any location in the URL. We added new options to the Aggregate list activity. All and Any are new aggregation functions you can use to check if an expression is true for all or any of the items in a list, respectively. In addition, we added the Reduce aggregation to enable turning a list of values into a single value using an expression. In this expression, both $currentObject and $currentResult are available to create a new $currentResult . Finally, all aggregations that could be used with a specified attribute can now also be used with an expression instead. In this expression, $currentObject is available to access the item of the list currently being processed. We introduced a new nanoflow activity called Clear from device that can be used to clear the objects of an entity from the device database. Objects cleared using this activity are not synchronized with the server database, and references to such objects are not cleared. We added a new workflow activity and a related microflow activity. You can use the Wait for notification workflow activity to suspend a workflow's execution, and you can use the Notify workflow microflow activity to send a notification to resume the workflow that has been suspended. We added support for workflow multi-user tasks . It is now possible to configure a user task where the same task is executed by a number of users in parallel. A multi-user task is completed by consolidating and evaluating the outcomes of each individual task. Decision methods can be Consensus , Veto , Majority , or Threshold . We also added support for the Auto-assign and Who Can Open options for multi-user tasks. Improvements Performance Improvements We improved the performance of editing published web service operations. Operations that expose large data structures no longer cause Studio Pro to become unresponsive upon opening the editing dialog box. (Tickets 179950, 183039) Other Improvements You can now set input parameters as return variables via the context menu. This is based on an idea from Marius van der Knaap. Thank you, Marius! We reduced the number of cases in the client where a data source is reloaded, even if its container is hidden by conditional visibility at the same time. (Ticket 126149) We improved the export size of the model. It should now be about half the size in a lot of cases. (Ticket 174121) We improved data encryption in mobile apps. (Ticket 181442) We added support for signing in using a macOS external browser. This requires configuration. For details, see the Configuring Your Windows Virtual Machine for Mendix Studio Pro section of Configuring Parallels . We added a column to the Open App dialog box that displays the Mendix Studio Pro application Version (including for local apps that are stored on disk). We added a Preferences link to the Open App dialog box. We added tooltips to the Branch Line , Message , and On Disk columns in the Branch Lines dialog box that is accessible via Open App . We updated the Revert All Changes menu item to show the Open App dialog box if the app is closed after the operation (for example, when the changes include a version change). We extended the Work Environment tab in Preferences with Studio Pro Theme . When it is set to Auto (Sy...",
+      "harvested": "2025-12-08T20:14:02.575Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Studio Pro 10.6 Specifics",
+      "category": "release_notes",
+      "url": "https://docs.mendix.com/releasenotes/studio-pro/10.6/",
+      "title": "10.6",
+      "description": "The release notes for Mendix Studio Pro 10.6 (including all patches) with details on new features, bug fixes, and known issues.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "10.6"
+        },
+        {
+          "level": 2,
+          "text": "10.6.25"
+        },
+        {
+          "level": 3,
+          "text": "Improvements"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 2,
+          "text": "10.6.24"
+        },
+        {
+          "level": 3,
+          "text": "Improvements"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 3,
+          "text": "Breaking Changes"
+        },
+        {
+          "level": 3,
+          "text": "Known Issues"
+        },
+        {
+          "level": 2,
+          "text": "10.6.23"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 3,
+          "text": "Known Issues"
+        },
+        {
+          "level": 2,
+          "text": "10.6.22"
+        },
+        {
+          "level": 3,
+          "text": "Improvements"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 3,
+          "text": "Deprecations"
+        },
+        {
+          "level": 3,
+          "text": "Breaking Changes"
+        },
+        {
+          "level": 3,
+          "text": "Known Issues"
+        },
+        {
+          "level": 2,
+          "text": "10.6.21"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        }
+      ],
+      "codeExamples": [],
+      "content": "10.6 Last modified: October 14, 2025 10.6.25 Release date: October 14, 2025 Go to Marketplace Improvements We updated the bundled Node.js from v20 to v22. Fixes We fixed an issue where trying to retrieve more than 500 external objects by ID at once failed, for example, when retrieving many external objects by association. (Ticket 251911) We fixed an issue in the interactive documentation (Swagger UI) page for published OData services, where it incorrectly indicated that it did not support OpenAPI version 3.0.4. (Tickets 256982, 257611) We fixed an issue where task queue tasks were not able to mark themselves as completed after execution. 10.6.24 Release date: June 5, 2025 Go to Marketplace Improvements When importing a module, widget, solution package or when starting a new app from a template, we now prevent the package from unpacking content to undesired directories. The user can still choose to extract the rest of the package. We improved accessibility in dialog boxes by allowing the keyboard to reach the Close button. Fixes We fixed a security issue related to importing modules into Studio Pro. (6.1 – CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:N/I:H/A:N – for more information see Security Advisories ) We fixed the behavior of the urlEncode and urlDecode functions in the client to align with the runtime. This means that spaces are now correctly encoded as %20 instead of + . urlDecode still supports decoding strings containing + to ensure backwards compatibility with strings encoded in previous versions. (Ticket 245510) We fixed an issue in the domain model editor, where an unexpected exception closed Studio Pro instead of showing an exception in a dialog. We fixed an issue where Studio Pro would showed an exception while checking the consistency of external attributes, associations, and enumerations. We fixed an issue where some task queue tasks remained in the Running state when a clustered application was restarted while optimistic locking was also enabled. (Ticket 239838) We fixed the date format preview in Studio Pro to be consistent with the actual date formatting behaviour in the runtime and client. Breaking Changes We updated the date formatting in the client to be consistent with the runtime in supporting genitive and abbreviated month names. See the table below for the changes between the old and new formatting. The runtime formatting has not changed and is equal to the new client behavior. Token Old New MMM genitive genitive abbreviated MMMM genitive genitive LLL genitive standalone abbreviated LLLL genitive standalone Known Issues A finished parallel split path that is removed from a running workflow instance wrongly leads to a versioning conflict. Please note that \"path\" was called \"branch\" in earlier versions. Fixed in 10.17.0 . Importing a module containing workflows makes all running workflow instances incompatible. (Ticket 234084) Fixed in 10.21.0 . There is a positioning error in the logic editors when you are dragging a large element, such as a loop, into a sequence flow, it overlaps with the existing elements. Fixed in 10.12.12 and in 10.14.0 . Line endings in CSS files are not being handled properly, so when using Revert All Changes or performing other version-control operations, CSS files appear in the Changes on Disk dialog box. Fixed in 10.18.0 . 10.6.23 Release date: April 25, 2025 Go to Marketplace Fixes We fixed an issue where Consumed Web Service causing validation failure in runtime for WSDL files imported locally. (Ticket 146066) We fixed an issue where an app crashed when a Call a microflow event was selected then the Select button was clicked in the Map entity dialog. (Ticket 225433) We fixed an issue where Export mapping schema elements with forced selections were not automatically selected and expanded when choosing the document schema source for the first time using XML schema or Consumed Web Service as the schema source. (Ticket 232274) Known Issues A finished parallel split path that is removed from a running workflow instance wrongly leads to a versioning conflict. Please note that \"path\" was called \"branch\" in earlier versions. Fixed in 10.17.0 . Importing a module containing workflows makes all running workflow instances incompatible. (Ticket 234084) Fixed in 10.21.0 . There is a positioning error in the logic editors when you are dragging a large element, such as a loop, into a sequence flow, it overlaps with the existing elements. Fixed in 10.12.12 and in 10.14.0 . Line endings in CSS files are not being handled properly, so when using Revert All Changes or performing other version-control operations, CSS files appear in the Changes on Disk dialog box. Fixed in 10.18.0 . 10.6.22 Release date: April 11, 2025 Go to Marketplace Improvements We mitigated CVE-2024-38374 by upgrading the CycloneDX Gradle plugin to 1.10.0. The CVE does not pose risk for Mendix customers. (Ticket 243005) We improved the performance of published OData services that use a Read microflow. When the c...",
+      "harvested": "2025-12-08T20:14:04.360Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Studio Pro 10.12 Specifics",
+      "category": "release_notes",
+      "url": "https://docs.mendix.com/releasenotes/studio-pro/10.12/",
+      "title": "10.12",
+      "description": "The release notes for Mendix Studio Pro 10.12 (including all patches) with details on new features, bug fixes, and known issues.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "10.12"
+        },
+        {
+          "level": 2,
+          "text": "10.12.19"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 2,
+          "text": "10.12.18"
+        },
+        {
+          "level": 3,
+          "text": "Improvements"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 2,
+          "text": "10.12.17"
+        },
+        {
+          "level": 3,
+          "text": "Improvements"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 3,
+          "text": "Breaking Changes"
+        },
+        {
+          "level": 3,
+          "text": "Known Issues"
+        },
+        {
+          "level": 2,
+          "text": "10.12.16"
+        },
+        {
+          "level": 3,
+          "text": "Improvements"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 3,
+          "text": "Deprecations"
+        },
+        {
+          "level": 3,
+          "text": "Breaking Changes"
+        },
+        {
+          "level": 3,
+          "text": "Known Issues"
+        },
+        {
+          "level": 2,
+          "text": "10.12.15"
+        },
+        {
+          "level": 3,
+          "text": "Fixes"
+        },
+        {
+          "level": 3,
+          "text": "Known Issues"
+        }
+      ],
+      "codeExamples": [],
+      "content": "10.12 Last modified: October 17, 2025 10.12.19 Release date: October 13, 2025 Go to Marketplace Fixes We fixed an issue where task queue tasks were not able to mark themselves as completed after execution. 10.12.18 Release date: September 22, 2025 Go to Marketplace Improvements We updated the bundled Node.js from v20 to v22. We upgraded the ONNX dependency to version 1.22.0. Fixes We fixed an issue where navigating to a screen already in the navigation history caused an unexpected behavior when using the Side Bar layout. (Ticket 232247) We fixed an issue where enumeration values with the name Core caused compilation errors. (Ticket 250532) We fixed an issue where an attempt to retrieve more than 500 external objects by ID at once failed. For example, when retrieving many external objects by association. (Ticket 251911) We fixed an issue in the interactive documentation (Swagger UI) page for published OData services which indicated it did not support OpenAPI version 3.0.4. (Tickets 256982 and 257611) We added proper refresh functionality for Marketplace for when a session times out. The reload button will properly handle the event, by closing the details page and refreshing the Search tab view. We fixed the accessibility of the popup modal so now the keyboard is allowed keyboard to reach the Close button. 10.12.17 Release date: June 3, 2025 Go to Marketplace Improvements We updated the dotnet runtime version installed with Studio Pro. When importing a module, widget, solution package or when starting a new app from a template, we now prevent the package from unpacking content to undesired directories. The user can still choose to extract the rest of the package. The authentication token is now rotated, ensuring a new token is generated upon session expiration for enhanced security. We improved the generation of Java code for enumerations. Fixes We fixed a security issue related to importing modules into Studio Pro. (6.1 – CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:C/C:N/I:H/A:N – for more information see Security Advisories ) We fixed an issue where Consumed Web Service caused a validation failure at runtime for WSDL files imported locally. (Ticket 146066) We fixed an issue where fields that could not be unchecked while Export mapping an XML schema or Consumed Web Service were not checked and expanded by default when selecting the document schema source for the first time. (Ticket 232274) We fixed an issue where disabling the Multiple sessions per user setting incorrectly killed all existing user sessions and deleted all associated tokens, including the currently valid one. (Ticket 238657) We fixed an issue where some task queue tasks remained in the Running state when a clustered application was restarted while optimistic locking was also enabled. (Ticket 239838) We fixed an issue where the Substract , Union and Intersect list operations did not always return a list with unique values when used in a nanoflow. (Ticket 240695) We fixed an issue where Studio Pro closed after a user logged in. (Ticket 248086) We fixed the behavior of the urlEncode and urlDecode functions in the client to align with the runtime. This means that spaces are now correctly encoded as %20 instead of + . urlDecode still supports decoding strings containing + to ensure backwards compatibility with strings encoded in previous versions. (Ticket 245510) We fixed an unnecesary redirect when creating a new app from the Mendix Portal. We fixed the way how multiline text is displayed in the Enumerations document. We fixed an issue where Studio Pro closed when adding an SVG file to the Image Collection document. We fixed an issue in the domain model editor, where an unexpected exception closed Studio Pro instead of showing an exception in a dialog. We fixed an issue where Studio Pro would showed an exception while checking the consistency of external attributes, associations, and enumerations. We fixed an issue where enumeration captions did not return the caption in the default language, if no caption was available for the requested language code. We updated the Mendix Cloud Foundry Client to mitigate vulnerabilities in its dependencies. The vulnerabilities do not pose risk for Mendix customers. We fixed the date format preview in Studio Pro to be consistent with the actual date formatting behaviour in the runtime and client. Breaking Changes We updated the date formatting in the client to be consistent with the runtime in supporting genitive and abbreviated month names. See the table below for the changes between the old and new formatting. The runtime formatting has not changed and is equal to the new client behavior. Token Old New MMM genitive genitive abbreviated MMMM genitive genitive LLL genitive standalone abbreviated LLLL genitive standalone Known Issues A finished parallel split path that is removed from a running workflow instance wrongly leads to a versioning conflict. Please note that \"path\" was called \"branch\" in earlier versions. Fixed in 1...",
+      "harvested": "2025-12-08T20:14:06.699Z",
+      "version": "mendix-10-11"
+    }
+  ],
+  "devops": [
+    {
+      "topic": "Mendix Cloud Deploy",
+      "category": "deployment",
+      "url": "https://docs.mendix.com/developerportal/deploy/mendix-cloud-deploy/",
+      "title": "Mendix Cloud",
+      "description": "This document describes Mendix Cloud, the default AWS-powered deployment for Mendix applications. It also provides information about Free App features, limitations, manual and automatic deletion policies, and archiving. This document also provides information to learn about Licensed App capabilities, including resource packs, high availability, regional fallback, database configurations, URLs, and Mendix pricing plans to optimize your app deployment and management.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Mendix Cloud"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 3,
+          "text": "Free App"
+        },
+        {
+          "level": 4,
+          "text": "Sleep Mode"
+        },
+        {
+          "level": 4,
+          "text": "Deleting Free Apps"
+        },
+        {
+          "level": 5,
+          "text": "Manually Deleting Free Apps"
+        },
+        {
+          "level": 5,
+          "text": "Automatic Archiving of Free Apps"
+        },
+        {
+          "level": 5,
+          "text": "Automatic Deletion of Unused Projects"
+        },
+        {
+          "level": 3,
+          "text": "Licensed App"
+        },
+        {
+          "level": 4,
+          "text": "Flexible Environments"
+        },
+        {
+          "level": 3,
+          "text": "Database"
+        },
+        {
+          "level": 3,
+          "text": "URLs and Ports"
+        },
+        {
+          "level": 3,
+          "text": "Number of End-Users for Licensed Apps"
+        },
+        {
+          "level": 3,
+          "text": "Supported Mendix Versions"
+        },
+        {
+          "level": 2,
+          "text": "Mendix Pricing Plans"
+        },
+        {
+          "level": 3,
+          "text": "Plans"
+        },
+        {
+          "level": 3,
+          "text": "Cloud Resource Packs"
+        },
+        {
+          "level": 3,
+          "text": "Additional Resources"
+        },
+        {
+          "level": 4,
+          "text": "High Availability and Fallback"
+        },
+        {
+          "level": 4,
+          "text": "Application Data Replication"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Mendix Cloud Last modified: November 24, 2025 Introduction Mendix Cloud is the default deployment option for Mendix applications. It is a public cloud service for Mendix applications, with infrastructure built and maintained by Mendix and built on top of Amazon Web Services (AWS). Mendix Cloud is optimized to run Mendix applications, is available in multiple regions around the globe, and comes with high availability options. There are several options for deployment with Mendix Cloud: Mendix Free – If you are new to the Mendix community and want to create, deploy, and share your own app, you can do so for free using Mendix's limited Free App environment. Note that Free Apps do not support complex or large applications, only run for a couple of hours before shutting down, cannot be scaled, and provide limited operational information. Mendix Cloud with licensed nodes – With a license, you can take advantage of Mendix Cloud's full features, including deep insights, alerting, high availability, and backups. Mendix Cloud Dedicated – Organizations can have their own Mendix Cloud through Mendix Cloud Dedicated, a single-tenant instance of the public Mendix Cloud that runs only that organization's applications. Free App Free Apps make it possible to start creating and deploying apps with Mendix for free. Free Apps have several limitations compared to licensed apps. The main limitations are summarized in the table below: Feature Free App Licensed App Number of users Unlimited users for regular Free Apps; six concurrent users for an unlicensed app running on another cloud platform (such as SAP BTP) Depends on your pricing plan Sleep mode Goes into sleep mode after about an hour of inactivity and automatically resumes when a user accesses it; all your data is retained while the app is in sleep mode Does not have a sleep mode Disk storage 0.5 GiB Database and 1 GiB Files Depends on your pricing plan App vCPUs 0.5 Depends on your pricing plan Scheduled events Are not run Are run and can be configured from the Mendix Portal Environments Single environment in Mendix Cloud A node in the cloud that has one or more environments, for example, production, acceptance, and test Deployment Can only be deployed to the cloud from Mendix Studio Pro Can be deployed from Mendix Studio Pro, from the Mendix Portal, or through an API Custom domains Not available Can be configured from the Mendix Portal Access restriction profiles Not available Can be configured from the Mendix Portal Client certificates Not available Can be configured from the Mendix Portal Starting and stopping your app manually Not available Available in the Mendix Portal Constants Defined in Studio Pro Configurable through environment variables in the Mendix Portal Runtime settings Not available Configurable through runtime and settings in the Mendix Portal Scalability Only one instance and a fixed amount (1 GiB) of memory Configurable in the Mendix Portal Metrics, alerts, and log levels Not available Available Historic app logs Not available; only live logs are available Available Backups Performed daily and cannot be triggered manually; stored for up to two weeks Performed daily and can also be created manually; kept for up to one year, depending on your plan Support No support Depends on your license option Sleep Mode Due to the limitations of a Free App, it enters sleep mode after about an hour of inactivity. If you access the app during this time, it displays the following message: If your app does not wake up after a few minutes, contact Mendix Support . To prevent your Free App going into sleep mode, upgrade to a licensed app running on a node in Mendix Cloud. For more information, see Licensing Mendix Cloud Apps . Deleting Free Apps This section outlines the different ways Free Apps can be deleted from the Mendix Platform. Manually Deleting Free Apps As a Technical Contact you can manually delete a Free App after publishing it from Studio Pro by following these steps: From Apps , go to the Environments page of your app. Click More Options ( )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M6 20C8.21 20 10 18.21 10 16C10 13.79 8.21 12 6 12C3.79 12 2 13.79 2 16C2 18.21 3.79 20 6 20ZM6 14C7.1 14 8 14.9 8 16C8 17.1 7.1 18 6 18C4.9 18 4 17.1 4 16C4 14.9 4.9 14 6 14Z\"/> )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16 12C13.79 12 12 13.79 12 16C12 18.21 13.79 20 16 20C18.21 20 20 18.21 20 16C20 13.79 18.21 12 16 12ZM16 18C14.9 18 14 17.1 14 16C14 14.9 14.9 14 16 14C17.1 14 18 14.9 18 16C18 17.1 17.1 18 16 18Z\"/> )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M22 16C22 13.79 23.79 12 26 12C28.21 12 30 13.79 30 16C30 18.21 28.21 20 26 20C23.79 20 22 18.21 22 16ZM24 16C24 17.1 24.9 18 26 18C27.1 18 28 17.1 28 16C28 14.9 27.1 14 26 14C24.9 14 24 14.9 24 16Z\"/> ) on the Sandbox environment. Click Delete . Deleting a Free App deletes the running app, its database, files, and backups. However, the project on the Mendix Platform and its repository on the Team Server remain acti...",
+      "harvested": "2025-12-08T20:14:24.254Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Environments",
+      "category": "deployment",
+      "url": "https://docs.mendix.com/developerportal/deploy/environments/",
+      "title": "Environments and Deployment",
+      "description": "Describes the Environments page and deployment flow",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Environments and Deployment"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Available Tabs"
+        },
+        {
+          "level": 3,
+          "text": "Overview Tab"
+        },
+        {
+          "level": 4,
+          "text": "Environment Information"
+        },
+        {
+          "level": 5,
+          "text": "Environment Actions"
+        },
+        {
+          "level": 5,
+          "text": "Environment Resources"
+        },
+        {
+          "level": 5,
+          "text": "Deployed Package"
+        },
+        {
+          "level": 4,
+          "text": "Environment Settings"
+        },
+        {
+          "level": 3,
+          "text": "Deployment Packages Tab"
+        },
+        {
+          "level": 4,
+          "text": "Deployment Package Details"
+        },
+        {
+          "level": 4,
+          "text": "Creating a Package"
+        },
+        {
+          "level": 4,
+          "text": "Uploading a Package"
+        },
+        {
+          "level": 4,
+          "text": "Deploying a Package"
+        },
+        {
+          "level": 3,
+          "text": "Permissions Tab"
+        },
+        {
+          "level": 3,
+          "text": "Activity Tab"
+        },
+        {
+          "level": 3,
+          "text": "Change Requests Tab"
+        },
+        {
+          "level": 2,
+          "text": "Cloud Settings"
+        },
+        {
+          "level": 3,
+          "text": "Custom Domains"
+        },
+        {
+          "level": 3,
+          "text": "Access Restriction Profiles"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Environments and Deployment Last modified: December 1, 2025 Introduction You can use the Environments page to access information about your environments, deployment packages, manage certificates and access restrictions, and more. To access your app's Environments page, go to Apps and click Environments on your app. You can also directly visit the Environments page using this link: https://cloud.home.mendix.com/link/deploy/ APP_ID , with APP_ID replaced by your project ID . Available Tabs The Environments page has the following tabs: Overview Deployment Packages Permissions Activity Change Requests Overview Tab On the Overview tab, you can view the environment information and perform actions on your environments. The most recent deployment package is shown in a banner at the top of the page, along with a button to deploy it. Environment Information You can see the following details for each environment shown in the Overview tab: The environment's name The Studio Pro Target ( )\" d=\"M13.3183 16.8678C13.5976 16.3431 14.3126 15.8789 15.3741 15.8789C17.2958 15.8789 17.6421 17.3017 17.6421 17.8971V22.0745L19.5197 19.1225L17.6762 16H19.8325L20.7487 17.7255L21.6649 16H23.8212L21.9777 19.1225L24 22.2789H21.8213L20.7487 20.4928L19.6761 22.2789L15.7875 22.2789V18.5328C15.7875 17.6448 15.4523 17.3623 14.8713 17.3623C14.0892 17.3623 13.7428 17.9576 13.7428 18.8355V22.2789H11.8993V18.5328C11.8993 17.6448 11.5641 17.3623 10.9831 17.3623C10.2011 17.3623 9.85468 17.9677 9.85468 18.8355V22.2789H8V16H9.47482L9.57537 16.7467H9.60889C10.0335 16.1413 10.6368 15.8789 11.4077 15.8789C12.3574 15.8789 12.9942 16.3229 13.2847 16.8678H13.3183Z\"/> )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M28 5H4C2.9 5 2 5.9 2 7V25C2 26.1 2.9 27 4 27H28C29.1046 27 30 26.1046 30 25V7C30 5.9 29.1 5 28 5ZM28 12H4V25H28V12ZM28 7V10H4V7H28Z\"/> ) – This is displayed if the environment is the designated Studio Pro target. For more information, see Studio Pro Deployment Settings . Licensed badge – This is displayed if the environment is licensed. The environment's status: – The application in this environment is running without any alerts. – No application has been started yet in this environment, or the application has been turned off. – The application in this environment is running, but has warning alerts, which might result in difficulties. For more information, refer to the alerts page or logs . – The application in this environment is running, but has critical alerts, which might make it unstable and not usable anymore. Refer to the alerts page or logs for more information. The date and time the app was started, if it is running. This is set in the user's time zone. The version of the deployment package The name of the deployment package Environment Actions You can perform the following actions on your environments: Deploy ( )\" d=\"M11.0136 6C11.2067 3.6534 13.4232 2 15.8462 2H19.1539C21.6901 2 24.0001 3.81149 24.0001 6.33333L24 8H24.5384C26.7537 8 28.8759 9.36711 29.3585 11.4399L27.4106 11.8934C27.1854 10.9262 26.0461 10 24.5384 10H21.9999L22.0001 6.33333C22 5.17519 20.8638 4 19.1539 4H15.8462C14.1362 4 13 5.17517 13 6.33333V8H9.99975C8.89529 8 8 8.89532 8 10V12C8 13.1047 8.89529 14 9.99975 14H15.9999V16H9.99975C7.7905 16 6 14.209 6 12V10C6 7.79097 7.7905 6 9.99975 6H11.0136Z\"/> )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M9 22C7.89543 22 7 22.8954 7 24V28C7 29.1046 7.89543 30 9 30H13C14.1046 30 15 29.1046 15 28V27H24V18.4142L26.2929 20.7071L27.7071 19.2929L23 14.5858L18.2929 19.2929L19.7071 20.7071L22 18.4142V25H15V24C15 22.8954 14.1046 22 13 22H9ZM13 24H9V28H13V24Z\"/> ) – Launch the Deploy wizard , where you can configure and start a new deployment for the selected environment. View Details ( )\" d=\"M22 4H6V26H11V28H6C4.9 28 4 27.1 4 26V4C4 2.9 4.9 2 6 2H22C23.1 2 24 2.9 24 4V13H22V4Z\"/> )\" d=\"M8 8H20V10H8V8Z\"/> )\" d=\"M16 12H8V14H16V12Z\"/> )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M25.63 15.57L27.43 17.37C27.8 17.74 28 18.22 28 18.74C28 19.26 27.8 19.74 27.43 20.11L17.56 30.01H12.99V25.47L22.89 15.57C23.63 14.84 24.9 14.84 25.63 15.57ZM14.99 28H16.73L23.29 21.42L21.54 19.67L14.99 26.29V28ZM22.95 18.25L24.7 20L26.01 18.69L24.21 16.98L22.95 18.25Z\"/> ) – Access the Environment Details page. View App )\" d=\"M24.59 6H19V4H28V13H26V7.41L15.71 17.71L14.29 16.29L24.59 6Z\"/> )\" d=\"M6 26H24V17.95H26V26C26 27.1 25.1 28 24 28H6C4.9 28 4 27.1 4 26V8C4 6.9 4.9 6 6 6H14.09V8H6V26Z\"/> – Launch the app in a new browser tab. More Options ( )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M6 20C8.21 20 10 18.21 10 16C10 13.79 8.21 12 6 12C3.79 12 2 13.79 2 16C2 18.21 3.79 20 6 20ZM6 14C7.1 14 8 14.9 8 16C8 17.1 7.1 18 6 18C4.9 18 4 17.1 4 16C4 14.9 4.9 14 6 14Z\"/> )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16 12C13.79 12 12 13.79 12 16C12 18.21 13.79 20 16 20C18.21 20 20 18.21 20 16C20 13.79 18.21 12 16 12ZM16 18C14.9 18 14 17.1 14 16C14 14.9 14.9 14 16 14C17.1 14 18 14.9 18 16C18 17.1 17.1 18 16 18Z\"/> )\" fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M22 16C22 13....",
+      "harvested": "2025-12-08T20:14:26.024Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Private Cloud",
+      "category": "deployment",
+      "url": "https://docs.mendix.com/developerportal/deploy/private-cloud/",
+      "title": "Mendix on Kubernetes",
+      "description": "Describes how to deploy to Mendix on Kubernetes.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Mendix on Kubernetes"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 3,
+          "text": "Registering Your Cluster and Namespace"
+        },
+        {
+          "level": 3,
+          "text": "Deploying Your App"
+        },
+        {
+          "level": 2,
+          "text": "Connected and Standalone Clusters"
+        },
+        {
+          "level": 3,
+          "text": "Connected Architecture"
+        },
+        {
+          "level": 3,
+          "text": "Standalone Architecture"
+        },
+        {
+          "level": 2,
+          "text": "Product Capability Comparison"
+        },
+        {
+          "level": 2,
+          "text": "Memory Allocation"
+        },
+        {
+          "level": 2,
+          "text": "Licensing Mendix on Kubernetes"
+        },
+        {
+          "level": 3,
+          "text": "Operator License"
+        },
+        {
+          "level": 3,
+          "text": "Runtime License"
+        },
+        {
+          "level": 3,
+          "text": "Request Both Operator and Runtime License"
+        },
+        {
+          "level": 3,
+          "text": "Activating Your License (or Licenses)"
+        },
+        {
+          "level": 4,
+          "text": "Online Mendix on Kubernetes Apps"
+        },
+        {
+          "level": 4,
+          "text": "Standalone &amp; Offline Mendix on Kubernetes Apps"
+        },
+        {
+          "level": 4,
+          "text": "Private Cloud Licensing Manager"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Mendix on Kubernetes Last modified: August 25, 2025 Introduction Mendix on Kubernetes allows you to deploy and manage your Mendix apps in a Kubernetes private cluster. It automates operations, such as database provisioning, that you would have to perform manually if you used the Mendix Docker buildpack. It also provides options for monitoring and logging through third-party tools. Your organization may have a requirement to use a private cloud, perhaps as part of a multi-cloud strategy. This could be because of legal requirements or a desire to have complete control over your data. Mendix on Kubernetes allows you to do this while keeping the familiar components of Docker and Kubernetes. You can use Mendix on Kubernetes with the connected option to keep the simplicity of one-click deployments from the Mendix Portal, or utilize the standalone Mendix Operator to deploy Mendix apps through your own DevOps process, which is particularly useful for private clouds with an air-gap isolating them from the internet. See Connected and Standalone Clusters , below, for more information. Please see Supported Providers for a list of platforms supported by Mendix on Kubernetes. There are two steps required to achieve this, listed below. Mendix on Kubernetes is a premium offering from Mendix, and there are additional licensing and cost implications if you want to use it for applications in production. See Licensing Mendix on Kubernetes , below, for more information. Registering Your Cluster and Namespace The first step is to register your cluster in the Mendix Portal. For more information see Creating a Mendix on Kubernetes Cluster . This activity needs to be done by a systems administrator who has administration rights to the platform where the cluster is being created. Deploying Your App To deploy your app, you have two options: You can deploy the app from within the Mendix Portal. For more information see Deploying a Mendix App to a Mendix on Kubernetes Cluster from Mendix Portal . You can create a CI/CD pipeline and deploy your app from within the cluster. For more information see Using Command Line to Deploy a Mendix App to a Mendix on Kubernetes Cluster . When you deploy through the Mendix Portal, this can be done by any Mendix user who has been given the appropriate rights to the cluster which has been registered. Connected and Standalone Clusters To allow you to manage the deployment of your apps to Red Hat OpenShift and Kubernetes, you first need to register a cluster in the Mendix Portal. This will provide you with the information you need to deploy the Mendix Operator in your cluster. If you have chosen a connected cluster, the Mendix Gateway Agent will also be deployed. Once the Mendix Operator is deployed to your cluster, you can use it to configure the resources which will be used by your apps. You then have two options, depending on whether you have chosen to create a connected cluster or a standalone cluster. Connected Architecture If you have chosen to register a connected cluster, the Mendix Gateway Agent will create a link to the Environments pages of your Mendix app through the Interactor . This is a secure bi-directional communication channel which is initiated from the Mendix Gateway Agent running on the cluster. Using this channel, any Mendix user who has been given the correct authority can pass instructions to the Mendix Operator and receive status information about the cluster. This includes instructions needed to deploy an app, or to configure the environment. Standalone Architecture If you have chosen to register a standalone cluster, then all communication with the Mendix Operator will be through instructions which are made directly through the Kubernetes API. These can be made manually, but are generally performed by your CI/CD pipeline. In this case, you will also have to have local source control of the Mendix app deployment packages to ensure that the deployment process can discover them. Product Capability Comparison The table below shows the differences between the capabilities for apps deployed to Mendix Cloud, Mendix on Kubernetes Connected, and Mendix on Kubernetes Standalone. Capability Mendix Cloud Mendix on Kubernetes Connected Mendix on Kubernetes Standalone Environment provisioning Fully automated Provisioned with database and blob storage provided by the customer Provisioned with database and blob storage provided by the customer Environment configuration For example, constants and scheduled event Mendix Portal Mendix Portal Custom Resources via Mendix Operator Mendix app/deployment package deployment Mendix Portal and Studio Pro Mendix Portal and Studio Pro Custom Resources via Mendix Operator normally combined in a CI/CD pipeline Backup and restore Mendix Portal Services supplied by the database server and file storage used¹ Services supplied by the database server and file storage used¹ Monitoring Mendix Portal App metrics sent to a Prometheus-compatible monitoring tool App met...",
+      "harvested": "2025-12-08T20:14:27.818Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Docker Deploy",
+      "category": "deployment",
+      "url": "https://docs.mendix.com/developerportal/deploy/docker-deploy/",
+      "title": "Docker",
+      "description": "Describes how to deploy using a Docker image.",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Docker"
+        },
+        {
+          "level": 2,
+          "text": "Introduction"
+        },
+        {
+          "level": 2,
+          "text": "Prerequisites"
+        },
+        {
+          "level": 2,
+          "text": "Building the Image"
+        },
+        {
+          "level": 2,
+          "text": "Pushing the Image"
+        },
+        {
+          "level": 2,
+          "text": "Read More"
+        },
+        {
+          "level": 2,
+          "text": "Feedback"
+        }
+      ],
+      "codeExamples": [
+        "docker build --build-arg BUILD_PATH=&#34;{relative-mendix-project-location}&#34; -t {image name} ."
+      ],
+      "content": "Docker Last modified: July 7, 2025 Introduction Docker is an open source container technology. With Mendix, you can use it for simple deployments, particularly when running local or development versions of your app. However, it lacks some scaling and integration features. The Docker Buildpack simplifies the creation of Docker images locally, but it falls short in terms of running, managing, and operating them effectively compared to the capabilities offered by Mendix on Kubernetes. Leveraging Mendix on Kubernetes means entrusting the Mendix Operator to automate these essential tasks whenever Kubernetes handles your containers. The following diagram illustrates the disparity between Docker Buildpack and Mendix Operator: Mendix suggests that, if you are planning to deploy to your own cloud platform at scale, a better solution for production apps is to use Mendix on Kubernetes . This provides you with structured and tested solutions for integrating with your own cloud infrastructure using comprehensive, automated, native functions, avoiding the need to create your own processes from scratch. This page explains how to build a Docker image from your Mendix App. Every time you make changes to your app, you must create a new Docker image that can be pushed through the different stages of your application pipeline. This how-to teaches you how to do the following: Build the image Push the image to a registry Prerequisites Before starting these instructions, make sure you have completed the following prerequisites: Download the latest version of Mendix Studio Pro from the Mendix Marketplace Install Docker from the Docker site Download the Mendix Docker Buildpack Building the Image To build the Docker image, follow these steps: Install Docker on your computer. Restart the computer to ensure that you have been granted access to Docker. Unzip the buildpack into a location of your choice. Open the Command Prompt and navigate to the folder where you unzipped the buildpack. Open your app in Studio Pro and select the menu option App > Show App Directory in Explorer : Copy the project folder and all its subfolders to the unzipped docker build folder. The project folder needs to be in the same folder as the Docker file, otherwise Docker cannot access it. Execute the following command: docker build --build-arg BUILD_PATH = &#34;{relative-mendix-project-location}&#34; -t { image name } . {relative-mendix-project-location} is the BUILD_PATH which indicates where the application model is located. It is the directory where your .MPR file is located after you copied the project into the docker build folder. If you do not specify it, it defaults to ./project . A successful build will resemble the output shown below: You can find much more information and links to relevant Docker documentation in the Mendix Docker Buildpack GitHub repository. Pushing the Image A new Docker image has been created with the name ( {image name} ) you gave it. You can see the image by using the command docker images . Next, you need to push the image to a registry. This can be a public registry or your own. To push it to your own registry, use the command docker push {image name} . Read More How to Run a Mendix Docker Image Feedback Was this page helpful? Yes No Glad to hear it! Thank you for your response. Sorry to hear that. Please tell us how we can improve .",
+      "harvested": "2025-12-08T20:14:29.680Z",
+      "version": "mendix-10-11"
+    }
+  ],
+  "apidocs": [
+    {
+      "topic": "Model SDK Reference",
+      "category": "sdk",
+      "url": "https://apidocs.rnd.mendix.com/modelsdk/latest/index.html",
+      "title": "Mendix Model SDK - v4.105.0",
+      "description": "Documentation for Mendix Model SDK - v4.105.0",
+      "headings": [
+        {
+          "level": 2,
+          "text": "Index"
+        },
+        {
+          "level": 3,
+          "text": "Namespaces"
+        },
+        {
+          "level": 3,
+          "text": "Enumerations"
+        },
+        {
+          "level": 3,
+          "text": "Classes"
+        },
+        {
+          "level": 3,
+          "text": "Interfaces"
+        },
+        {
+          "level": 3,
+          "text": "Type aliases"
+        },
+        {
+          "level": 3,
+          "text": "Variables"
+        },
+        {
+          "level": 3,
+          "text": "Functions"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Index Namespaces aliases appservices authentication businessevents client codeactions common configuration constants customblobdocuments customicons customwidgets databaseconnector datasets datatypes documenttemplates domainmodels enumerations exportmappings images importmappings integrationoverview javaactions javascriptactions jsonstructures kafka mappings menus messagedefinitions microflows nanoflows navigation odatapublish pages projects queues regularexpressions reports rest scheduledevents security services settings texts url utils webservices workflows xmlschemas Enumerations Priority Classes Abstract Element Abstract Enum Abstract Model Abstract Property Abstract Unit By Id Reference Property By Name Reference List Property By Name Reference Property Element Enum List Property Enum Property Java Script Serializer Local By Name Reference Property Model Model Event Receiver Model Unit Part List Property Part Property Primitive List Property Primitive Property Structural Child List Property Structural Child Property Structural Unit Structure Structure Version Info Transaction Undo Manager Undo State Version Interfaces IAbstract Element IAbstract Element Json IAbstract Model IAbstract Unit IAbstract Unit Json IBuild Result Event ICommit To Git Team Server Options ICommit ToSVNTeam Server Options IDelta Event IElement IExport Mpk Callback IExport Mpk Response IFile Event IGet Files Options IList ILoad Unit Interfaces Response ILoad Unit Response ILock Data ILock Working Copy Options ILock Working Copy Response IModel Server Client IModel Unit IMpr Meta Data INamed Element IRequest File Download Options IRequest Multipart Binary File Upload Options IRequest Options IResponse IResponse Callback IStructural Unit IStructure IStructure Json ITransaction Options ITransportation IWorking Copy IWorking Copy Data Event IWorking Copy Meta Data Type aliases Delta ICommit To Team Server Options IMerge State IModel IModel Event IWorking Copy Event Lock Type Model Sdk Client Variables MAX_ METAMODEL_ VERSION SDK_ VERSION Functions begin Transaction create Element FromJSON create Model Unit FromJSON instantiate Child Element is Named Element run In Transaction send List Change Deltas",
+      "harvested": "2025-12-08T20:14:39.202Z",
+      "version": "mendix-10-11"
+    },
+    {
+      "topic": "Platform SDK Reference",
+      "category": "sdk",
+      "url": "https://apidocs.rnd.mendix.com/platformsdk/latest/index.html",
+      "title": "Mendix Platform SDK - v5.2.0",
+      "description": "Documentation for Mendix Platform SDK - v5.2.0",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Mendix Platform SDK"
+        },
+        {
+          "level": 2,
+          "text": "Obtaining a Personal Access Token"
+        },
+        {
+          "level": 2,
+          "text": "Creating a script"
+        },
+        {
+          "level": 2,
+          "text": "Using the API"
+        }
+      ],
+      "codeExamples": [],
+      "content": "Mendix Platform SDK The Mendix Platform SDK can be used to call Mendix Platform APIs. It also integrates with the Mendix Model SDK for working on temporary online working copies of Mendix projects. At the moment, the Platform SDK implements the following functionality: Creating a new app Deleting an app Creating a temporary working copy for editing an app model using the Mendix Model SDK Committing the changes to a temporary working copy back to the Mendix Team Server Getting info about a repository, its branches and commits Obtaining a Personal Access Token To use the Mendix Platform SDK, you need a Personal Access Token with the right scopes. Follow this guide to create a Personal Access Token. Warning: Do not put the Personal Access Token inside your source code! Instead, pass it to your script using an environment variable. The Platform SDK automatically tries to get the Personal Access Token from the environment variable MENDIX_TOKEN. Creating a script To set up your development environment and create your first script, please follow the guide . Using the API Here is a small example script that shows the main APIs of the Platform SDK. import { MendixPlatformClient } from \"mendixplatformsdk\" ; async function main () { // Create a Platform SDK client. This will automatically read // your Personal Access Token from the environment variable MENDIX_TOKEN. const client = new MendixPlatformClient (); // Create a new app in the Mendix Developer Portal. This will also create // a new Team Server repository based on the Blank App template. // // If you want to use an existing app, you can use the following: // const app = client.getApp(\"existing-app-id\"); const app = await client . createNewApp ( \"My First App\" , { repositoryType: \"git\" }); // Create a temporary working copy on the Model Server based on the main // line of the Team Server repository. // // If you want to use an existing working copy, you can use the following: // const workingCopy = app.getOnlineWorkingCopy(\"existing-working-copy-id\"); const workingCopy = await app . createTemporaryWorkingCopy ( \"main\" ); // Open the working copy using the Model SDK. const model = await workingCopy . openModel (); // Show the names of all the modules in the app model. console . log ( \"All modules in the model:\" ); for ( const module of model . allModules ()) { console . log ( ` * ${ module . name } ` ); } // Rename the first module. model . allModules ()[ 0 ]. name = \"RenamedModule\" ; await model . flushChanges (); // Commit the changes back to the Team Server. await workingCopy . commitToRepository ( \"main\" , { commitMessage: \"Rename the first module\" }); // Create a Repository object to get info about its branches and commits. const repository = app . getRepository () // Show the commit messages in the main branch. // The response is paginated using cursor-based pagination. console . log ( \"Last commits in main branch:\" ); const commits = ( await repository . getBranchCommits ( \"main\" )). items ; for ( const commit of commits ) { console . log ( ` * ${ commit . message } ` ); } // Delete the app. await app . delete (); } // Run the &#39;main&#39; function and report any errors. main (). catch ( error => { console . log ( \"ERROR: An error occurred.\" , error ); process . exit ( 1 ); })",
+      "harvested": "2025-12-08T20:14:40.948Z",
+      "version": "mendix-10-11"
+    }
+  ]
+}

@@ -43,6 +43,9 @@ import { HarvestScheduler } from './harvester/index.js';
 import HybridSearch from './vector/HybridSearch.js';
 import VectorStore from './vector/VectorStore.js';
 
+// Analytics (Phase 3) - Usage tracking
+import Analytics from './utils/Analytics.js';
+
 // Initialize
 const logger = new Logger('Server');
 const config = getConfig();
@@ -70,6 +73,18 @@ const webFetcher = new WebFetcher({ enabled: true });
 const searchEngine = new SearchEngine();
 const qualityScorer = new QualityScorer();
 const syncReminder = new SyncReminder();
+
+// Initialize analytics (Phase 3 - usage tracking)
+const analytics = new Analytics();
+analytics
+  .initialize()
+  .then(() => {
+    analytics.startSession();
+    logger.info('Analytics initialized');
+  })
+  .catch((err) => {
+    logger.warn('Analytics initialization failed (non-critical)', { error: err.message });
+  });
 
 // Initialize harvest scheduler (Phase 1 - auto-updates knowledge)
 const harvestScheduler = new HarvestScheduler();
@@ -600,6 +615,10 @@ server.tool(
   },
   async ({ topic, detail_level = 'basic' }) => {
     try {
+      // Track usage
+      analytics.trackToolUsage('query_mendix_knowledge');
+      analytics.trackQuery(topic, detail_level);
+
       logger.info('Querying knowledge', { topic, detail_level });
 
       const searchResults = searchEngine.search(topic, {
@@ -684,9 +703,15 @@ server.tool(
   },
   async ({ project_path, module_name, entity_name }) => {
     try {
+      // Track usage
+      analytics.trackToolUsage('analyze_project');
+
       logger.info('Analyzing project', { project_path, module_name, entity_name });
 
       const project = await projectLoader.loadProject(project_path);
+
+      // Track project analysis stats
+      analytics.trackProjectAnalysis({ modules: project.modules || [] });
 
       // If specific module and entity requested
       if (module_name && entity_name) {
@@ -741,6 +766,10 @@ server.tool(
   },
   async ({ scenario }) => {
     try {
+      // Track usage
+      analytics.trackToolUsage('get_best_practice');
+      analytics.trackBestPractice(scenario);
+
       logger.info('Getting best practice', { scenario });
 
       const results = searchEngine.search(scenario, {
@@ -820,6 +849,10 @@ server.tool(
   },
   async ({ knowledge_file, category, content, source, verified = false }) => {
     try {
+      // Track usage
+      analytics.trackToolUsage('add_to_knowledge_base');
+      analytics.trackKnowledgeAddition(knowledge_file, category);
+
       logger.info('Adding knowledge', { file: knowledge_file, category, source });
 
       // Parse the JSON string content
@@ -1193,6 +1226,10 @@ server.tool(
   },
   async ({ query, limit, mode }) => {
     try {
+      // Track usage
+      analytics.trackToolUsage('hybrid_search');
+      analytics.trackSearch(query, 0);
+
       const options = {
         limit,
         keywordOnly: mode === 'keyword',
@@ -1200,6 +1237,9 @@ server.tool(
       };
 
       const results = await hybridSearch.search(query, options);
+
+      // Track result count
+      analytics.trackSearch(query, results.length);
 
       if (results.length === 0) {
         return {
@@ -1314,6 +1354,85 @@ server.tool(
       logger.error('Re-indexing failed', { error: error.message });
       return {
         content: [{ type: 'text', text: `❌ Re-indexing failed: ${error.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool 12: Usage Analytics
+server.tool(
+  'get_analytics',
+  'Get usage analytics showing tool usage patterns, popular topics, and server health metrics.',
+  {
+    detailed: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe('Show detailed analytics with all data'),
+  },
+  async ({ detailed }) => {
+    try {
+      analytics.trackToolUsage('get_analytics');
+
+      const report = detailed ? analytics.getDetailedReport() : analytics.getSummary();
+
+      let text = `# 📊 Usage Analytics\n\n`;
+
+      // Overview
+      text += `## Overview\n\n`;
+      text += `| Metric | Value |\n|--------|-------|\n`;
+      text += `| Total Tool Calls | ${report.overview?.totalToolCalls || 0} |\n`;
+      text += `| Sessions | ${report.overview?.totalSessions || 0} |\n`;
+      text += `| Avg Session Length | ${report.overview?.avgSessionMinutes || 0} min |\n`;
+      text += `| Knowledge Additions | ${report.overview?.knowledgeAdditions || 0} |\n`;
+      text += `| Projects Analyzed | ${report.overview?.projectsAnalyzed || 0} |\n`;
+      text += `| Errors | ${report.overview?.totalErrors || 0} |\n`;
+      text += `\n`;
+
+      // Top Tools
+      if (report.topTools && Object.keys(report.topTools).length > 0) {
+        text += `## 🔧 Most Used Tools\n\n`;
+        for (const [tool, count] of Object.entries(report.topTools)) {
+          text += `- **${tool}**: ${count} calls\n`;
+        }
+        text += `\n`;
+      }
+
+      // Top Topics
+      if (report.topTopics && Object.keys(report.topTopics).length > 0) {
+        text += `## 🔍 Most Queried Topics\n\n`;
+        for (const [topic, count] of Object.entries(report.topTopics)) {
+          text += `- "${topic}": ${count} queries\n`;
+        }
+        text += `\n`;
+      }
+
+      // Search Terms
+      if (report.topSearchTerms && Object.keys(report.topSearchTerms).length > 0) {
+        text += `## 📝 Popular Search Terms\n\n`;
+        const terms = Object.entries(report.topSearchTerms).slice(0, 10);
+        text += terms.map(([term, count]) => `\`${term}\` (${count})`).join(' • ');
+        text += `\n\n`;
+      }
+
+      // Recent Trend
+      if (report.recentTrend && report.recentTrend.length > 0) {
+        text += `## 📈 Recent Activity (Last 7 Days)\n\n`;
+        text += `| Date | Calls |\n|------|-------|\n`;
+        for (const day of report.recentTrend) {
+          text += `| ${day.date} | ${day.calls} |\n`;
+        }
+        text += `\n`;
+      }
+
+      text += `\n*Last updated: ${report.lastUpdated || 'N/A'}*`;
+
+      return { content: [{ type: 'text', text }] };
+    } catch (error) {
+      logger.error('Analytics failed', { error: error.message });
+      return {
+        content: [{ type: 'text', text: `❌ Analytics failed: ${error.message}` }],
         isError: true,
       };
     }

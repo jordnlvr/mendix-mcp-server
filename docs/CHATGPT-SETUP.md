@@ -12,16 +12,19 @@
 ## GPT Configuration
 
 ### Name
+
 ```
 Mendix Expert
 ```
 
 ### Description
+
 ```
 Expert Mendix developer assistant with access to a curated knowledge base of SDK patterns, best practices, troubleshooting guides, and project analysis capabilities.
 ```
 
 ### Instructions (System Prompt)
+
 Copy this entire block into the "Instructions" field:
 
 ```
@@ -86,7 +89,9 @@ You: [Use hybridSearch with "StringTemplate error"] → Find relevant troublesho
 ```
 
 ### Conversation Starters
+
 Add these to help users get started:
+
 ```
 How do I create an entity with the Mendix SDK?
 What are the best practices for microflow naming?
@@ -96,12 +101,14 @@ Troubleshoot SDK microflow creation errors
 ```
 
 ### Actions
+
 1. Click **Create new action**
 2. Click **Import from URL**
 3. Enter your ngrok URL: `https://YOUR-NGROK-URL.ngrok-free.app/openapi.json`
 4. Click **Import**
 
 The following actions will be imported:
+
 - `queryKnowledge` - Query the Mendix knowledge base
 - `hybridSearch` - Advanced keyword + semantic search
 - `getBestPractice` - Get best practice recommendations
@@ -113,11 +120,13 @@ The following actions will be imported:
 ## Getting the ngrok URL
 
 Run this command to check your current public URL:
+
 ```powershell
 .\check-api-status.ps1
 ```
 
 Or start fresh with:
+
 ```powershell
 .\start-chatgpt-api.ps1
 ```
@@ -127,17 +136,21 @@ Or start fresh with:
 ## Troubleshooting
 
 ### "Action failed" in ChatGPT
+
 1. Run `.\check-api-status.ps1` to verify the API is running
 2. If ngrok URL changed, update the Action in your GPT settings
 3. Check ngrok dashboard at http://127.0.0.1:4040 for errors
 
 ### ngrok URL keeps changing
+
 Free ngrok URLs change on each restart. Options:
+
 1. **Keep it running** - Don't restart unless needed
 2. **Get ngrok paid tier** - $8/month for a stable subdomain
 3. **Use a different tunnel** - Cloudflare Tunnel, localtunnel, etc.
 
 ### ChatGPT can't reach the API
+
 1. Make sure your computer is on and connected to internet
 2. Check if firewall is blocking ngrok
 3. Verify the REST server is running: `curl http://localhost:5050/health`

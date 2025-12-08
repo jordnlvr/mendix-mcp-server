@@ -27,15 +27,15 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 
 ## ✨ Key Features
 
-| Feature | Description |
-|---------|-------------|
-| 🔍 **Intelligent Search** | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow" |
-| 🧠 **Self-Learning** | Automatically grows smarter as you add knowledge |
-| 🔬 **Auto-Research** | Embedded research protocol guides AI to find answers in docs, GitHub, forums |
-| 📊 **Analytics** | 92% hit rate, tracks missed queries to identify knowledge gaps |
-| 🔧 **Auto-Maintenance** | Scheduled validation, staleness detection, cache cleanup |
-| 📁 **Project Analysis** | Analyze any `.mpr` file - discover modules, entities, microflows |
-| 🔄 **Sync Reminder** | Reminds you to sync with GitHub after 7 days |
+| Feature                   | Description                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| 🔍 **Intelligent Search** | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow"   |
+| 🧠 **Self-Learning**      | Automatically grows smarter as you add knowledge                             |
+| 🔬 **Auto-Research**      | Embedded research protocol guides AI to find answers in docs, GitHub, forums |
+| 📊 **Analytics**          | 92% hit rate, tracks missed queries to identify knowledge gaps               |
+| 🔧 **Auto-Maintenance**   | Scheduled validation, staleness detection, cache cleanup                     |
+| 📁 **Project Analysis**   | Analyze any `.mpr` file - discover modules, entities, microflows             |
+| 🔄 **Sync Reminder**      | Reminds you to sync with GitHub after 7 days                                 |
 
 ---
 
@@ -101,6 +101,7 @@ Add to `claude_desktop_config.json`:
 ### 3. Use It!
 
 In your AI chat:
+
 - `@mendix-expert` - Ask about Mendix development
 - "How do I create a microflow with the SDK?"
 - "Analyze my project at D:/Projects/MyApp.mpr"
@@ -109,12 +110,12 @@ In your AI chat:
 
 ## 📚 Available Tools
 
-| Tool | Description |
-|------|-------------|
-| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic |
-| `analyze_project` | Analyze a `.mpr` file or extracted project directory |
-| `get_best_practice` | Get recommendations for specific scenarios |
-| `add_to_knowledge_base` | Contribute new knowledge (auto quality scoring) |
+| Tool                     | Description                                          |
+| ------------------------ | ---------------------------------------------------- |
+| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic       |
+| `analyze_project`        | Analyze a `.mpr` file or extracted project directory |
+| `get_best_practice`      | Get recommendations for specific scenarios           |
+| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)      |
 
 ---
 
@@ -122,35 +123,41 @@ In your AI chat:
 
 Access these via the MCP resources protocol:
 
-| Resource | What It Shows |
-|----------|---------------|
-| `mendix://knowledge/overview` | Knowledge base summary & file list |
-| `mendix://stats` | Server statistics (uptime, cache, index size) |
-| `mendix://search/config` | Current search configuration |
-| `mendix://validation/report` | Knowledge validation errors/warnings |
-| `mendix://analytics` | Search analytics (hit rate, top terms, gaps) |
-| `mendix://staleness` | Entries older than 90 days needing updates |
-| `mendix://maintenance` | Auto-maintenance schedule & status |
+| Resource                      | What It Shows                                 |
+| ----------------------------- | --------------------------------------------- |
+| `mendix://knowledge/overview` | Knowledge base summary & file list            |
+| `mendix://stats`              | Server statistics (uptime, cache, index size) |
+| `mendix://search/config`      | Current search configuration                  |
+| `mendix://validation/report`  | Knowledge validation errors/warnings          |
+| `mendix://analytics`          | Search analytics (hit rate, top terms, gaps)  |
+| `mendix://staleness`          | Entries older than 90 days needing updates    |
+| `mendix://maintenance`        | Auto-maintenance schedule & status            |
 
 ---
 
 ## 🔧 Search Features
 
 ### Fuzzy Matching
+
 Typos are handled gracefully:
+
 - `"micorflow"` → finds **microflow**
 - `"domian model"` → finds **domain model**
 - `"platfrom sdk"` → finds **platform sdk**
 
 ### Synonym Expansion
+
 Searches automatically expand:
+
 - `MF` → microflow
 - `DM` → domain model
 - `SDK` → mendixmodelsdk, mendixplatformsdk
 - `NP` → non-persistent
 
 ### Stemming
+
 Finds variations:
+
 - `"microflows"` matches **microflow**
 - `"creating"` matches **create**
 - `"validation"` matches **validate**
@@ -161,17 +168,17 @@ Finds variations:
 
 177 entries across 9 topic files:
 
-| File | Entries | Topics |
-|------|---------|--------|
-| `model-sdk.json` | 25 | Model manipulation, elements, properties |
-| `platform-sdk.json` | 23 | Working copies, commits, branches |
-| `best-practices.json` | 28 | Naming, architecture, performance |
-| `troubleshooting.json` | 22 | Common errors and solutions |
-| `studio-pro.json` | 20 | Studio Pro features, shortcuts |
-| `advanced-patterns.json` | 18 | Complex SDK patterns |
-| `performance-guide.json` | 15 | Optimization techniques |
-| `security-guide.json` | 14 | Security best practices |
-| `sdk-community-resources.json` | 12 | Community links, forums |
+| File                           | Entries | Topics                                   |
+| ------------------------------ | ------- | ---------------------------------------- |
+| `model-sdk.json`               | 25      | Model manipulation, elements, properties |
+| `platform-sdk.json`            | 23      | Working copies, commits, branches        |
+| `best-practices.json`          | 28      | Naming, architecture, performance        |
+| `troubleshooting.json`         | 22      | Common errors and solutions              |
+| `studio-pro.json`              | 20      | Studio Pro features, shortcuts           |
+| `advanced-patterns.json`       | 18      | Complex SDK patterns                     |
+| `performance-guide.json`       | 15      | Optimization techniques                  |
+| `security-guide.json`          | 14      | Security best practices                  |
+| `sdk-community-resources.json` | 12      | Community links, forums                  |
 
 ---
 
@@ -179,11 +186,11 @@ Finds variations:
 
 The server maintains itself with scheduled tasks:
 
-| Task | Frequency | Purpose |
-|------|-----------|---------|
-| Validation | Every 7 days | Check knowledge quality |
-| Staleness Check | Every 7 days | Find outdated entries |
-| Cache Cleanup | Daily | Clear expired cache |
+| Task            | Frequency     | Purpose                 |
+| --------------- | ------------- | ----------------------- |
+| Validation      | Every 7 days  | Check knowledge quality |
+| Staleness Check | Every 7 days  | Find outdated entries   |
+| Cache Cleanup   | Daily         | Clear expired cache     |
 | Analytics Reset | Every 14 days | Archive and reset stats |
 
 View status via `mendix://maintenance` resource.
@@ -193,6 +200,7 @@ View status via `mendix://maintenance` resource.
 ## 📈 Performance
 
 Current metrics:
+
 - **92% hit rate** - Most queries find relevant results
 - **2ms average response** - Near-instant answers
 - **177 indexed entries** - Comprehensive coverage
@@ -247,6 +255,7 @@ new KM('./knowledge').validateKnowledgeBase().then(r => console.log(r.summary));
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ### Quick Contribution Ideas
+
 - 📚 Add knowledge entries for topics you know well
 - 🐛 Report bugs or unexpected behavior
 - ✨ Suggest new features
@@ -259,6 +268,7 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ### Recent Updates (v2.1.0)
+
 - ✅ Fuzzy search with Levenshtein distance
 - ✅ Analytics tracking with knowledge gap detection
 - ✅ Auto-maintenance scheduler

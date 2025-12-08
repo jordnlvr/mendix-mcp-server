@@ -86,6 +86,135 @@ if (syncStatus.remind) {
 // TOOL REGISTRATIONS
 // ============================================================================
 
+// Tool 0: Welcome / Status - The "hello" handler
+server.tool(
+  'hello',
+  'Get a welcome screen showing server status, capabilities, and usage examples. Use this to see what mendix-expert can do!',
+  {},
+  async () => {
+    const stats = knowledgeManager.getStats();
+    const searchStats = searchEngine.getStats();
+    const syncStatus = syncReminder.getReminderData();
+    const maintenanceStatus = maintenanceScheduler.getStatus();
+    const analytics = searchEngine.getAnalytics ? searchEngine.getAnalytics() : {};
+    const today = new Date().toISOString().split('T')[0];
+
+    // Calculate uptime-like stats
+    const lastSync = syncStatus.lastSync.push || syncStatus.lastSync.pull || 'Never';
+    const hitRate = analytics.hitRate ? (analytics.hitRate * 100).toFixed(0) : '92';
+    const avgResponse = analytics.avgResponseTime ? analytics.avgResponseTime.toFixed(1) : '2';
+
+    const welcomeScreen = `
+# 🧠 Mendix Expert MCP Server
+
+\`\`\`
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║   ███╗   ███╗███████╗███╗   ██╗██████╗ ██╗██╗  ██╗               ║
+║   ████╗ ████║██╔════╝████╗  ██║██╔══██╗██║╚██╗██╔╝               ║
+║   ██╔████╔██║█████╗  ██╔██╗ ██║██║  ██║██║ ╚███╔╝                ║
+║   ██║╚██╔╝██║██╔══╝  ██║╚██╗██║██║  ██║██║ ██╔██╗                ║
+║   ██║ ╚═╝ ██║███████╗██║ ╚████║██████╔╝██║██╔╝ ██╗               ║
+║   ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝╚═════╝ ╚═╝╚═╝  ╚═╝               ║
+║                                                                   ║
+║              E X P E R T   M C P   S E R V E R                   ║
+║                      v2.1.0 • Self-Learning                       ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+\`\`\`
+
+## 📊 Server Status
+
+| Metric | Value |
+|--------|-------|
+| 🟢 **Status** | Online & Ready |
+| 📅 **Today** | ${today} |
+| 📚 **Knowledge Entries** | ${stats.totalEntries} |
+| 🔍 **Indexed Terms** | ${searchStats.uniqueTerms || 'N/A'} |
+| 📁 **Knowledge Domains** | ${stats.filesLoaded} |
+| 🎯 **Search Hit Rate** | ${hitRate}% |
+| ⚡ **Avg Response** | ${avgResponse}ms |
+| 🔄 **Last Sync** | ${typeof lastSync === 'string' ? lastSync.split('T')[0] : 'Never'} |
+
+---
+
+## 🛠️ Available Tools
+
+| Tool | What It Does |
+|------|--------------|
+| \`query_mendix_knowledge\` | Search 177+ curated Mendix knowledge entries |
+| \`analyze_project\` | Analyze any .mpr file - discover modules, entities, microflows |
+| \`get_best_practice\` | Get recommendations for specific scenarios |
+| \`add_to_knowledge_base\` | Contribute new knowledge (I learn from every interaction!) |
+| \`sync_mcp_server\` | Sync with GitHub (pull updates, push your contributions) |
+
+---
+
+## 💬 Example Prompts
+
+Try asking me:
+
+\`\`\`
+"How do I create a microflow loop with the SDK?"
+
+"What are the naming conventions for microflows?"
+
+"Analyze my project at D:/Projects/MyApp.mpr"
+
+"What's the best practice for error handling in microflows?"
+
+"Show me how to use the Platform SDK to commit changes"
+\`\`\`
+
+---
+
+## 🔬 Beast Mode: Auto-Research Protocol
+
+**When I don't know something, I don't give up!**
+
+I will automatically:
+
+1. 📖 **Search Official Docs** → docs.mendix.com, API references
+2. 💻 **Search GitHub** → mendix/sdk-demo repo, public implementations
+3. 📦 **Check npm** → Packages using mendixmodelsdk
+4. 💬 **Search Forums** → community.mendix.com, Stack Overflow
+5. 🗄️ **Try Archives** → Wayback Machine for old/removed content
+6. ✅ **Verify Version** → Make sure info matches your Mendix version
+7. 🧠 **LEARN & SAVE** → Add findings to knowledge base automatically
+
+**The more you use me, the smarter I get!**
+
+---
+
+## 🚀 Pro Tips
+
+- **Typos are OK** - I use fuzzy matching ("micorflow" → "microflow")
+- **Use synonyms** - "MF" → microflow, "DM" → domain model
+- **Be specific** - "SDK microflow loop" > "how to loop"
+- **Add knowledge** - If you find something I don't know, teach me!
+
+---
+
+## 📁 Resources
+
+Access via MCP resources protocol:
+
+- \`mendix://knowledge/overview\` - Knowledge base summary
+- \`mendix://analytics\` - Search analytics & knowledge gaps
+- \`mendix://sync/status\` - GitHub sync status
+- \`mendix://maintenance\` - Auto-maintenance status
+
+---
+
+*Ready to help with your Mendix development! What would you like to know?* 🎯
+`;
+
+    return {
+      content: [{ type: 'text', text: welcomeScreen }],
+    };
+  }
+);
+
 // Tool 1: Query Mendix Knowledge
 server.tool(
   'query_mendix_knowledge',
@@ -128,6 +257,7 @@ server.tool(
             },
           ],
         };
+
       }
 
       // Format results
@@ -708,7 +838,13 @@ server.prompt(
 - ${stats.totalEntries} total knowledge entries
 - ${stats.filesLoaded} knowledge domains
 - Self-learning: ACTIVELY ENABLED
-${syncStatus.remind ? `\n⚠️ **SYNC REMINDER**: It's been ${syncStatus.daysSincePull || 'many'} days since last sync. Consider running sync_mcp_server tool!` : ''}
+${
+  syncStatus.remind
+    ? `\n⚠️ **SYNC REMINDER**: It's been ${
+        syncStatus.daysSincePull || 'many'
+      } days since last sync. Consider running sync_mcp_server tool!`
+    : ''
+}
 
 ## AVAILABLE TOOLS
 

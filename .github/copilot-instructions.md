@@ -20,6 +20,7 @@ This is a **Model Context Protocol (MCP) server** that provides AI assistants wi
 8. **Archives**: Wayback Machine, archive.ph for old content
 
 ### After Research:
+
 - **ALWAYS add findings to knowledge base** using `add_to_knowledge_base` tool
 - Note the Mendix version the info applies to
 - Cite your sources

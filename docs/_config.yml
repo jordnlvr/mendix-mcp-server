@@ -1,9 +1,9 @@
 # Mendix Expert MCP Server Documentation
-# GitHub Pages configuration
+# GitHub Pages configuration - Professional Theme
 
 title: Mendix Expert MCP Server
 description: A self-learning, auto-researching AI assistant for Mendix development
-remote_theme: pages-themes/cayman@v0.2.0
+remote_theme: just-the-docs/just-the-docs@v0.10.0
 
 # Site settings
 baseurl: "/mendix-mcp-server"
@@ -18,24 +18,32 @@ plugins:
   - jekyll-remote-theme
   - jekyll-seo-tag
 
-# Navigation (used by theme)
-nav:
-  - title: Home
-    url: /
-  - title: Getting Started
-    url: /getting-started.html
-  - title: Architecture
-    url: /architecture.html
-  - title: Tools Reference
-    url: /tools.html
-  - title: Knowledge Base
-    url: /knowledge-base.html
-  - title: Self-Learning
-    url: /self-learning.html
-  - title: Beast Mode
-    url: /beast-mode.html
-  - title: Maintenance
-    url: /maintenance.html
+# Theme settings (just-the-docs)
+color_scheme: dark
+search_enabled: true
+search_tokenizer_separator: /[\s\-/]+/
+heading_anchors: true
+ga_tracking: false
+
+# Logo and favicon
+logo: "/assets/images/logo.svg"
+
+# Aux links (top right)
+aux_links:
+  "View on GitHub":
+    - "https://github.com/jordnlvr/mendix-mcp-server"
+aux_links_new_tab: true
+
+# Footer
+footer_content: "Copyright &copy; 2025 Mendix Expert MCP Server. Distributed under MIT License."
+
+# Back to top link
+back_to_top: true
+back_to_top_text: "Back to top"
+
+# Navigation structure
+nav_enabled: true
+nav_sort: case_insensitive
 
 # Collections
 collections:

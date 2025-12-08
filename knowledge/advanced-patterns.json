@@ -801,7 +801,11 @@
         "ui_resource_module_ordering": {
           "location": "App Settings > Theme",
           "rule": "Lower in list = higher precedence (loaded later, overrides earlier)",
-          "example": ["Atlas_Core (base)", "Atlas_Web_Content", "YourThemeModule (last = highest priority)"]
+          "example": [
+            "Atlas_Core (base)",
+            "Atlas_Web_Content",
+            "YourThemeModule (last = highest priority)"
+          ]
         },
         "source": "docs.mendix.com/howto/front-end/customize-styling-new (September 2025)"
       },

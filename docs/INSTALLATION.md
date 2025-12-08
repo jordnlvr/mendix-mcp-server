@@ -1,6 +1,13 @@
-# 🚀 Installation Guide
+---
+layout: default
+title: Installation Guide
+parent: Getting Started
+nav_order: 1
+---
 
-> Get mendix-expert running in 5 minutes
+# Installation Guide
+
+Get mendix-expert running in 5 minutes
 
 ---
 

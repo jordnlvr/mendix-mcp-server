@@ -1,9 +1,10 @@
 ---
 layout: default
 title: Maintenance
+nav_order: 8
 ---
 
-# 🔧 Maintenance
+# Maintenance
 
 How to keep the Mendix Expert server running optimally.
 

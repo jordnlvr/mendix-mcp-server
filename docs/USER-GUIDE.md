@@ -1,6 +1,12 @@
-# 🎓 Complete User Guide
+---
+layout: default
+title: User Guide
+nav_order: 9
+---
 
-> Everything you need to know about using, updating, and sharing the mendix-expert MCP server.
+# Complete User Guide
+
+Everything you need to know about using, updating, and sharing the mendix-expert MCP server.
 
 ---
 

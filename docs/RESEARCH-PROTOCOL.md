@@ -1,10 +1,15 @@
-# 🔥 BEAST MODE: Mendix Expert Research Protocol
+---
+layout: default
+title: Research Protocol
+parent: Beast Mode
+nav_order: 1
+---
 
+# BEAST MODE: Mendix Expert Research Protocol
+
+{: .important }
 > **THIS IS NOT A SUGGESTION - IT'S A MANDATE.**
->
 > When the knowledge base doesn't have an answer, you MUST research EXHAUSTIVELY through ALL tiers.
-> DO NOT say "I don't have information" - SEARCH FOR IT!
-> DO NOT give up after one search - TRY EVERYTHING!
 
 ---
 

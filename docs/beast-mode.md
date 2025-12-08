@@ -1,9 +1,11 @@
 ---
 layout: default
 title: Beast Mode
+nav_order: 7
+has_children: true
 ---
 
-# 🔥 Beast Mode
+# Beast Mode
 
 Beast Mode is an **exhaustive research protocol** that ensures AI assistants never give up when searching for Mendix answers.
 

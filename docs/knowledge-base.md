@@ -1,9 +1,10 @@
 ---
 layout: default
 title: Knowledge Base
+nav_order: 5
 ---
 
-# 📚 Knowledge Base
+# Knowledge Base
 
 The knowledge base is the "brain" of the Mendix Expert server. It contains curated, structured information about Mendix development.
 

@@ -1,9 +1,10 @@
 ---
 layout: default
 title: Tools Reference
+nav_order: 4
 ---
 
-# 🛠️ Tools Reference
+# Tools Reference
 
 All available MCP tools exposed by the Mendix Expert server.
 

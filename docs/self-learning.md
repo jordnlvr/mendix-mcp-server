@@ -1,9 +1,10 @@
 ---
 layout: default
 title: Self-Learning
+nav_order: 6
 ---
 
-# 🧠 Self-Learning
+# Self-Learning
 
 The Mendix Expert server is designed to grow smarter with every interaction. Here's how the self-learning system works.
 

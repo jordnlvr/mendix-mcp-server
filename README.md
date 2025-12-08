@@ -32,11 +32,12 @@ npx @jordnlvr/mendix-mcp-server
 
 This is a **Model Context Protocol (MCP) server** that supercharges AI assistants (like GitHub Copilot, Claude) with:
 
-1. **Deep Mendix Knowledge** - 177+ curated entries about SDK patterns, best practices, troubleshooting
-2. **Auto-Research Protocol** - When the AI doesn't know something, it researches official docs, GitHub, forums, and learns
+1. **Deep Mendix Knowledge** - 300+ curated entries about SDK patterns, best practices, troubleshooting
+2. **Semantic Vector Search** - Pinecone + Azure OpenAI embeddings for meaning-based search
 3. **Self-Learning** - Every discovery gets saved to the knowledge base automatically
-4. **Project Analysis** - Can analyze your actual `.mpr` files to understand your project structure
-5. **Cross-Machine Sync** - Keep knowledge synced across multiple computers via GitHub
+4. **Auto-Harvesting** - Weekly crawls of docs.mendix.com for fresh content
+5. **Project Analysis** - Can analyze your actual `.mpr` files to understand your project structure
+6. **Beast Mode** - Exhaustive 6-tier research protocol when answers aren't in the knowledge base
 
 **Think of it as giving your AI assistant a Mendix expert's brain that keeps getting smarter.**
 

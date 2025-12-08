@@ -522,7 +522,7 @@ export default class VectorStore {
 
     // Check cache first - huge speedup for repeated queries!
     let queryVector = this.queryCache.get(cacheKey);
-    
+
     if (!queryVector) {
       // Get query embedding (async for OpenAI/Azure, sync for local)
       const isCloudEmbedding =

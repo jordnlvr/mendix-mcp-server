@@ -1,0 +1,51 @@
+# Mendix Expert MCP Server Documentation
+# GitHub Pages configuration
+
+title: Mendix Expert MCP Server
+description: A self-learning, auto-researching AI assistant for Mendix development
+remote_theme: pages-themes/cayman@v0.2.0
+
+# Site settings
+baseurl: "/mendix-mcp-server"
+url: "https://jordnlvr.github.io"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Plugins
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+
+# Navigation
+nav:
+  - title: Home
+    url: /
+  - title: Getting Started
+    url: /getting-started
+  - title: Architecture
+    url: /architecture
+  - title: Tools Reference
+    url: /tools
+  - title: Knowledge Base
+    url: /knowledge-base
+  - title: Self-Learning
+    url: /self-learning
+  - title: Beast Mode
+    url: /beast-mode
+  - title: Maintenance
+    url: /maintenance
+
+# Collections
+collections:
+  guides:
+    output: true
+    permalink: /guides/:name
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

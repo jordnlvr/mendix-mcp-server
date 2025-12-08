@@ -411,15 +411,17 @@ export default class HybridSearch {
     for (const result of results) {
       // Normalize title for comparison
       const normalizedTitle = this.normalizeForDedup(result.title);
-      
+
       if (!seen.has(normalizedTitle)) {
         seen.set(normalizedTitle, result);
         deduplicated.push(result);
       } else {
         // Keep the one with higher score or more sources
         const existing = seen.get(normalizedTitle);
-        if (result.fusedScore > existing.fusedScore || 
-            (result.sources?.length || 0) > (existing.sources?.length || 0)) {
+        if (
+          result.fusedScore > existing.fusedScore ||
+          (result.sources?.length || 0) > (existing.sources?.length || 0)
+        ) {
           // Replace existing with better result
           const idx = deduplicated.indexOf(existing);
           if (idx !== -1) {
@@ -441,7 +443,7 @@ export default class HybridSearch {
     return title
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '') // Remove punctuation
-      .replace(/\s+/g, '');       // Remove spaces
+      .replace(/\s+/g, ''); // Remove spaces
   }
 
   /**

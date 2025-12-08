@@ -1,16 +1,19 @@
 /**
- * Mendix Expert MCP Server v2.1
+ * Mendix Expert MCP Server v2.3.0
  * Modular, scalable, self-learning knowledge server
  * Updated for MCP SDK v1.x (ESM)
  *
  * Architecture:
  * - Core: ProjectLoader, KnowledgeManager, SearchEngine, QualityScorer, CacheManager
  * - Tools: QueryTool, AnalyzeTool, BestPracticeTool, AddKnowledgeTool
+ * - Vector: VectorStore (Pinecone), HybridSearch
  * - Utils: Logger, Validator, Config
  *
  * Features:
  * - Dynamic project loading (any .mpr or extracted directory)
  * - Intelligent search with relevance scoring
+ * - Semantic vector search (Pinecone) - Phase 2!
+ * - Hybrid search (keyword + vector fusion)
  * - Automatic quality assessment
  * - Version tracking and conflict detection
  * - Self-learning with auto-research
@@ -36,8 +39,9 @@ import WebFetcher from './utils/WebFetcher.js';
 // Harvester components (Phase 1)
 import { HarvestScheduler } from './harvester/index.js';
 
-// PHASE_2_TODO: Add vector search imports when ready
-// import { VectorStore } from './vector/VectorStore.js';
+// Vector search components (Phase 2) - NOW ACTIVE!
+import VectorStore from './vector/VectorStore.js';
+import HybridSearch from './vector/HybridSearch.js';
 
 // Initialize
 const logger = new Logger('Server');
@@ -50,12 +54,12 @@ if (!configValidation.valid) {
   process.exit(1);
 }
 
-logger.info('Starting Mendix Expert MCP Server v2.1 (SDK v1.x)');
+logger.info('Starting Mendix Expert MCP Server v2.3.0 (SDK v1.x)');
 
 // Create server with new McpServer API
 const server = new McpServer({
   name: config.get('server.name', 'mendix-expert'),
-  version: config.get('server.version', '2.1.0'),
+  version: config.get('server.version', '2.3.0'),
 });
 
 // Initialize core components
@@ -71,6 +75,26 @@ const syncReminder = new SyncReminder();
 const harvestScheduler = new HarvestScheduler();
 harvestScheduler.initialize().catch((err) => {
   logger.warn('HarvestScheduler initialization failed (non-critical)', { error: err.message });
+});
+
+// Initialize vector search (Phase 2 - semantic search)
+const vectorStore = new VectorStore();
+const hybridSearch = new HybridSearch();
+
+// Initialize vector store in background (don't block startup)
+vectorStore.initialize().then(async (ready) => {
+  if (ready) {
+    logger.info('Vector search available (Pinecone connected)');
+    // Index knowledge base for vector search
+    const kb = knowledgeManager.knowledgeBase;
+    if (Object.keys(kb).length > 0) {
+      await hybridSearch.indexKnowledgeBase(kb);
+    }
+  } else {
+    logger.info('Vector search disabled (no Pinecone API key)');
+  }
+}).catch((err) => {
+  logger.warn('VectorStore initialization failed (non-critical)', { error: err.message });
 });
 
 // Initialize maintenance scheduler with all components
@@ -130,7 +154,7 @@ server.tool(
 ║   ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝╚═════╝ ╚═╝╚═╝  ╚═╝               ║
 ║                                                                   ║
 ║              E X P E R T   M C P   S E R V E R                   ║
-║                      v2.1.0 • Self-Learning                       ║
+║                      v2.3.0 • Self-Learning                       ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 \`\`\`
@@ -148,6 +172,7 @@ server.tool(
 | ⚡ **Avg Response** | ${avgResponse}ms |
 | 🔄 **Last Sync** | ${typeof lastSync === 'string' ? lastSync.split('T')[0] : 'Never'} |
 | 🌾 **Next Harvest** | ${harvestScheduler.getStatus().nextScheduledHarvest} |
+| 🔮 **Vector Search** | ${vectorStore.initialized ? 'Active' : 'Disabled'} |
 
 ---
 
@@ -160,8 +185,11 @@ server.tool(
 | \`get_best_practice\` | Get recommendations for specific scenarios |
 | \`add_to_knowledge_base\` | Contribute new knowledge (I learn from every interaction!) |
 | \`sync_mcp_server\` | Sync with GitHub (pull updates, push your contributions) |
-| \`harvest\` | 🌾 **NEW!** Crawl Mendix docs for fresh knowledge |
+| \`harvest\` | 🌾 Crawl Mendix docs for fresh knowledge |
 | \`harvest_status\` | Check harvest status and available sources |
+| \`vector_search\` | 🔮 **NEW!** Semantic search - find concepts, not just keywords |
+| \`hybrid_search\` | 🎯 **NEW!** Combined keyword + semantic search |
+| \`vector_status\` | Check Pinecone index and search stats |
 
 ---
 
@@ -1049,11 +1077,193 @@ server.tool(
     statusText += `- **Harvest specific:** \`@mendix-expert harvest sources=["releaseNotes"]\`\n`;
     statusText += `- **Dry run:** \`@mendix-expert harvest dryRun=true\`\n`;
 
-    // PHASE_2_TODO: Add vector search status when implemented
-    statusText += `\n---\n`;
-    statusText += `📋 **Roadmap:** See \`ROADMAP.md\` for Phase 2 (vector search) plans.\n`;
+    // Add vector search status
+    const vectorStats = await vectorStore.getStats();
+    statusText += `\n## 🔮 Vector Search (Phase 2)\n\n`;
+    statusText += `| Metric | Value |\n|--------|-------|\n`;
+    statusText += `| Status | ${vectorStats.status === 'ready' ? '✅ Ready' : '⚠️ ' + vectorStats.status} |\n`;
+    statusText += `| Vectors indexed | ${vectorStats.vectors || 0} |\n`;
+    statusText += `| Dimension | ${vectorStats.dimension || 'N/A'} |\n`;
 
     return { content: [{ type: 'text', text: statusText }] };
+  }
+);
+
+// Tool 8: Vector Search
+server.tool(
+  'vector_search',
+  'Perform semantic vector search to find conceptually related knowledge. Unlike keyword search, this finds results based on meaning, not exact terms.',
+  {
+    query: z.string().describe('The search query - can be a question or concept'),
+    limit: z.number().optional().default(10).describe('Maximum results to return'),
+    minScore: z.number().optional().default(0.3).describe('Minimum similarity score (0-1)'),
+  },
+  async ({ query, limit, minScore }) => {
+    try {
+      const results = await vectorStore.search(query, { topK: limit, minScore });
+
+      if (results.length === 0) {
+        return {
+          content: [{
+            type: 'text',
+            text: `No semantic matches found for "${query}". Try using different terms or concepts.\n\n**Tip:** Vector search works best for conceptual queries like "how to iterate over a list" rather than exact terms.`
+          }]
+        };
+      }
+
+      let resultText = `# 🔮 Vector Search Results\n\n`;
+      resultText += `**Query:** "${query}"\n`;
+      resultText += `**Results:** ${results.length} semantic matches\n\n`;
+
+      results.forEach((r, i) => {
+        resultText += `## ${i + 1}. ${r.title || 'Untitled'}\n`;
+        resultText += `- **Category:** ${r.category || 'N/A'}\n`;
+        resultText += `- **Similarity:** ${(r.score * 100).toFixed(1)}%\n`;
+        if (r.preview) {
+          resultText += `- **Preview:** ${r.preview}...\n`;
+        }
+        resultText += `\n`;
+      });
+
+      return { content: [{ type: 'text', text: resultText }] };
+    } catch (error) {
+      logger.error('Vector search failed', { error: error.message });
+      return {
+        content: [{ type: 'text', text: `❌ Vector search failed: ${error.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool 9: Hybrid Search
+server.tool(
+  'hybrid_search',
+  'Perform hybrid search combining keyword matching with semantic understanding. Best for complex queries where you want both exact matches and related concepts.',
+  {
+    query: z.string().describe('The search query'),
+    limit: z.number().optional().default(10).describe('Maximum results'),
+    mode: z.enum(['hybrid', 'keyword', 'vector']).optional().default('hybrid').describe('Search mode'),
+  },
+  async ({ query, limit, mode }) => {
+    try {
+      const options = {
+        limit,
+        keywordOnly: mode === 'keyword',
+        vectorOnly: mode === 'vector',
+      };
+
+      const results = await hybridSearch.search(query, options);
+
+      if (results.length === 0) {
+        return {
+          content: [{
+            type: 'text',
+            text: `No results found for "${query}". Try broader terms or check spelling.`
+          }]
+        };
+      }
+
+      let resultText = `# 🔍 Hybrid Search Results\n\n`;
+      resultText += `**Query:** "${query}"\n`;
+      resultText += `**Mode:** ${mode}\n`;
+      resultText += `**Results:** ${results.length} matches\n\n`;
+
+      results.forEach((r, i) => {
+        const matchIcon = r.matchType === 'both' ? '🎯' : r.matchType === 'keyword' ? '📝' : '🔮';
+        resultText += `## ${matchIcon} ${i + 1}. ${r.title || 'Untitled'}\n`;
+        resultText += `- **Category:** ${r.category || 'N/A'}\n`;
+        resultText += `- **Match Type:** ${r.matchType}\n`;
+        if (r.fusedScore) resultText += `- **Fused Score:** ${(r.fusedScore * 100).toFixed(1)}%\n`;
+        if (r.keywordScore) resultText += `- **Keyword Score:** ${r.keywordScore.toFixed(2)}\n`;
+        if (r.vectorScore) resultText += `- **Vector Score:** ${(r.vectorScore * 100).toFixed(1)}%\n`;
+        resultText += `\n`;
+      });
+
+      resultText += `\n---\n`;
+      resultText += `🎯 = Both keyword + semantic match | 📝 = Keyword match | 🔮 = Semantic match\n`;
+
+      return { content: [{ type: 'text', text: resultText }] };
+    } catch (error) {
+      logger.error('Hybrid search failed', { error: error.message });
+      return {
+        content: [{ type: 'text', text: `❌ Hybrid search failed: ${error.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool 10: Vector Index Status
+server.tool(
+  'vector_status',
+  'Get detailed statistics about the vector search index, including indexed entries and Pinecone status.',
+  {},
+  async () => {
+    const vectorStats = await vectorStore.getStats();
+    const hybridStats = await hybridSearch.getStats();
+
+    let statusText = `# 🔮 Vector Search Status\n\n`;
+
+    statusText += `## Pinecone Index\n\n`;
+    statusText += `| Metric | Value |\n|--------|-------|\n`;
+    statusText += `| Status | ${vectorStats.status} |\n`;
+    statusText += `| Vectors | ${vectorStats.vectors || 0} |\n`;
+    statusText += `| Dimension | ${vectorStats.dimension || 'N/A'} |\n`;
+
+    if (vectorStats.namespaces && Object.keys(vectorStats.namespaces).length > 0) {
+      statusText += `\n## Namespaces\n\n`;
+      for (const [ns, data] of Object.entries(vectorStats.namespaces)) {
+        statusText += `- **${ns}:** ${data.recordCount || 0} vectors\n`;
+      }
+    }
+
+    statusText += `\n## Hybrid Search Weights\n\n`;
+    statusText += `| Engine | Weight |\n|--------|--------|\n`;
+    statusText += `| Keyword (TF-IDF) | ${(hybridStats.weights.keyword * 100).toFixed(0)}% |\n`;
+    statusText += `| Vector (Semantic) | ${(hybridStats.weights.vector * 100).toFixed(0)}% |\n`;
+
+    statusText += `\n## Quick Commands\n\n`;
+    statusText += `- **Vector search:** \`@mendix-expert vector_search query="your query"\`\n`;
+    statusText += `- **Hybrid search:** \`@mendix-expert hybrid_search query="your query"\`\n`;
+    statusText += `- **Re-index:** \`@mendix-expert reindex_vectors\`\n`;
+
+    return { content: [{ type: 'text', text: statusText }] };
+  }
+);
+
+// Tool 11: Re-index Vectors
+server.tool(
+  'reindex_vectors',
+  'Re-index all knowledge into the vector store. Use after adding new knowledge or if search quality seems degraded.',
+  {
+    clear: z.boolean().optional().default(false).describe('Clear existing vectors before re-indexing'),
+  },
+  async ({ clear }) => {
+    try {
+      if (clear) {
+        await vectorStore.clear();
+      }
+
+      const kb = knowledgeManager.knowledgeBase;
+      const stats = await hybridSearch.indexKnowledgeBase(kb);
+
+      let resultText = `# ✅ Vector Re-indexing Complete\n\n`;
+      resultText += `| Metric | Count |\n|--------|-------|\n`;
+      resultText += `| Keyword entries | ${stats.keyword.entries} |\n`;
+      resultText += `| Vector entries | ${stats.vector.indexed} |\n`;
+      if (clear) {
+        resultText += `| Previous vectors | Cleared |\n`;
+      }
+
+      return { content: [{ type: 'text', text: resultText }] };
+    } catch (error) {
+      logger.error('Re-indexing failed', { error: error.message });
+      return {
+        content: [{ type: 'text', text: `❌ Re-indexing failed: ${error.message}` }],
+        isError: true,
+      };
+    }
   }
 );
 

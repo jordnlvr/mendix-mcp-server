@@ -1,8 +1,9 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.1.0-blue.svg" alt="Version 2.1.0">
+  <img src="https://img.shields.io/badge/version-2.3.0-blue.svg" alt="Version 2.3.0">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node >= 18">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License">
   <img src="https://img.shields.io/badge/MCP-compatible-purple.svg" alt="MCP Compatible">
+  <img src="https://img.shields.io/badge/Pinecone-vector%20search-orange.svg" alt="Pinecone Vector Search">
 </p>
 
 # 🧠 Mendix Expert MCP Server
@@ -30,6 +31,8 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 | Feature                   | Description                                                                  |
 | ------------------------- | ---------------------------------------------------------------------------- |
 | 🔍 **Intelligent Search** | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow"   |
+| 🔮 **Vector Search**      | Semantic search using Pinecone - find concepts, not just keywords (NEW!)     |
+| 🎯 **Hybrid Search**      | Combined keyword + semantic search for best of both worlds (NEW!)            |
 | 🧠 **Self-Learning**      | Automatically grows smarter as you add knowledge                             |
 | 🔬 **Auto-Research**      | Embedded research protocol guides AI to find answers in docs, GitHub, forums |
 | 📊 **Analytics**          | 92% hit rate, tracks missed queries to identify knowledge gaps               |
@@ -120,7 +123,11 @@ In your AI chat:
 | `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge                |
 | `harvest_status`         | Check harvest status and available sources              |
 | `hello`                  | Get a welcome screen with status and examples           |
-| `beast_mode`             | 🔥 **NEW!** Get the exhaustive research protocol prompt |
+| `beast_mode`             | 🔥 Get the exhaustive research protocol prompt          |
+| `vector_search`          | 🔮 **NEW!** Semantic search - find concepts             |
+| `hybrid_search`          | 🎯 **NEW!** Combined keyword + semantic search          |
+| `vector_status`          | Check Pinecone index and search stats                   |
+| `reindex_vectors`        | Re-index knowledge for vector search                    |
 
 ---
 
@@ -218,6 +225,65 @@ Scheduled Crawler → docs.mendix.com → Parse → Add to Knowledge Base
 - Runs automatically every **7 days**
 - Can be triggered manually anytime
 - Rebuilds search index after adding new knowledge
+
+---
+
+## 🔮 Vector Search (NEW in v2.3.0!)
+
+The server now includes **semantic vector search** using Pinecone! This means you can search by **meaning**, not just keywords.
+
+### Why Vector Search?
+
+| Keyword Search | Vector Search |
+|----------------|---------------|
+| Finds "microflow" | Finds "microflow", "workflow", "automation", "business logic" |
+| Exact match required | Semantic understanding |
+| "loop" won't find "iterate" | "loop" finds "iterate", "forEach", "while" |
+
+### Setup (Optional)
+
+Vector search requires a **free Pinecone account**:
+
+1. Sign up at [pinecone.io](https://www.pinecone.io) (free tier: 100K vectors)
+2. Create an API key
+3. Add to your `.env` file:
+   ```
+   PINECONE_API_KEY=your_key_here
+   ```
+
+**Without Pinecone:** Server works fine with keyword search only!
+
+### Usage
+
+```bash
+# Semantic search - finds conceptually related content
+@mendix-expert vector_search query="how to iterate over a list"
+
+# Hybrid search - best of both worlds
+@mendix-expert hybrid_search query="microflow error handling"
+
+# Check vector index status
+@mendix-expert vector_status
+
+# Re-index after adding new knowledge
+@mendix-expert reindex_vectors
+```
+
+### How Hybrid Search Works
+
+```
+User Query: "loop through entities"
+    │
+    ├─→ Keyword Search (60% weight)
+    │      Finds: "loop", "entity", "iterate"
+    │
+    └─→ Vector Search (40% weight)
+           Finds: "forEach", "list iteration", "aggregate"
+    │
+    └─→ Reciprocal Rank Fusion
+           Merges results, ranks by combined score
+           🎯 = Both matched, 📝 = Keyword only, 🔮 = Vector only
+```
 
 ---
 

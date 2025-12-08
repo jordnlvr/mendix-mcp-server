@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "mendix-expert": {
+      "command": "node",
+      "args": ["D:\\Users\\kelly.seale\\VSCode-Dream-Workspace\\mendix-mcp-server\\server.js"],
+      "env": {
+        "MENDIX_PROJECT_PATH": "D:\\kelly.seale\\CodeBase\\OneTech-main\\OneTech.mpr",
+        "MENDIX_SDK_TOOLKIT_PATH": "D:\\Users\\kelly.seale\\VSCode-Dream-Workspace\\Mendix-SDK-Toolkit"
+      }
+    }
+  }
+}

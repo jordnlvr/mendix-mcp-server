@@ -1,0 +1,472 @@
+{
+  "topic": "Mendix SDK Community Resources & Expert Sources",
+  "description": "Comprehensive collection of community-discovered Mendix SDK resources, npm packages, GitHub repositories, archived Medium articles, and expert contacts for deeper SDK research and examples.",
+  "last_updated": "2025-01-10",
+  "research_notes": "Deep research conducted to find 10-30+ examples per source category. Archive.ph discovered as workaround for 404'd Medium articles.",
+
+  "categories": {
+    "npm_sdk_packages": [
+      {
+        "name": "@sefranke/sf-mendix-sdk-helper",
+        "version": "1.7.1",
+        "npm_url": "https://www.npmjs.com/package/@sefranke/sf-mendix-sdk-helper",
+        "description": "Makes Mendix SDK development easier. Helper functions for creating microflow parameters, translations, text templates, sequence flows.",
+        "author": "sefranke",
+        "value": "VERY HIGH - Contains working patterns for entity creation, microflow activities, loops, queued calls",
+        "key_features": [
+          "createAttribute() - Create entity attributes with types",
+          "createAttributeStringStored, createAttributeBooleanStored, etc.",
+          "createEnumeration() - Create enumeration types",
+          "createAssociation() - Domain model associations",
+          "createDomainModelAnnotation() - Annotations",
+          "createMicroflowAnnotation() - Microflow annotations",
+          "createForEachLoop() - Loop activities with proper IterableList",
+          "createChangeObjectAction() - Change object with commit",
+          "createQueuedMicroflowCall() - Task queue integration",
+          "createTaskQueue() - Task queue creation",
+          "getLocationsForModule() - Track x,y coordinates in flows",
+          "PAT support in constructor"
+        ],
+        "release_notes_patterns": {
+          "v1.7.1": "PAT parameter support in constructor",
+          "v1.7.0": "Fixed createForEachLoop with list variable name and variable name parameters",
+          "v1.6.4": "Added createAttributeEnumStored with defaultValue",
+          "v1.6.3": "Added createEnumeration and getOrCreateEnumeration",
+          "v1.6.2": "Added pathFolder to queue creation",
+          "v1.6.1": "Added createQueueSettings, createTaskQueue, createQueuedMicroflowCall",
+          "v1.5.2": "Added createAttributeIntegerStored, createAttributeDecimalStored",
+          "v1.5.0": "Added location tracking: getLocationsForModule(), getDomainModelLocation(), getFlowLocation()"
+        }
+      },
+      {
+        "name": "mxdocgen",
+        "version": "1.2.1",
+        "npm_url": "https://www.npmjs.com/package/mxdocgen",
+        "github_url": "https://github.com/KevinVlaanderen/MxDocGen",
+        "description": "Documentation generation tool using Mendix Model SDK. Mimics Studio Pro documentation capabilities with greater flexibility.",
+        "author": "Kevin Vlaanderen",
+        "value": "HIGH - Shows model traversal, module filtering, template generation",
+        "key_features": [
+          "CLI and library usage",
+          "Module regex filtering (--modules flag)",
+          "Template-based output generation",
+          "Working copy management",
+          "API documentation extraction"
+        ],
+        "usage_pattern": "mxdocgen generate --username USER --apikey KEY --projectid ID --modules '.*' --outputdir output"
+      },
+      {
+        "name": "mfautolayout",
+        "version": "2.0.8",
+        "npm_url": "https://www.npmjs.com/package/mfautolayout",
+        "description": "Microflow auto-layout tool using Dagre library. Rearranges microflow components automatically.",
+        "author": "vietduc1441",
+        "value": "MEDIUM - Shows microflow traversal and coordinate manipulation",
+        "key_features": [
+          "Dagre library integration for graph layout",
+          "Microflow component positioning",
+          "Module-selective processing",
+          "Global installation with config.js"
+        ],
+        "config_example": "var project = { username: 'xxx', apikey: 'KEY', projectId: 'ID', projectName: 'NAME', revNo: -1, branchName: null };"
+      },
+      {
+        "name": "openmdx",
+        "version": "0.0.9",
+        "npm_url": "https://www.npmjs.com/package/openmdx",
+        "github_url": "https://github.com/mango-ict/openmdx",
+        "description": "Export Mendix Model to open source alternatives. Explores Mendix and Platform SDK possibilities.",
+        "author": "mango-ict (MangoICT)",
+        "value": "MEDIUM - Shows model export patterns",
+        "languages": "TypeScript 51.6%, JavaScript 48.3%"
+      },
+      {
+        "name": "@clevr/mendixplatformsdk",
+        "version": "5.2.0",
+        "description": "Mendix Platform SDK fork by CLEVR (consulting company)",
+        "value": "Reference for SDK modifications/extensions",
+        "last_publish": "5 months ago"
+      },
+      {
+        "name": "@gajduk/mendixplatformsdk",
+        "version": "4.1.1",
+        "description": "Platform SDK fork by Gajduk Andrej (performance expert)",
+        "value": "Reference for SDK modifications",
+        "author": "Gajduk Andrej"
+      },
+      {
+        "name": "@types/mendixmodelsdk",
+        "description": "TypeScript definitions stub for Mendix Model SDK",
+        "value": "LOW - Basic type definitions"
+      }
+    ],
+
+    "github_repositories": [
+      {
+        "name": "MendixModelSDKDemo",
+        "owner": "engalar",
+        "url": "https://github.com/engalar/MendixModelSDKDemo",
+        "description": "SDK demo for extracting module information and generating JSON schemas from mendixmodelsdk types",
+        "language": "TypeScript 94.7%, JavaScript 5.3%",
+        "value": "VERY HIGH - Shows advanced SDK introspection and schema extraction",
+        "key_insights": [
+          "Extracts module information from node_modules/mendixmodelsdk/src/gen",
+          "Generates JSON Schema for each module",
+          "Handles property types: PrimitiveProperty, ByNameReferenceProperty, PartListProperty, PartProperty",
+          "Processes enumeration classes (extends internal.AbstractEnum)",
+          "Extracts versionInfo including deleted flags and property changes",
+          "Multi-phase processing: Extract → Transform → Generate Schema"
+        ],
+        "property_types_discovered": {
+          "PrimitiveProperty": "Primitive types (String, Boolean, Integer, etc.)",
+          "ByNameReferenceProperty": "References to other elements by name",
+          "PartListProperty": "Lists of child elements",
+          "PartProperty": "Single child element"
+        }
+      },
+      {
+        "name": "MxDocGen",
+        "owner": "KevinVlaanderen",
+        "url": "https://github.com/KevinVlaanderen/MxDocGen",
+        "description": "Documentation generation using Model SDK with template support",
+        "language": "TypeScript 68.6%, HTML 31.2%",
+        "value": "HIGH - Production-ready SDK usage patterns",
+        "structure": ["src/", "templates/", "demo/", "docs/"]
+      },
+      {
+        "name": "openmdx",
+        "owner": "mango-ict",
+        "url": "https://github.com/mango-ict/openmdx",
+        "description": "Mendix model export to open source alternatives",
+        "value": "MEDIUM - Model traversal examples"
+      }
+    ],
+
+    "archived_medium_articles": [
+      {
+        "title": "How to work with Variables in Java actions",
+        "archive_url": "https://archive.ph/X3taA",
+        "author": "Ryan Mocke",
+        "date": "Apr 30, 2021",
+        "value": "HIGH - Shows Java proxy usage, getMendixObject(), entity creation in Java",
+        "key_patterns": [
+          "import myfirstmodule.proxies.Order;",
+          "Order newOrder = new Order(context);",
+          "newOrder.setUsername(Username_Param);",
+          "return newOrder.getMendixObject();"
+        ]
+      },
+      {
+        "title": "The new way to call Mendix microflows from Java actions",
+        "archive_url": "https://archive.ph/blSGx",
+        "author": "Robert Price",
+        "date": "Mar 3, 2020",
+        "value": "HIGH - Fluent microflow calling API (Mendix 8.7+)",
+        "key_patterns": [
+          "Core.microflowCall('Module.Microflow').inTransaction(true).withParam('Name', value).execute(context);",
+          "HashMap<String, Object> params for withParams()"
+        ]
+      },
+      {
+        "title": "How to Make Apps Multithreaded in Mendix 9",
+        "archive_url": "https://archive.ph/1N1LH",
+        "author": "Ryan Mocke",
+        "date": "May 13, 2021",
+        "value": "MEDIUM - Task Queue, background execution patterns",
+        "key_concepts": ["executeMicroflowInBackground", "Task Queue", "Process Queue module"]
+      },
+      {
+        "title": "How to React to the new way Mendix widgets are built",
+        "archive_url": "https://archive.ph/yTS4v",
+        "author": "Rob Duits",
+        "date": "Mar 3, 2020",
+        "value": "HIGH - Pluggable widgets with React",
+        "key_concepts": [
+          "Pluggable widgets vs Dojo widgets",
+          "Mendix Pluggable Widget Generator",
+          "npm install @mendix/generator-widget -g",
+          "yo @mendix/widget WidgetName"
+        ]
+      },
+      {
+        "title": "How to develop with best practices",
+        "archive_url": "https://archive.ph/kn8zD",
+        "author": "Ryan Mocke",
+        "value": "HIGH - Comprehensive best practices guide",
+        "topics": [
+          "Folder structure organization",
+          "Domain model naming conventions",
+          "Microflow naming conventions (ACT_, DS_, SUB_, VAL_, OCH_, BCO_, ACO_)",
+          "Calculated attributes caution",
+          "Inheritance depth limits",
+          "Delete behaviour setup",
+          "Event handler limits",
+          "Microflow size limits (25 actions max)",
+          "Loop commit optimization",
+          "XPath optimization"
+        ]
+      },
+      {
+        "title": "Performance modeling in Mendix — Indexes",
+        "archive_url": "https://archive.ph/9JsPE",
+        "author": "Martin Leppen",
+        "date": "Feb 4, 2022",
+        "value": "HIGH - Index implementation and optimization",
+        "key_insights": [
+          "Index creates separate table with selected attributes + primary key",
+          "260ms to 3ms query improvement (99% reduction)",
+          "Order of index attributes must match XPath constraint order",
+          "Don't index every attribute - only high-variance ones",
+          "Indexes impact deployment sync time on large tables"
+        ]
+      },
+      {
+        "title": "Performance modeling in Mendix — Batch processing",
+        "author": "Martin Leppen",
+        "value": "HIGH - Batch processing optimization"
+      },
+      {
+        "title": "Mastering Mendix Maps: Unlocking Lightning-Fast Performance",
+        "author": "Marius van der Knaap",
+        "value": "MEDIUM - Map widget optimization"
+      },
+      {
+        "title": "Working with JSON in Mendix",
+        "author": "Lennart Spaans",
+        "value": "HIGH - JSON import/export mappings"
+      },
+      {
+        "title": "Add Google SSO to your Mendix app using the OIDC module",
+        "author": "Ryan Mocke",
+        "value": "HIGH - Authentication/SSO patterns"
+      },
+      {
+        "title": "How to send styled HTML emails using email module",
+        "author": "Ryan Mocke",
+        "value": "MEDIUM - Email module usage"
+      },
+      {
+        "title": "DALL-E Integration with Mendix",
+        "author": "Rasagnya Dilip",
+        "value": "MEDIUM - AI/ML integration"
+      },
+      {
+        "title": "Making a difference with Mendix (Diff module)",
+        "author": "Robert Price",
+        "value": "MEDIUM - Custom module development"
+      },
+      {
+        "title": "Building a debugging keyboard for Mendix Studio Pro",
+        "author": "Robert Price",
+        "value": "LOW - Tooling customization"
+      },
+      {
+        "title": "Module rolls? A difficult decision — Mendix and Me",
+        "author": "Andreas Blaesius",
+        "value": "HIGH - Module architecture decisions"
+      }
+    ],
+
+    "mendix_experts": [
+      {
+        "name": "Ryan Mocke",
+        "role": "Developer Evangelist at Mendix",
+        "location": "London",
+        "followers": "296+",
+        "specialties": ["Java actions", "How-to guides", "Best practices", "SSO/OIDC"],
+        "medium": "@ryanmocke"
+      },
+      {
+        "name": "Martin Leppen",
+        "role": "Mendix consultant at CAPE Groep",
+        "followers": "25+",
+        "specialties": ["Performance modeling", "Indexes", "Batch processing"],
+        "medium": "@m.leppen"
+      },
+      {
+        "name": "Robert Price",
+        "role": "Low-code solutions developer",
+        "experience": "20+ years industry experience",
+        "specialties": ["Java actions", "Microflow calling", "Custom modules (Diff)"],
+        "medium": "@robert.price_68862",
+        "website": "robertprice.co.uk"
+      },
+      {
+        "name": "Rob Duits",
+        "role": "Low-code front-end developer, Managing consultant at Incentro",
+        "since": "2015",
+        "specialties": ["Pluggable widgets", "React", "Front-end"],
+        "medium": "@rob.duits"
+      },
+      {
+        "name": "Andreas Blaesius",
+        "series": "Mendix and Me",
+        "specialties": ["Module roles", "Project architecture"],
+        "medium": "@gandy84"
+      },
+      {
+        "name": "Marius van der Knaap",
+        "specialties": ["Performance", "Mendix Maps optimization"],
+        "medium": "@mariusvanderknaap"
+      },
+      {
+        "name": "Gajduk Andrej",
+        "specialties": ["Performance", "SDK fork maintainer"],
+        "npm": "@gajduk/mendixplatformsdk"
+      },
+      {
+        "name": "Kevin Vlaanderen",
+        "projects": ["MxDocGen"],
+        "github": "@KevinVlaanderen",
+        "specialties": ["Documentation generation", "SDK tooling"]
+      },
+      {
+        "name": "Lennart Spaans",
+        "specialties": ["JSON handling", "Integrations"],
+        "medium": "@lennartspaans"
+      },
+      {
+        "name": "sefranke",
+        "projects": ["sf-mendix-sdk-helper"],
+        "specialties": ["SDK helper libraries", "Microflow automation"],
+        "npm": "@sefranke"
+      },
+      {
+        "name": "vietduc1441",
+        "projects": ["mfautolayout"],
+        "specialties": ["Microflow layout automation"]
+      },
+      {
+        "name": "engalar",
+        "projects": ["MendixModelSDKDemo"],
+        "specialties": ["SDK introspection", "Schema generation"],
+        "github": "@engalar"
+      }
+    ],
+
+    "sdk_helper_patterns": [
+      {
+        "pattern_name": "Location Tracking for Microflows",
+        "problem": "Need to track x,y coordinates when placing elements in domain model or microflows",
+        "solution": "Use getLocationsForModule(), getDomainModelLocation(), getFlowLocation()",
+        "example_code": "const locFlow = sh.getFlowLocation('MyFirstModule'); locFlow.x += 200; createActivity({x: locFlow.x, y: locFlow.y});"
+      },
+      {
+        "pattern_name": "Entity Attribute Creation",
+        "methods": [
+          "createAttributeStringStored(name, length, defaultValue?, documentation?)",
+          "createAttributeBooleanStored(name, defaultValue, documentation?)",
+          "createAttributeDateTimeStored(name, localized, defaultValue?, documentation?)",
+          "createAttributeIntegerStored(name, defaultValue, documentation?)",
+          "createAttributeDecimalStored(name, defaultValue, documentation?)",
+          "createAttributeEnumStored(name, enumQualifiedName, defaultValue?, documentation?)"
+        ]
+      },
+      {
+        "pattern_name": "Microflow Activities",
+        "methods": [
+          "createAnnotation(caption, relativeMiddlePoint, microflow, size)",
+          "createChangeObjectAction()",
+          "createForEachLoop(listVariable, variableName, microflow?, size?)",
+          "createQueuedMicroflowCall(qualifiedMicroflowName, mfParams, queueSettings, relativeMiddlePoint, microflow?, size?, caption?)"
+        ]
+      },
+      {
+        "pattern_name": "Queue Management",
+        "methods": [
+          "createQueueSettings(qualifiedQueueName, retries, interval?, intervalType?, maximumInterval)",
+          "createTaskQueue(qualifiedQueueName, threads, clusterWide)",
+          "getOrCreateTaskQueue(qualifiedQueueName, threads, clusterWide)"
+        ]
+      }
+    ],
+
+    "java_action_patterns": [
+      {
+        "pattern_name": "Create Mendix Entity in Java",
+        "code_example": [
+          "import myfirstmodule.proxies.Order;",
+          "IContext context = getContext();",
+          "Order newOrder = new Order(context);",
+          "newOrder.setUsername(usernameParam);",
+          "newOrder.setAddress(addressParam);",
+          "return newOrder.getMendixObject();"
+        ],
+        "key_points": [
+          "Import proxy class generated by Mendix",
+          "Use getContext() for IContext",
+          "Use setter methods from proxy",
+          "Return getMendixObject() for Mendix object return types"
+        ]
+      },
+      {
+        "pattern_name": "Fluent API for Microflow Calling (Mendix 8.7+)",
+        "code_example": [
+          "Core.microflowCall('Module.MicroflowName')",
+          "  .inTransaction(true)",
+          "  .withParam('ParamName', 'ParamValue')",
+          "  .withParam('ParamName2', 123)",
+          "  .execute(this.getContext());"
+        ],
+        "alternative_with_map": [
+          "Map<String, Object> params = new HashMap<>();",
+          "params.put('Name', 'Value');",
+          "Core.microflowCall('Module.MicroflowName')",
+          "  .inTransaction(true)",
+          "  .withParams(params)",
+          "  .execute(this.getContext());"
+        ]
+      }
+    ],
+
+    "research_sources": [
+      {
+        "source": "Archive.ph (archive.today)",
+        "description": "186 Mendix Medium articles FOUND!",
+        "access_pattern": "https://archive.ph/https://medium.com/mendix* shows index",
+        "limitation": "CAPTCHA blocks after ~100 results",
+        "total_articles": 186
+      },
+      {
+        "source": "npm registry",
+        "search_url": "https://www.npmjs.com/search?q=keywords:mendixmodelsdk",
+        "dependents_url": "https://www.npmjs.com/browse/depended/mendixmodelsdk",
+        "result": "7+ SDK-dependent packages found"
+      },
+      {
+        "source": "GitHub",
+        "search_pattern": "mendixmodelsdk language:TypeScript",
+        "limitation": "Code search requires login",
+        "result": "Found MendixModelSDKDemo repository"
+      },
+      {
+        "source": "Wayback Machine (web.archive.org)",
+        "result": "Mendix Medium articles NOT archived there",
+        "note": "Archive.org does not have Mendix Medium SDK articles"
+      }
+    ],
+
+    "future_research_opportunities": [
+      {
+        "source": "Stack Overflow",
+        "query": "questions tagged [mendix] + SDK"
+      },
+      {
+        "source": "Reddit",
+        "subreddits": ["r/mendix", "r/lowcode"]
+      },
+      {
+        "source": "Mendix World",
+        "description": "Conference recordings on YouTube"
+      },
+      {
+        "source": "CLEVR blog",
+        "url": "clevr.com/blog/mendix"
+      },
+      {
+        "source": "Mendix Academy",
+        "description": "Course materials (requires account)"
+      }
+    ]
+  }
+}

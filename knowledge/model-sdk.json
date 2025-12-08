@@ -1,0 +1,1155 @@
+{
+  "topic": "Mendix Model SDK 4.105.0+",
+  "description": "Complete API reference for Mendix Model SDK - programmatically read and manipulate Mendix application models including domain models, microflows, pages, and more. The Model SDK provides full read/write access to .mpr files and online working copies.",
+  "last_updated": "2025-12-01",
+  "mendix_versions": [
+    "Compatible with Studio Pro 10.24+ and 11.x",
+    "11.5.0 (latest metamodel)",
+    "SDK version 4.105.0 (published Nov 20, 2025)"
+  ],
+  "official_docs": [
+    "https://docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-intro/",
+    "https://docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-refguide/",
+    "https://apidocs.rnd.mendix.com/modelsdk/latest/index.html",
+    "https://docs.mendix.com/apidocs-mxsdk/mxsdk/understanding-the-metamodel/",
+    "https://docs.mendix.com/apidocs-mxsdk/mxsdk/working-with-when-to-use/"
+  ],
+  "sdk_concepts": [
+    {
+      "concept": "Online Working Copy",
+      "description": "Cloud-hosted copy of your Mendix app that SDK can access and modify",
+      "use_when": "Need to modify app model programmatically",
+      "lifecycle": "Create → Load → Modify → Commit → Close",
+      "limitations": [
+        "Only one online working copy per app at a time",
+        "Must commit or discard changes before closing",
+        "Requires Mendix Platform authentication"
+      ],
+      "example": "const workingCopy = await client.platform().createOnlineWorkingCopy(project, { revision: -1 });"
+    },
+    {
+      "concept": "Model Units",
+      "description": "Files in Mendix project (.mpr is special, modules are folders)",
+      "types": ["Projects", "Modules", "Documents (pages, microflows, domain models)", "Folders"],
+      "access_pattern": "Load unit → Navigate structure → Read/modify elements",
+      "example": "const domainModel = await model.allDomainModels()[0].load();"
+    },
+    {
+      "concept": "Model Elements",
+      "description": "Individual components (entities, attributes, microflows, pages, etc.)",
+      "hierarchy": "Project → Module → Document → Elements",
+      "properties": "Typed properties (strings, numbers, references to other elements)",
+      "example": "entity.name = 'Customer'; attribute.type = datatypes.StringAttributeType.create(model);"
+    },
+    {
+      "concept": "Structural vs Instance",
+      "description": "Structural = metadata (domain model). Instance = runtime data.",
+      "sdk_scope": "Only structural - SDK cannot access runtime data",
+      "example": "SDK can read/write Entity definition, NOT actual Customer records in database"
+    },
+    {
+      "concept": "Metamodel",
+      "description": "Schema defining all possible Mendix model structures (updated per version)",
+      "version_matching": "SDK metamodel version must match Studio Pro version",
+      "compatibility": "SDK 4.104.0 supports up to metamodel 11.4.0",
+      "best_practice": "Check compatibility before loading models"
+    }
+  ],
+  "key_apis": {
+    "authentication": {
+      "description": "Authenticate with Mendix Platform to access projects",
+      "methods": [
+        {
+          "method": "Personal Access Token (PAT)",
+          "code": "const client = new MendixPlatformClient({ mendixToken: process.env.MENDIX_TOKEN });",
+          "use_when": "Production automation, CI/CD",
+          "security": "Store token securely in environment variables"
+        },
+        {
+          "method": "Username/Password (deprecated)",
+          "code": "Not recommended - use PAT instead",
+          "use_when": "Legacy scripts only",
+          "security": "Insecure, being phased out"
+        }
+      ]
+    },
+    "project_access": {
+      "description": "Access and create working copies of Mendix projects",
+      "operations": [
+        {
+          "operation": "Create Online Working Copy",
+          "code": "const workingCopy = await client.platform().createOnlineWorkingCopy(project, { revision: -1 });",
+          "parameters": {
+            "project": "Project ID from Mendix Platform",
+            "revision": "Revision number (-1 for latest)"
+          },
+          "returns": "OnlineWorkingCopy instance"
+        },
+        {
+          "operation": "Open Model",
+          "code": "const model = await workingCopy.openModel();",
+          "returns": "IModel instance for reading/writing"
+        },
+        {
+          "operation": "Commit Changes",
+          "code": "await model.commitToRepository('main', { commitMessage: 'Updated domain model' });",
+          "parameters": {
+            "branch": "Branch name (usually 'main')",
+            "commitMessage": "Description of changes"
+          }
+        },
+        {
+          "operation": "Close Working Copy",
+          "code": "await workingCopy.close();",
+          "note": "Always close when done to free resources"
+        }
+      ]
+    },
+    "domain_model": {
+      "description": "Read and manipulate entities, attributes, associations",
+      "operations": [
+        {
+          "operation": "Load Domain Model",
+          "code": "const domainModel = await model.allDomainModels().filter(dm => dm.containerAsModule.name === 'MyModule')[0].load();",
+          "returns": "DomainModel with entities"
+        },
+        {
+          "operation": "Get All Entities",
+          "code": "const entities = domainModel.entities;",
+          "returns": "Array of Entity objects"
+        },
+        {
+          "operation": "Create Entity",
+          "code": "const entity = domainmodels.Entity.createIn(domainModel); entity.name = 'Customer'; entity.location = { x: 100, y: 100 };",
+          "note": "Must set name and location"
+        },
+        {
+          "operation": "Add Attribute",
+          "code": "const attr = domainmodels.Attribute.createIn(entity); attr.name = 'Email'; attr.type = datatypes.StringAttributeType.create(model);",
+          "types": "StringAttributeType, IntegerAttributeType, DateTimeAttributeType, BooleanAttributeType, etc."
+        },
+        {
+          "operation": "Create Association",
+          "code": "const assoc = domainmodels.Association.createIn(domainModel); assoc.name = 'Customer_Order'; assoc.parent = customer; assoc.child = order; assoc.type = domainmodels.AssociationType.Reference; assoc.owner = domainmodels.AssociationOwner.Default;",
+          "types": ["Reference (1-*)", "ReferenceSet (*-*)"],
+          "ownership": ["Default", "Both"]
+        },
+        {
+          "operation": "Read Entity Properties",
+          "code": "entity.name, entity.attributes, entity.associations, entity.generalization, entity.documentation",
+          "properties": "All entity metadata accessible"
+        }
+      ],
+      "best_practices": [
+        {
+          "practice": "Always load units before accessing elements",
+          "rationale": "Units are lazy-loaded, accessing without load causes errors",
+          "example": "await domainModel.load() before accessing domainModel.entities"
+        },
+        {
+          "practice": "Use qualified names for cross-module references",
+          "rationale": "Avoid naming conflicts, explicit dependencies",
+          "example": "'MyModule.Customer' instead of just 'Customer'"
+        }
+      ]
+    },
+    "microflows": {
+      "description": "Read and analyze microflow structures programmatically",
+      "operations": [
+        {
+          "operation": "Load Microflows",
+          "code": "const microflows = await model.allMicroflows(); for (const mf of microflows) { await mf.load(); }",
+          "returns": "Array of Microflow objects"
+        },
+        {
+          "operation": "Get Microflow Details",
+          "code": "const name = microflow.name; const params = microflow.objectCollection.objects.filter(obj => obj instanceof microflows.MicroflowParameterObject);",
+          "properties": "name, documentation, objectCollection (all flow elements)"
+        },
+        {
+          "operation": "Analyze Flow Elements",
+          "code": "const activities = microflow.objectCollection.objects.filter(obj => obj instanceof microflows.ActionActivity);",
+          "element_types": [
+            "ActionActivity (Create, Change, Retrieve, etc.)",
+            "ExclusiveSplit (Decision)",
+            "MicroflowCall",
+            "StartEvent",
+            "EndEvent"
+          ]
+        },
+        {
+          "operation": "Get Activity Details",
+          "code": "if (activity.action instanceof microflows.ChangeObjectAction) { const entity = activity.action.changeVariableName; }",
+          "action_types": [
+            "CreateObjectAction",
+            "ChangeObjectAction",
+            "DeleteAction",
+            "RetrieveAction",
+            "CommitAction"
+          ]
+        }
+      ],
+      "limitations": [
+        "Creating/modifying microflows is complex - requires positioning all elements",
+        "Easier to read than write microflows programmatically",
+        "Consider Studio Pro for complex microflow creation"
+      ],
+      "use_cases": [
+        "Document microflow structures",
+        "Analyze microflow complexity metrics",
+        "Find all microflows using specific entity",
+        "Generate microflow diagrams",
+        "Migration analysis"
+      ]
+    },
+    "pages": {
+      "description": "Read page structures and widget configurations",
+      "operations": [
+        {
+          "operation": "Load Pages",
+          "code": "const pages = await model.allPages(); for (const page of pages) { await page.load(); }",
+          "returns": "Array of Page objects"
+        },
+        {
+          "operation": "Get Page Widgets",
+          "code": "const widgets = page.widgets;",
+          "widget_types": ["DataGrid", "DataView", "Button", "TextBox", "ListView", "etc."]
+        },
+        {
+          "operation": "Analyze Data Sources",
+          "code": "if (dataGrid.dataSource instanceof pages.DatabaseSource) { const entity = dataGrid.dataSource.entity; }",
+          "source_types": ["DatabaseSource", "MicroflowSource", "AssociationSource"]
+        }
+      ],
+      "limitations": [
+        "Page structure is very complex in SDK",
+        "Widget positioning and styling difficult to manipulate",
+        "Better to read pages than write them"
+      ],
+      "use_cases": [
+        "Document page-entity relationships",
+        "Find all pages using specific entity",
+        "Analyze data source patterns",
+        "Generate page documentation"
+      ]
+    }
+  },
+  "best_practices": [
+    {
+      "practice": "Use Model SDK for reading, Studio Pro for complex writing",
+      "rationale": "SDK excellent for analysis and simple modifications, Studio Pro better for complex creation",
+      "example": "Read domain model with SDK, analyze usage. Create new microflows in Studio Pro.",
+      "source": "Mendix SDK Best Practices"
+    },
+    {
+      "practice": "Always close working copies",
+      "rationale": "Prevents resource leaks on Mendix Platform",
+      "example": "Use try-finally to ensure workingCopy.close() is called",
+      "source": "SDK Documentation"
+    },
+    {
+      "practice": "Batch changes and commit once",
+      "rationale": "Each commit is slow - group related changes",
+      "example": "Create multiple entities, then single commit instead of commit per entity",
+      "source": "Performance Best Practices"
+    },
+    {
+      "practice": "Handle SDK errors gracefully",
+      "rationale": "Network issues, authentication failures, model conflicts can occur",
+      "example": "Wrap SDK calls in try-catch, log errors, retry logic for transient failures",
+      "source": "Robustness Guidelines"
+    },
+    {
+      "practice": "Version check before operations",
+      "rationale": "SDK metamodel must match Studio Pro version",
+      "example": "Check model.metaModelVersion before processing",
+      "source": "SDK Compatibility Guide"
+    }
+  ],
+  "common_patterns": [
+    {
+      "pattern": "Domain Model Documentation Generator",
+      "use_case": "Automatically generate markdown documentation of all entities",
+      "implementation": "Load domain model → Iterate entities → Extract name, attributes, associations → Format as markdown",
+      "example": "See Mendix-SDK-Toolkit in workspace - reads domain model and generates comprehensive docs",
+      "source": "Common automation task"
+    },
+    {
+      "pattern": "Cross-Module Dependency Analyzer",
+      "use_case": "Find all dependencies between modules",
+      "implementation": "Scan all entities, microflows, pages for cross-module references",
+      "example": "Identify which modules can be safely removed or refactored",
+      "source": "Architecture analysis"
+    },
+    {
+      "pattern": "Entity Usage Reporter",
+      "use_case": "Find all places an entity is used (microflows, pages, associations)",
+      "implementation": "Load all microflows and pages → Search for entity references",
+      "example": "Impact analysis before deleting or modifying entity",
+      "source": "Refactoring safety"
+    },
+    {
+      "pattern": "Bulk Entity Creator",
+      "use_case": "Create multiple similar entities from template",
+      "implementation": "Define entity template → Loop creating entities with variations",
+      "example": "Create 10 lookup entities with same attribute structure",
+      "source": "Rapid scaffolding"
+    }
+  ],
+  "anti_patterns": [
+    {
+      "mistake": "Modifying model without loading units first",
+      "why_bad": "Units are lazy-loaded - accessing without load causes null references",
+      "alternative": "Always call .load() on units before accessing elements",
+      "example": "const dm = await domainModel.load(); THEN access dm.entities"
+    },
+    {
+      "mistake": "Not handling authentication failures",
+      "why_bad": "SDK operations silently fail or throw unhelpful errors",
+      "alternative": "Validate token before operations, handle auth errors explicitly",
+      "example": "Try authentication first, catch and report token expiration clearly"
+    },
+    {
+      "mistake": "Creating complex microflows programmatically",
+      "why_bad": "Requires precise positioning, flow sequencing, error-prone",
+      "alternative": "Use SDK for simple microflows or read-only analysis. Use Studio Pro for complex flows.",
+      "example": "Don't try to create 50-step microflow in SDK - use Studio Pro"
+    },
+    {
+      "mistake": "Committing after every small change",
+      "why_bad": "Commits are slow network operations",
+      "alternative": "Batch changes and commit once",
+      "example": "Create 10 entities, THEN commit. Not commit after each entity."
+    }
+  ],
+  "expert_tips": [
+    {
+      "tip": "Use filters before loading to reduce memory usage",
+      "source": "SDK Performance Guide",
+      "context": "Loading all elements can consume gigabytes for large apps",
+      "example": "const domainModels = model.allDomainModels().filter(dm => dm.containerAsModule.name === 'MyModule');"
+    },
+    {
+      "tip": "Model SDK uses structural model - cannot access runtime data",
+      "source": "SDK Documentation",
+      "context": "SDK reads .mpr structure, NOT database records",
+      "example": "Can read Customer entity definition, CANNOT read actual customer records"
+    },
+    {
+      "tip": "Working copies lock project - coordinate with team",
+      "source": "Team Collaboration Best Practices",
+      "context": "Only one online working copy allowed per project",
+      "example": "Ensure no active working copies before SDK automation runs"
+    },
+    {
+      "tip": "Use TypeScript for SDK development for better IntelliSense",
+      "source": "Developer Experience",
+      "context": "SDK has extensive type definitions",
+      "example": "TypeScript provides autocomplete for all SDK methods and properties"
+    }
+  ],
+  "real_world_examples": [
+    {
+      "scenario": "Automated documentation generation",
+      "solution": "SDK script reads domain model, microflows, pages. Generates markdown documentation with entity relationships, microflow descriptions, page-entity mappings.",
+      "source": "Mendix-SDK-Toolkit project in workspace"
+    },
+    {
+      "scenario": "CI/CD model validation",
+      "solution": "SDK script analyzes model for violations: missing documentation, incorrect naming conventions, security misconfiguration. Fails build if violations found.",
+      "source": "Enterprise CI/CD pipeline"
+    },
+    {
+      "scenario": "Module migration assistant",
+      "solution": "SDK reads legacy module, maps entities to new structure, generates migration microflows, updates references across entire app.",
+      "source": "Large-scale refactoring project"
+    },
+    {
+      "scenario": "Entity relationship diagram generator",
+      "solution": "SDK reads all entities and associations, generates Mermaid or PlantUML diagrams showing complete data model.",
+      "source": "Architecture documentation automation"
+    }
+  ],
+  "code_examples": [
+    {
+      "title": "Complete Domain Model Reader",
+      "description": "Read all entities, attributes, and associations from a module",
+      "code": "const mendixsdk = require('mendixmodelsdk');\nconst client = new mendixsdk.MendixPlatformClient({ mendixToken: process.env.MENDIX_TOKEN });\n\nasync function readDomainModel(projectId, moduleName) {\n  const project = client.platform().project(projectId);\n  const workingCopy = await client.platform().createOnlineWorkingCopy(project, { revision: -1 });\n  \n  try {\n    const model = await workingCopy.openModel();\n    const domainModel = await model.allDomainModels()\n      .filter(dm => dm.containerAsModule.name === moduleName)[0]\n      .load();\n    \n    const result = {\n      module: moduleName,\n      entities: []\n    };\n    \n    for (const entity of domainModel.entities) {\n      const entityData = {\n        name: entity.name,\n        documentation: entity.documentation,\n        attributes: entity.attributes.map(attr => ({\n          name: attr.name,\n          type: attr.type.toString(),\n          value: attr.value ? attr.value.toString() : null\n        })),\n        associations: domainModel.associations\n          .filter(assoc => assoc.parent === entity || assoc.child === entity)\n          .map(assoc => ({\n            name: assoc.name,\n            parent: assoc.parent.name,\n            child: assoc.child.name,\n            type: assoc.type.toString()\n          }))\n      };\n      result.entities.push(entityData);\n    }\n    \n    return result;\n  } finally {\n    await workingCopy.close();\n  }\n}\n\nreadDomainModel('project-id', 'MyModule').then(console.log);",
+      "use_case": "Documentation generation, model analysis"
+    },
+    {
+      "title": "Create Entity with Attributes",
+      "description": "Programmatically create a new entity with attributes",
+      "code": "const { domainmodels, datatypes } = require('mendixmodelsdk');\n\nasync function createEntity(model, domainModel, entityName) {\n  // Create entity\n  const entity = domainmodels.Entity.createIn(domainModel);\n  entity.name = entityName;\n  entity.location = { x: 100, y: 100 };\n  entity.documentation = `Auto-generated entity: ${entityName}`;\n  \n  // Add attributes\n  const nameAttr = domainmodels.Attribute.createIn(entity);\n  nameAttr.name = 'Name';\n  nameAttr.type = datatypes.StringAttributeType.create(model);\n  \n  const emailAttr = domainmodels.Attribute.createIn(entity);\n  emailAttr.name = 'Email';\n  emailAttr.type = datatypes.StringAttributeType.create(model);\n  \n  const createdDateAttr = domainmodels.Attribute.createIn(entity);\n  createdDateAttr.name = 'CreatedDate';\n  createdDateAttr.type = datatypes.DateTimeAttributeType.create(model);\n  \n  const isActiveAttr = domainmodels.Attribute.createIn(entity);\n  isActiveAttr.name = 'IsActive';\n  isActiveAttr.type = datatypes.BooleanAttributeType.create(model);\n  \n  return entity;\n}",
+      "use_case": "Scaffolding, automated entity creation"
+    },
+    {
+      "title": "Find All Microflows Using Entity",
+      "description": "Analyze which microflows reference a specific entity",
+      "code": "async function findMicroflowsUsingEntity(model, entityName) {\n  const microflows = await model.allMicroflows();\n  const results = [];\n  \n  for (const mf of microflows) {\n    await mf.load();\n    \n    // Check parameters\n    const hasParam = mf.objectCollection.objects.some(obj => \n      obj instanceof microflows.MicroflowParameterObject && \n      obj.entity?.name === entityName\n    );\n    \n    // Check activities\n    const hasActivity = mf.objectCollection.objects.some(obj => {\n      if (obj instanceof microflows.ActionActivity) {\n        const action = obj.action;\n        if (action instanceof microflows.CreateObjectAction) {\n          return action.entity?.name === entityName;\n        }\n        if (action instanceof microflows.RetrieveAction) {\n          return action.entityRef?.name === entityName;\n        }\n      }\n      return false;\n    });\n    \n    if (hasParam || hasActivity) {\n      results.push({\n        microflow: mf.qualifiedName,\n        module: mf.containerAsModule.name,\n        usageType: hasParam ? 'parameter' : 'activity'\n      });\n    }\n  }\n  \n  return results;\n}",
+      "use_case": "Impact analysis, refactoring safety checks"
+    }
+  ],
+  "performance_notes": "Loading large models can consume significant memory (2-8GB for enterprise apps). Use filters to load only needed units. Close working copies promptly. Consider batch processing for large operations. Network latency affects working copy operations.",
+  "security_notes": "Personal Access Tokens (PAT) provide full access to projects - store securely. Never commit tokens to source control. Use environment variables. PAT can be scoped to specific projects. Rotate tokens regularly. SDK operations log to Mendix Platform audit trail.",
+  "testing_strategy": "Test SDK scripts on development projects first. Verify changes in Studio Pro before committing. Use version control for SDK scripts. Automated tests should create test projects, not modify production. Mock Platform SDK for unit testing. Integration tests require real Mendix Platform access.",
+  "common_errors": [
+    {
+      "error": "TypeError: Cannot read property 'x' of undefined",
+      "cause": "Accessing unit without loading first",
+      "fix": "Call await unit.load() before accessing properties",
+      "example": "const dm = await domainModel.load();"
+    },
+    {
+      "error": "Working copy already exists",
+      "cause": "Previous working copy not closed or another process has lock",
+      "fix": "Close previous working copy or wait for other process to release",
+      "example": "await workingCopy.close() in finally block"
+    },
+    {
+      "error": "Authentication failed",
+      "cause": "Invalid or expired PAT token",
+      "fix": "Generate new PAT from Mendix Platform, update environment variable",
+      "example": "Verify token in platform before running SDK script"
+    },
+    {
+      "error": "Metamodel version mismatch",
+      "cause": "SDK version doesn't support Studio Pro version",
+      "fix": "Update SDK to version supporting your Studio Pro version",
+      "example": "npm install mendixmodelsdk@latest"
+    }
+  ],
+  "sdk_vs_platform_sdk": {
+    "model_sdk": {
+      "purpose": "Read and write Mendix application models (.mpr files)",
+      "scope": "Entities, attributes, associations, microflows, pages, etc.",
+      "typical_use": "Documentation generation, model analysis, bulk entity creation",
+      "complexity": "Complex - requires understanding metamodel"
+    },
+    "platform_sdk": {
+      "purpose": "Manage Mendix projects on platform (create apps, manage branches, deploy)",
+      "scope": "App lifecycle, working copies, Team Server, deployment",
+      "typical_use": "CI/CD automation, project provisioning, deployment scripts",
+      "complexity": "Simpler - higher-level operations"
+    },
+    "relationship": "Model SDK uses Platform SDK to access working copies. Platform SDK needed for authentication and project access. Model SDK for detailed model manipulation."
+  },
+  "categories": {
+    "sdk_setup": [
+      {
+        "title": "Model SDK Setup and Dependencies (v4.105.0)",
+        "version_info": {
+          "model_sdk_version": "4.105.0",
+          "platform_sdk_version": "5.2.0",
+          "max_metamodel_version": "11.5.0",
+          "node_version": "22.x LTS required",
+          "typescript_version": "~4.6.2 recommended"
+        },
+        "installation": {
+          "npm_commands": [
+            "npm install mendixmodelsdk mendixplatformsdk --save",
+            "npm install typescript@~4.6.2 @types/node@^22 --save-dev"
+          ],
+          "tsconfig_settings": {
+            "target": "ES2019",
+            "module": "commonjs",
+            "strict": true,
+            "esModuleInterop": true
+          }
+        },
+        "authentication": {
+          "method": "Personal Access Token (PAT)",
+          "env_variable": "MENDIX_TOKEN",
+          "get_token_url": "https://warden.mendix.com/v1/keys",
+          "scope_required": "mx:modelrepository:repo:write"
+        },
+        "basic_import_pattern": "import { MendixPlatformClient } from 'mendixplatformsdk';\nimport { domainmodels, microflows, pages } from 'mendixmodelsdk';",
+        "memory_tips": "For large models, run with: node --max-old-space-size=4096 script.js",
+        "_metadata": {
+          "id": "b2ba9c18-13a1-4055-90de-576cf92d0358",
+          "added_at": "2025-12-08T00:49:27.845Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/setting-up-your-development-environment/ and npmjs.com/package/mendixmodelsdk",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "model_navigation": [
+      {
+        "title": "Finding Things in the Model - Navigation Patterns",
+        "description": "Key patterns for navigating and finding elements in a Mendix model",
+        "root_access": {
+          "method": "model.root",
+          "description": "Access point to all modules in the model",
+          "example": "const modules = model.root.modules;"
+        },
+        "allXXX_methods": {
+          "description": "Find all elements of a specific type across the model",
+          "common_methods": [
+            "model.allDomainModels()",
+            "model.allMicroflows()",
+            "model.allPages()",
+            "model.allEntities()",
+            "model.allEnumerations()",
+            "model.allConstants()",
+            "model.allModules()"
+          ],
+          "returns": "Array of interface objects (not fully loaded)",
+          "example": "const domainModels = model.allDomainModels().filter(dm => dm.containerAsModule.name === 'MyModule')[0];"
+        },
+        "findByQualifiedName": {
+          "description": "Find a specific element by its qualified name (Module.ElementName)",
+          "common_methods": [
+            "model.findMicroflowByQualifiedName('Module.MicroflowName')",
+            "model.findEntityByQualifiedName('Module.EntityName')",
+            "model.findPageByQualifiedName('Module.PageName')"
+          ],
+          "returns": "Interface object or null if not found"
+        },
+        "module_filtering_pattern": "model.allDomainModels().filter(dm => dm.containerAsModule.name === 'ModuleName')[0]",
+        "important_notes": [
+          "allXXX() returns interfaces - must call load() to get full object",
+          "Use containerAsModule.name to filter by module",
+          "Qualified names use format: ModuleName.ElementName"
+        ],
+        "_metadata": {
+          "id": "233a1ed1-fc69-40b9-a607-d6caa4a33838",
+          "added_at": "2025-12-08T00:49:49.321Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/finding-things-in-the-model/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "element_loading": [
+      {
+        "title": "Loading Units and Elements - Interface vs Full Object Pattern",
+        "description": "Critical pattern for understanding the difference between interface objects and fully loaded objects",
+        "concept": "The SDK loads elements in two stages: Interface (partial) and Full (loaded)",
+        "interface_object": {
+          "what_is_it": "A lightweight representation with only public/identifier properties",
+          "properties_available": "Only id, name, qualifiedName, and structural references",
+          "when_used": "Returned by allXXX() methods and findByQualifiedName()"
+        },
+        "full_object": {
+          "what_is_it": "Complete element with all properties loaded from server",
+          "how_to_get": "Call load() on interface object",
+          "async_pattern": "const fullElement = await interfaceElement.load();"
+        },
+        "checking_load_status": {
+          "isLoaded": "Boolean property - true if fully loaded",
+          "isLoadable": "Boolean property - true if can be loaded"
+        },
+        "asLoaded_method": {
+          "description": "Synchronous access when you know element is already loaded",
+          "usage": "element.asLoaded() - throws if not loaded",
+          "when_to_use": "After awaiting load() or within load callback"
+        },
+        "code_patterns": {
+          "async_load": "const domainModel = await model.allDomainModels()[0].load();",
+          "check_then_use": "if (element.isLoaded) { const full = element.asLoaded(); }",
+          "filter_then_load": "const dm = model.allDomainModels().filter(dm => dm.containerAsModule.name === 'MyModule')[0];\nconst fullDm = await dm.load();"
+        },
+        "critical_rule": "NEVER access non-public properties on interface objects - will throw error or return undefined",
+        "_metadata": {
+          "id": "ece16f8e-334b-47e6-9e73-a5c5ecb3a6dc",
+          "added_at": "2025-12-08T00:50:00.782Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/loading-units-and-elements/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "entity_creation": [
+      {
+        "title": "Creating Entities and Domain Model Elements",
+        "description": "Patterns for creating entities, attributes, associations, and other domain model elements",
+        "entity_creation": {
+          "basic_pattern": "const entity = domainmodels.Entity.createIn(domainModel);\nentity.name = 'MyEntity';\nentity.location = { x: 100, y: 100 };",
+          "required_properties": ["name", "location"],
+          "generalization_pattern": {
+            "no_generalization": "const noGen = domainmodels.NoGeneralization.create(model);\nentity.generalization = noGen;",
+            "with_generalization": "const gen = domainmodels.Generalization.create(model);\ngen.generalization = model.findEntityByQualifiedName('Module.ParentEntity');\nentity.generalization = gen;"
+          }
+        },
+        "attribute_creation": {
+          "string_attribute": "const attr = domainmodels.Attribute.create(model);\nattr.name = 'MyAttribute';\nattr.type = domainmodels.StringAttributeType.create(model);\nattr.value = domainmodels.StoredValue.create(model);\nentity.attributes.push(attr);",
+          "integer_attribute": "attr.type = domainmodels.IntegerAttributeType.create(model);",
+          "decimal_attribute": "attr.type = domainmodels.DecimalAttributeType.create(model);",
+          "boolean_attribute": "attr.type = domainmodels.BooleanAttributeType.create(model);",
+          "datetime_attribute": "attr.type = domainmodels.DateTimeAttributeType.create(model);",
+          "enum_attribute": "const enumType = domainmodels.EnumerationAttributeType.create(model);\nenumType.enumeration = model.findEnumerationByQualifiedName('Module.MyEnum');\nattr.type = enumType;"
+        },
+        "association_creation": {
+          "pattern": "const assoc = domainmodels.Association.create(model);\nassoc.name = 'Parent_Child';\nassoc.parent = parentEntity;\nassoc.child = childEntity;\nassoc.deleteBehavior = domainmodels.AssociationDeleteBehavior.create(model);\nassoc.parentConnection = { x: 75, y: 100 };\nassoc.childConnection = { x: 30, y: 0 };\ndomainModel.associations.push(assoc);",
+          "important": "Set both parent and child AFTER creating the association"
+        },
+        "adding_to_domain_model": {
+          "entities": "domainModel.entities.push(entity);",
+          "associations": "domainModel.associations.push(association);"
+        },
+        "_metadata": {
+          "id": "016a9ebb-f3c9-4a3a-a096-4bb60932a54d",
+          "added_at": "2025-12-08T00:50:13.524Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/creating-the-domain-model/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "reverse_engineering": [
+      {
+        "title": "JavaScriptSerializer - Reverse Engineering Pattern",
+        "description": "Generate SDK code from existing model elements - the most powerful learning tool",
+        "purpose": "Given a fully loaded model unit, generate the JavaScript/TypeScript code that would create that exact unit",
+        "import": "import { JavaScriptSerializer } from 'mendixmodelsdk';",
+        "basic_usage": "console.log(JavaScriptSerializer.serializeToJs(someFullyLoadedModelUnit));",
+        "full_example": "const client = new MendixPlatformClient();\nconst app = client.getApp(projectId);\nconst workingCopy = await app.createTemporaryWorkingCopy('main');\nconst model = await workingCopy.openModel();\n\nconst domainModel = await model.allDomainModels().filter(dm => dm.containerAsModule.name === 'MyModule')[0].load();\n\nconsole.log(JavaScriptSerializer.serializeToJs(domainModel));",
+        "use_cases": [
+          "Learn how to create specific element types",
+          "Bootstrap scripts based on existing app structures",
+          "Understand required properties for complex elements",
+          "Generate code for microflows, pages, domain models"
+        ],
+        "workflow_tip": "Build template in Studio Pro → Generate code with serializer → Customize for your needs",
+        "output_format": "JavaScript function that recreates the element when called",
+        "pipe_to_file": "node script.js > output.js",
+        "critical_note": "Element MUST be fully loaded (await load()) before serialization",
+        "_metadata": {
+          "id": "27e1c9d4-6e22-445d-b443-c129d2249039",
+          "added_at": "2025-12-08T00:50:24.636Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/generating-code-from-the-model/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "microflow_patterns": [
+      {
+        "title": "Microflow SDK Patterns",
+        "description": "Creating and modifying microflows programmatically",
+        "microflow_creation": {
+          "basic": "const mf = microflows.Microflow.createIn(module);",
+          "with_folder": "const mf = microflows.Microflow.createIn(folder);"
+        },
+        "microflow_structure": {
+          "objectCollection": "Contains all MicroflowObjects (activities, events, decisions)",
+          "flows": "Contains all Flow connections between objects",
+          "allowedModuleRoles": "Security settings - which roles can execute"
+        },
+        "microflow_object_hierarchy": {
+          "MicroflowObject": "Base class for all microflow elements",
+          "subclasses": [
+            "Activity (ActionActivity, LoopedActivity)",
+            "StartEvent",
+            "EndEvent",
+            "ExclusiveSplit (decision)",
+            "ExclusiveMerge",
+            "InheritanceSplit",
+            "BreakEvent",
+            "ContinueEvent",
+            "ErrorEvent",
+            "Annotation",
+            "MicroflowParameterObject"
+          ]
+        },
+        "common_activities": {
+          "CreateObjectAction": "Create new object",
+          "ChangeObjectAction": "Modify object attributes",
+          "DeleteAction": "Delete object",
+          "RetrieveAction": "Retrieve from database",
+          "AggregateListAction": "Count, sum, avg, min, max on list",
+          "ListOperationAction": "List contains, filter, find, etc.",
+          "LogMessageAction": "Write to log",
+          "ShowMessageAction": "Show message dialog",
+          "MicroflowCallAction": "Call another microflow",
+          "CommitAction": "Commit object to database",
+          "RollbackAction": "Rollback changes"
+        },
+        "positioning": {
+          "property": "relativeMiddlePoint",
+          "format": "{ x: number, y: number }",
+          "example": "activity.relativeMiddlePoint = { x: 200, y: 100 };"
+        },
+        "flow_connections": {
+          "SequenceFlow": "Normal flow between activities",
+          "pattern": "const flow = microflows.SequenceFlow.create(model);\nflow.origin = startEvent;\nflow.destination = activity;\nmicroflow.flows.push(flow);"
+        },
+        "critical_rules": [
+          "Every microflow needs StartEvent and at least one EndEvent",
+          "Delete flows BEFORE activities when modifying",
+          "Set allowedModuleRoles for security",
+          "Use relativeMiddlePoint for positioning"
+        ],
+        "_metadata": {
+          "id": "51c9d000-7f3b-4307-8374-471816f742f2",
+          "added_at": "2025-12-08T00:50:38.554Z",
+          "source": "apidocs.rnd.mendix.com/modelsdk/latest/classes/microflows.Microflow.html",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      }
+    ],
+    "element_states": [
+      {
+        "title": "Element States and Lifecycle",
+        "description": "Understanding element states when creating and modifying model elements",
+        "states": {
+          "new": {
+            "description": "Just created with create() method, not yet attached to model",
+            "can_modify": true,
+            "example": "const entity = domainmodels.Entity.create(model); // state: new"
+          },
+          "attached": {
+            "description": "Part of the model structure (in container or collection)",
+            "can_modify": true,
+            "how_to_attach": [
+              "createIn(container) - creates already attached",
+              "collection.push(element) - attaches to collection",
+              "property = element - attaches to property"
+            ]
+          },
+          "detached": {
+            "description": "Was attached but removed from container",
+            "can_modify": true,
+            "how_to_detach": "element.detach()",
+            "reattach": "Can be attached elsewhere in same model"
+          },
+          "deleted": {
+            "description": "Marked for deletion",
+            "can_modify": false,
+            "how_to_delete": "element.delete()"
+          }
+        },
+        "create_patterns": {
+          "create_new": "domainmodels.Entity.create(model) - creates in 'new' state",
+          "createIn": "domainmodels.Entity.createIn(domainModel) - creates already attached",
+          "recommendation": "Use createIn() when possible - safer and clearer intent"
+        },
+        "modification_rules": [
+          "Elements in 'new', 'attached', or 'detached' state can be modified",
+          "Elements in 'deleted' state cannot be modified",
+          "Detached elements must be attached before commit",
+          "New elements must be attached before commit"
+        ],
+        "_metadata": {
+          "id": "248e0b08-0133-40c5-a79c-4f1a7d7e2634",
+          "added_at": "2025-12-08T00:50:49.306Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/changing-things-in-the-model/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "sdk_namespaces": [
+      {
+        "title": "Model SDK Namespaces Reference",
+        "description": "Complete list of available namespaces in mendixmodelsdk v4.105.0",
+        "core_namespaces": {
+          "domainmodels": "Entities, attributes, associations, access rules, indexes, validation rules",
+          "microflows": "Microflows, activities, flows, decisions, parameters",
+          "pages": "Pages, layouts, snippets, widgets, data views, list views",
+          "nanoflows": "Client-side nanoflows",
+          "workflows": "Workflow definitions, user tasks, decisions"
+        },
+        "integration_namespaces": {
+          "rest": "Published and consumed REST services",
+          "webservices": "Published and consumed web services (SOAP)",
+          "mappings": "Import and export mappings",
+          "jsonstructures": "JSON structure definitions",
+          "xmlschemas": "XML schema definitions"
+        },
+        "ui_namespaces": {
+          "menus": "Navigation menus",
+          "navigation": "Navigation profiles and structures",
+          "customwidgets": "Custom widget definitions",
+          "nativepages": "Native mobile pages"
+        },
+        "data_namespaces": {
+          "enumerations": "Enumeration definitions",
+          "constants": "Constant definitions",
+          "regularexpressions": "Regular expression definitions",
+          "datasets": "Dataset definitions"
+        },
+        "security_namespaces": {
+          "security": "Module roles, entity access, page access",
+          "projects": "Module structure, folders, project settings"
+        },
+        "other_namespaces": {
+          "scheduledevents": "Scheduled event definitions",
+          "documenttemplates": "Document template definitions",
+          "reports": "Report definitions",
+          "images": "Image collections",
+          "texts": "Text/translation collections",
+          "codeactions": "Java/JavaScript action definitions",
+          "javaactions": "Java action definitions",
+          "javascriptactions": "JavaScript action definitions"
+        },
+        "usage_pattern": "import { domainmodels, microflows, pages } from 'mendixmodelsdk';",
+        "api_docs_url": "https://apidocs.rnd.mendix.com/modelsdk/latest/index.html",
+        "_metadata": {
+          "id": "da2b6012-5fce-42fe-895f-bf0633489e61",
+          "added_at": "2025-12-08T00:51:14.539Z",
+          "source": "apidocs.rnd.mendix.com/modelsdk/latest/index.html",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      }
+    ],
+    "metamodel_overview": [
+      {
+        "title": "Mendix Metamodel Overview",
+        "description": "Understanding the structure of a Mendix model for SDK development",
+        "hierarchy": {
+          "Project": "Root level - contains modules",
+          "Module": "Contains domain model, microflows, pages, etc.",
+          "DocumentContainer": "Folders within modules",
+          "Document": "Microflows, pages, domain models (model units)",
+          "Element": "Individual components within documents"
+        },
+        "unit_types": {
+          "structural_unit": "Module level containers (always loaded)",
+          "model_unit": "Documents like microflows, pages - must be loaded explicitly"
+        },
+        "property_types": {
+          "primitive": "String, number, boolean, enum",
+          "by_id_reference": "Reference to element in same unit",
+          "by_name_reference": "Reference by qualified name (cross-unit)",
+          "part": "Child element contained within parent",
+          "part_list": "List of child elements"
+        },
+        "interface_vs_class": {
+          "interface": "Prefixed with 'I' (IMicroflow) - represents unloaded element",
+          "class": "No prefix (Microflow) - represents fully loaded element",
+          "conversion": "await interfaceElement.load() returns class instance"
+        },
+        "key_concepts": {
+          "qualified_name": "ModuleName.ElementName format for cross-references",
+          "container": "Parent element that owns this element",
+          "unit": "Top-level document containing the element",
+          "id": "Unique identifier for each element"
+        },
+        "metamodel_docs": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-refguide/",
+        "_metadata": {
+          "id": "37034b1e-5c71-4ceb-a4fc-8d4a88e03300",
+          "added_at": "2025-12-08T00:51:25.851Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/understanding-the-metamodel/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "sdk_resources": [
+      {
+        "title": "SDK Resources and Documentation Sources",
+        "description": "Where to find Mendix SDK information online",
+        "official_documentation": {
+          "main_sdk_docs": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+          "sdk_howtos": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-howtos/",
+          "metamodel_reference": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-refguide/",
+          "use_cases": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-use-cases/",
+          "setup_guide": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/setting-up-your-development-environment/"
+        },
+        "api_reference": {
+          "model_sdk_api": "https://apidocs.rnd.mendix.com/modelsdk/latest/index.html",
+          "platform_sdk_api": "https://apidocs.rnd.mendix.com/platformsdk/latest/index.html",
+          "note": "TypeDoc-generated API reference with all classes, methods, properties"
+        },
+        "npm_packages": {
+          "mendixmodelsdk": "https://www.npmjs.com/package/mendixmodelsdk",
+          "mendixplatformsdk": "https://www.npmjs.com/package/mendixplatformsdk",
+          "check_versions": "npm view mendixmodelsdk version"
+        },
+        "authentication": {
+          "get_pat": "https://warden.mendix.com/v1/keys",
+          "pat_docs": "https://docs.mendix.com/community-tools/mendix-profile/user-settings/#pat"
+        },
+        "community_resources": {
+          "mendix_forum": "https://community.mendix.com/ (search for SDK topics)",
+          "note": "Medium articles have been removed, StackOverflow has minimal SDK content"
+        },
+        "key_techniques": {
+          "reverse_engineering": "JavaScriptSerializer.serializeToJs() - THE most valuable learning tool",
+          "api_exploration": "Use TypeScript intellisense with the SDK types",
+          "model_inspection": "console.log(element.toJSON()) for debugging"
+        },
+        "version_checking": {
+          "model_sdk": "Check MAX_METAMODEL_VERSION in package for Studio Pro compatibility",
+          "current_compatible": "v4.105.0 supports up to Mendix 11.5.0 metamodel"
+        },
+        "_metadata": {
+          "id": "7d2a5547-3c65-4dcb-b210-ed2dba2af1d8",
+          "added_at": "2025-12-08T00:51:51.633Z",
+          "source": "Research compilation June 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      }
+    ],
+    "documentation_update_pattern": [
+      {
+        "title": "SDK Pattern: Updating Entity/Microflow Documentation",
+        "description": "Working pattern for programmatically updating documentation in Mendix models",
+        "use_case": "Batch update documentation for entities, microflows, attributes via SDK",
+        "code_pattern": "import { MendixPlatformClient } from 'mendixplatformsdk';\nimport { domainmodels, microflows } from 'mendixmodelsdk';\n\nconst DOCS_TO_APPLY = [\n  { qualifiedName: 'Module.EntityName', documentation: 'Description here' },\n  { qualifiedName: 'Module.MicroflowName', documentation: 'Description here' }\n];\n\nasync function applyDocs() {\n  const client = new MendixPlatformClient();\n  const app = client.getApp('app-id');\n  const wc = await app.createTemporaryWorkingCopy('main');\n  const model = await wc.openModel();\n\n  for (const doc of DOCS_TO_APPLY) {\n    // Try entity first\n    const entity = model.findEntityByQualifiedName(doc.qualifiedName);\n    if (entity) {\n      const fullEntity = await entity.load();\n      fullEntity.documentation = doc.documentation;\n      continue;\n    }\n    \n    // Try microflow\n    const mf = model.findMicroflowByQualifiedName(doc.qualifiedName);\n    if (mf) {\n      const fullMf = await mf.load();\n      fullMf.documentation = doc.documentation;\n    }\n  }\n\n  await model.flushChanges();\n  await wc.commitToRepository('main', { commitMessage: 'SDK: Updated documentation' });\n}",
+        "documentation_property": {
+          "entity": "entity.documentation = 'text'",
+          "microflow": "microflow.documentation = 'text'",
+          "attribute": "attribute.documentation = 'text'",
+          "association": "association.documentation = 'text'"
+        },
+        "batch_tips": [
+          "Process 5-10 items per commit for manageable changes",
+          "Use descriptive commit messages",
+          "Pull changes in Studio Pro after SDK commit (Ctrl+Shift+G → Update)"
+        ],
+        "_metadata": {
+          "id": "75146b6d-f69e-462b-93fc-bfbde81cd17a",
+          "added_at": "2025-12-08T00:52:03.555Z",
+          "source": "SmartHub documentation workflow - proven pattern",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      }
+    ],
+    "complete_script_template": [
+      {
+        "title": "Complete SDK Script Template",
+        "description": "Full TypeScript template for Mendix SDK scripts",
+        "template": "import { MendixPlatformClient } from 'mendixplatformsdk';\nimport { domainmodels, microflows, IModel, projects } from 'mendixmodelsdk';\n\n// Configuration\nconst APP_ID = 'your-app-id-here';\nconst MODULE_NAME = 'MyModule';\nconst BRANCH = 'main'; // 'trunk' for SVN\n\nasync function main() {\n  try {\n    // 1. Initialize client\n    const client = new MendixPlatformClient();\n    console.log('Client initialized');\n\n    // 2. Get app\n    const app = client.getApp(APP_ID);\n    console.log('Got app reference');\n\n    // 3. Create working copy\n    const workingCopy = await app.createTemporaryWorkingCopy(BRANCH);\n    console.log('Created working copy');\n\n    // 4. Open model\n    const model = await workingCopy.openModel();\n    console.log('Model opened');\n\n    // 5. Find module\n    const module = model.allModules().find(m => m.name === MODULE_NAME);\n    if (!module) throw new Error(`Module ${MODULE_NAME} not found`);\n\n    // 6. Your logic here\n    await doWork(model, module);\n\n    // 7. Flush and commit\n    await model.flushChanges();\n    console.log('Changes flushed');\n\n    await workingCopy.commitToRepository(BRANCH, {\n      commitMessage: 'SDK: Your commit message'\n    });\n    console.log('Committed successfully!');\n\n  } catch (error) {\n    console.error('Error:', error);\n    process.exit(1);\n  }\n}\n\nasync function doWork(model: IModel, module: projects.IModule) {\n  // Your SDK logic here\n  console.log(`Working on module: ${module.name}`);\n}\n\nmain();",
+        "package_json_deps": {
+          "dependencies": {
+            "mendixmodelsdk": "^4.105.0",
+            "mendixplatformsdk": "^5.2.0"
+          },
+          "devDependencies": {
+            "typescript": "~4.6.2",
+            "@types/node": "^22"
+          }
+        },
+        "tsconfig": {
+          "compilerOptions": {
+            "target": "ES2019",
+            "module": "commonjs",
+            "strict": true,
+            "esModuleInterop": true,
+            "outDir": "./dist"
+          }
+        },
+        "run_commands": {
+          "compile": "npx tsc",
+          "run": "node dist/script.js",
+          "run_with_memory": "node --max-old-space-size=4096 dist/script.js"
+        },
+        "_metadata": {
+          "id": "268f6829-df3a-44d0-ad20-e922326f46e7",
+          "added_at": "2025-12-08T00:52:16.818Z",
+          "source": "Compiled from official docs and proven patterns",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      }
+    ],
+    "sdk_use_cases": [
+      {
+        "title": "SDK Use Cases and When to Use Which Approach",
+        "description": "Common SDK use cases and whether they require read-only or read-write access",
+        "analysis_use_cases": {
+          "type": "Read-only - no commit needed",
+          "examples": [
+            "Analyzing module complexity and dependencies",
+            "Generating documentation from model",
+            "Creating reports on microflow usage",
+            "Finding unused entities or attributes",
+            "Extracting domain model to diagrams",
+            "Code review and quality metrics"
+          ],
+          "pattern": "createTemporaryWorkingCopy → openModel → analyze → NO commit"
+        },
+        "export_use_cases": {
+          "type": "Read-only export",
+          "examples": [
+            "Export domain model to JSON/XML",
+            "Export microflows for documentation",
+            "Generate TypeScript interfaces from entities",
+            "Create data dictionaries"
+          ]
+        },
+        "modification_use_cases": {
+          "type": "Read-write - requires commit",
+          "examples": [
+            "Batch update documentation",
+            "Rename entities across modules",
+            "Add standard attributes to entities",
+            "Create scaffolding microflows",
+            "Apply naming conventions",
+            "Add logging to all microflows"
+          ],
+          "pattern": "createTemporaryWorkingCopy → openModel → modify → flushChanges → commitToRepository"
+        },
+        "generation_use_cases": {
+          "type": "Create new content",
+          "examples": [
+            "Generate CRUD microflows for entities",
+            "Create pages from templates",
+            "Scaffold new modules with standard structure",
+            "Import external data models"
+          ]
+        },
+        "choosing_approach": {
+          "mx_exe_vs_sdk": {
+            "mx_exe": "Offline analysis of local .mpr files - no authentication needed",
+            "sdk": "Online access to Team Server - requires PAT authentication",
+            "when_to_use_mx": "Quick local analysis, CI/CD validation, offline work",
+            "when_to_use_sdk": "Modifications, cross-environment work, automation"
+          }
+        },
+        "_metadata": {
+          "id": "e6a6984a-0631-4f8b-91a1-71a61552d7f0",
+          "added_at": "2025-12-08T00:52:29.644Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-use-cases/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ]
+  },
+
+  "community_resources_reference": {
+    "note": "See sdk-community-resources.json for comprehensive community research",
+    "key_packages": ["@sefranke/sf-mendix-sdk-helper", "mxdocgen", "mfautolayout"],
+    "archive_source": "https://archive.ph/https://medium.com/mendix* (186 articles)",
+    "github_repos": ["engalar/MendixModelSDKDemo", "KevinVlaanderen/MxDocGen"],
+    "research_date": "2025-01-10"
+  }
+}

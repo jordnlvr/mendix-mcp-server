@@ -1,0 +1,935 @@
+{
+  "topic": "Mendix Security Hardening Guide",
+  "description": "Comprehensive guide to securing Mendix applications covering entity access, authentication, authorization, XPath constraints, API security, and compliance. Based on Mendix security best practices and industry standards.",
+  "last_updated": "2025-12-01",
+  "mendix_versions": [
+    "10.24 (LTS)",
+    "11.4.0",
+    "11.5.0"
+  ],
+  "official_docs": [
+    "https://docs.mendix.com/refguide/security/",
+    "https://docs.mendix.com/refguide/access-rules/",
+    "https://docs.mendix.com/refguide/xpath-constraints/",
+    "https://docs.mendix.com/howto/security/",
+    "https://docs.mendix.com/refguide/optimistic-locking/"
+  ],
+  "mendix_11_security_changes": {
+    "absolute_session_timeout": {
+      "feature": "AbsoluteSessionTimeout runtime setting (11.4.0+)",
+      "description": "Sessions expire after configured time regardless of activity",
+      "use_when": "Sensitive applications requiring forced re-authentication",
+      "configuration": "Runtime settings → AbsoluteSessionTimeout"
+    },
+    "optimistic_locking_security": {
+      "feature": "Optimistic locking (11.5.0+)",
+      "description": "Prevents unauthorized data overwrites via concurrent modification detection",
+      "impact": "Adds MxObjectVersion system attribute to all entities",
+      "docs": "https://docs.mendix.com/refguide/optimistic-locking/"
+    },
+    "showhomepage_security": {
+      "breaking_change": "ShowHomePage now respects entity access rules (11.0+)",
+      "impact": "May break existing apps if home page entities lack proper access rules",
+      "fix": "Add Read access to all entities displayed on home page for all roles"
+    }
+  },
+  "security_fundamentals": {
+    "defense_in_depth": {
+      "principle": "Multiple layers of security - if one fails, others protect",
+      "layers": [
+        "Authentication (who are you)",
+        "Authorization (what can you do)",
+        "Entity access rules (what data can you see)",
+        "XPath constraints (row-level security)",
+        "Microflow security (what operations)",
+        "Network security (firewalls, SSL)",
+        "Input validation (prevent injection)",
+        "Audit logging (detect breaches)"
+      ]
+    },
+    "least_privilege": {
+      "principle": "Users should have minimum access needed for their role",
+      "implementation": "Start with no access, grant incrementally",
+      "review": "Regular access reviews, remove unused permissions"
+    },
+    "security_by_default": {
+      "principle": "Secure by default, explicit opt-in for access",
+      "mendix_default": "All entities and microflows deny access unless explicitly granted",
+      "benefit": "Prevents accidental data exposure"
+    }
+  },
+  "authentication": {
+    "methods": [
+      {
+        "method": "Local Accounts",
+        "description": "Username/password stored in Mendix database",
+        "security_level": "Basic",
+        "use_when": "Development, small internal tools, proof of concepts",
+        "vulnerabilities": [
+          "Weak passwords",
+          "No 2FA",
+          "Password reuse"
+        ],
+        "hardening": [
+          "Enforce strong password policy (length, complexity)",
+          "Implement account lockout after failed attempts",
+          "Hash passwords (Mendix does this automatically with bcrypt)",
+          "Require password changes periodically"
+        ],
+        "best_for": "Development only"
+      },
+      {
+        "method": "Mendix SSO",
+        "description": "Single sign-on using Mendix platform accounts",
+        "security_level": "High",
+        "use_when": "Mendix Cloud deployment, internal Mendix users",
+        "benefits": [
+          "Centralized authentication",
+          "No password management",
+          "Automatic security updates"
+        ],
+        "configuration": "Cloud Portal → Settings → Mendix SSO",
+        "best_for": "Mendix Cloud production apps"
+      },
+      {
+        "method": "SAML 2.0",
+        "description": "Enterprise SSO (Okta, Azure AD, OneLogin, etc.)",
+        "security_level": "High",
+        "use_when": "Enterprise environments with existing identity provider",
+        "benefits": [
+          "Enterprise SSO",
+          "2FA support",
+          "Centralized user management",
+          "Compliance"
+        ],
+        "implementation": "SAML module from Marketplace + IDP configuration",
+        "considerations": [
+          "Certificate management",
+          "IDP metadata updates",
+          "User provisioning"
+        ],
+        "best_for": "Enterprise applications"
+      },
+      {
+        "method": "OpenID Connect (OIDC)",
+        "description": "Modern OAuth 2.0-based authentication (Google, Microsoft, Auth0)",
+        "security_level": "High",
+        "use_when": "Modern identity providers, social login",
+        "benefits": [
+          "Modern protocol",
+          "Mobile-friendly",
+          "Rich user info",
+          "Refresh tokens"
+        ],
+        "implementation": "OIDC module from Marketplace + provider configuration",
+        "best_for": "Customer-facing apps, modern SSO"
+      },
+      {
+        "method": "Multi-Factor Authentication (MFA)",
+        "description": "Second factor (TOTP, SMS, email) in addition to password",
+        "security_level": "Very High",
+        "use_when": "High-security requirements, financial/healthcare apps",
+        "implementation": "MFA modules from Marketplace (TOTP Authenticator, etc.)",
+        "benefit": "Protects against password compromise",
+        "best_for": "High-security applications"
+      }
+    ],
+    "session_management": {
+      "session_timeout": {
+        "configuration": "Runtime settings → Session timeout",
+        "guideline": "Balance security vs UX: 15-60 minutes for normal apps, 5-15 for high-security",
+        "implementation": "Show warning before timeout, allow extend session"
+      },
+      "session_fixation": {
+        "mendix_protection": "Mendix regenerates session ID on login (automatic)",
+        "additional": "Use HTTPS to protect session cookies"
+      },
+      "concurrent_sessions": {
+        "consideration": "Allow or prevent multiple sessions per user",
+        "implementation": "Track active sessions, invalidate old sessions if needed"
+      }
+    },
+    "password_policies": {
+      "minimum_length": "12+ characters (NIST recommendation)",
+      "complexity": "Mix of uppercase, lowercase, numbers, special characters",
+      "expiration": "90 days (or no expiration with MFA per NIST)",
+      "history": "Prevent reuse of last 10 passwords",
+      "lockout": "Lock account after 5 failed attempts, 15-minute lockout"
+    }
+  },
+  "authorization": {
+    "roles": {
+      "user_roles": {
+        "description": "Defined at app level, assigned to users",
+        "examples": [
+          "Administrator",
+          "Manager",
+          "User",
+          "Guest"
+        ],
+        "best_practice": "Role-based, not individual user permissions"
+      },
+      "module_roles": {
+        "description": "Defined per module, mapped to user roles",
+        "purpose": "Module-level access control",
+        "mapping": "User role → Module role mapping in security settings"
+      },
+      "design_principles": [
+        "Align roles with business functions, not individuals",
+        "Minimize number of roles (3-7 typical)",
+        "Clear role hierarchy (Guest < User < Manager < Admin)",
+        "Document role capabilities and intended users"
+      ]
+    },
+    "entity_access_rules": {
+      "permissions": [
+        {
+          "permission": "Create",
+          "description": "Allow creation of new objects",
+          "typical": "Users can create their own records"
+        },
+        {
+          "permission": "Read",
+          "description": "Allow retrieval and viewing",
+          "typical": "Most common permission"
+        },
+        {
+          "permission": "Write",
+          "description": "Allow modification of existing objects",
+          "typical": "Users can edit their own or assigned records"
+        },
+        {
+          "permission": "Delete",
+          "description": "Allow deletion of objects",
+          "typical": "Restricted to admins or owners"
+        }
+      ],
+      "member_access": {
+        "description": "Attribute-level read/write control",
+        "use_for": "Hide sensitive attributes, read-only fields",
+        "example": "SSN: Read-only for User, Read-Write for Admin, None for Guest"
+      },
+      "best_practices": [
+        {
+          "practice": "Define access rules for ALL entities",
+          "rationale": "Default is no access - explicit grants prevent oversights",
+          "approach": "For each entity, grant minimum needed per role"
+        },
+        {
+          "practice": "Use XPath constraints for row-level security",
+          "rationale": "Filter what rows users can access",
+          "example": "[System.owner = '[%CurrentUser%]'] for user's own data only"
+        },
+        {
+          "practice": "Review security matrix regularly",
+          "rationale": "Access creep over time",
+          "approach": "Document role → entity → permissions matrix, review quarterly"
+        },
+        {
+          "practice": "Test with different roles",
+          "rationale": "Easy to misconfigure and leak data",
+          "approach": "Log in as each role, verify data visibility and operations"
+        }
+      ]
+    }
+  },
+  "xpath_constraints": {
+    "description": "Row-level security rules to filter which objects users can access",
+    "evaluation": "Automatically appended to ALL retrieves for constrained entities",
+    "patterns": [
+      {
+        "pattern": "Owner-Based Access",
+        "xpath": "[System.owner = '[%CurrentUser%]']",
+        "description": "Users can only access objects they own",
+        "use_case": "Personal data (tasks, notes, preferences)",
+        "setup": "Entity must have System.owner association"
+      },
+      {
+        "pattern": "Path to User",
+        "xpath": "[Module.Order_Customer/Module.Customer_Account/System.owner = '[%CurrentUser%]']",
+        "description": "Access through association chain",
+        "use_case": "Users access data related to their account (orders, invoices)",
+        "performance": "Index all association foreign keys"
+      },
+      {
+        "pattern": "Organization/Tenant-Based",
+        "xpath": "[Module.Entity_Organization = $currentSession/User/Module.User_Organization]",
+        "description": "Multi-tenant data isolation",
+        "use_case": "SaaS applications with multiple tenants",
+        "critical": "Must apply to ALL entities, cannot be bypassed"
+      },
+      {
+        "pattern": "Role-Based Filtering",
+        "xpath": "[Status = 'Published'] or [Status = 'Draft' and System.owner = '[%CurrentUser%]']",
+        "description": "Different access based on status or role",
+        "use_case": "Users see published + their own drafts, admins see all"
+      },
+      {
+        "pattern": "Time-Based Access",
+        "xpath": "[EffectiveDate <= '[%CurrentDateTime%]' and ExpirationDate >= '[%CurrentDateTime%]']",
+        "description": "Access only current/active records",
+        "use_case": "Versioned entities, time-limited data"
+      },
+      {
+        "pattern": "Department/Team Access",
+        "xpath": "[Module.Entity_Department = $currentSession/User/Department]",
+        "description": "Access limited to user's department",
+        "use_case": "Departmental data isolation"
+      }
+    ],
+    "best_practices": [
+      {
+        "practice": "Keep XPath constraints simple for performance",
+        "rationale": "Complex XPath can slow queries significantly",
+        "guideline": "Avoid multi-hop associations, use direct associations",
+        "optimization": "Index all attributes in XPath constraints"
+      },
+      {
+        "practice": "Test constraints thoroughly",
+        "rationale": "Incorrect constraints leak data or block legitimate access",
+        "approach": "Test with different users, roles, data scenarios"
+      },
+      {
+        "practice": "Document business logic in constraint description",
+        "rationale": "Makes security rules clear and maintainable",
+        "example": "'Users can access Orders they created OR assigned to their department'"
+      },
+      {
+        "practice": "Never bypass security context unless absolutely necessary",
+        "rationale": "System context bypasses all security",
+        "when_needed": "System processes, scheduled events, carefully documented",
+        "alternative": "Proper security configuration instead of workarounds"
+      }
+    ],
+    "common_mistakes": [
+      {
+        "mistake": "Forgetting constraint on one entity",
+        "consequence": "Data leak",
+        "prevention": "Security checklist, all entities reviewed"
+      },
+      {
+        "mistake": "XPath constraint too restrictive",
+        "consequence": "Users can't access legitimate data",
+        "prevention": "Test with real users and data"
+      },
+      {
+        "mistake": "Performance ignored",
+        "consequence": "Slow queries from complex XPath",
+        "prevention": "Profile queries, add indexes"
+      }
+    ]
+  },
+  "microflow_security": {
+    "configuration": {
+      "setting": "Microflow → Properties → Allowed roles",
+      "default": "All roles if not set (before Mendix 10)",
+      "best_practice": "Explicitly set allowed roles on ALL microflows",
+      "guideline": "Especially important for microflows exposed to pages or APIs"
+    },
+    "patterns": [
+      {
+        "pattern": "Action Microflows (ACT_*)",
+        "security": "Grant to roles that can execute this action",
+        "example": "ACT_Order_Delete → Administrator only"
+      },
+      {
+        "pattern": "Sub-Microflows (SUB_*)",
+        "security": "Often no direct access (called by other microflows)",
+        "consideration": "Still set allowed roles to prevent misuse"
+      },
+      {
+        "pattern": "Data Source Microflows (DS_*)",
+        "security": "Grant to roles that can view this data",
+        "example": "DS_Order_Recent → All authenticated users"
+      }
+    ],
+    "entity_access_vs_microflow_security": {
+      "key_point": "Entity access does NOT protect microflow actions",
+      "example": "User can't Read Order entity, but can execute ACT_Order_Delete if microflow allows",
+      "solution": "Set microflow security explicitly, don't rely on entity access"
+    },
+    "secure_coding": [
+      {
+        "practice": "Validate input parameters",
+        "rationale": "Prevent injection, unexpected behavior",
+        "example": "Check object not empty, string length, numeric ranges"
+      },
+      {
+        "practice": "Re-check permissions in microflow",
+        "rationale": "Defense in depth",
+        "example": "Even if role allows microflow, check user owns object being modified"
+      },
+      {
+        "practice": "Avoid system context unless necessary",
+        "rationale": "Bypasses all security",
+        "when_needed": "System processes only, well-documented"
+      }
+    ]
+  },
+  "api_security": {
+    "rest_api": {
+      "authentication": [
+        {
+          "method": "API Keys",
+          "description": "Static key per consumer",
+          "implementation": "Pass in header: X-API-Key",
+          "security": "Rotate regularly, store securely",
+          "use_when": "Server-to-server, trusted consumers"
+        },
+        {
+          "method": "JWT Tokens",
+          "description": "Signed tokens with claims",
+          "implementation": "OAuth 2.0 or custom JWT",
+          "benefits": "Stateless, scalable, expires automatically",
+          "use_when": "Modern APIs, mobile apps, SPAs"
+        },
+        {
+          "method": "OAuth 2.0",
+          "description": "Industry-standard authorization framework",
+          "flows": "Client Credentials, Authorization Code, etc.",
+          "modules": "OIDC/OAuth modules from Marketplace",
+          "use_when": "Third-party integrations, delegated access"
+        },
+        {
+          "method": "Basic Auth",
+          "description": "Username/password in header (base64)",
+          "security": "Weak, use only with HTTPS",
+          "use_when": "Legacy systems only, prefer JWT"
+        }
+      ],
+      "authorization": {
+        "approach": "Map API clients to user roles, apply entity access",
+        "implementation": "Create API user per client, assign role",
+        "best_practice": "Least privilege - API users have minimal needed permissions"
+      },
+      "rate_limiting": {
+        "purpose": "Prevent abuse, DoS attacks",
+        "implementation": "Rate Limiter module from Marketplace or API gateway",
+        "typical": "100-1000 requests per minute per client",
+        "response": "HTTP 429 Too Many Requests"
+      },
+      "input_validation": {
+        "validation": [
+          "Validate all input parameters",
+          "Check data types, lengths, formats",
+          "Sanitize strings (prevent injection)",
+          "Validate against schema"
+        ],
+        "error_handling": "Return generic error messages, don't leak internals"
+      },
+      "https_only": {
+        "requirement": "All APIs must use HTTPS",
+        "rationale": "Protects data in transit, prevents man-in-the-middle",
+        "mendix_cloud": "HTTPS enforced automatically"
+      }
+    },
+    "odata": {
+      "security": {
+        "published_resources": "Only publish entities meant to be public",
+        "entity_access": "OData respects entity access rules",
+        "authentication": "Same as REST (API keys, JWT, OAuth)"
+      },
+      "query_limitations": {
+        "consideration": "OData allows complex queries",
+        "risk": "Performance issues, data exposure",
+        "mitigation": "Limit query complexity, monitor slow queries"
+      }
+    }
+  },
+  "data_protection": {
+    "encryption": {
+      "at_rest": {
+        "description": "Encrypt data stored in database",
+        "mendix_cloud": "Automatic database encryption",
+        "additional": "Attribute-level encryption for PII (SSN, credit cards)",
+        "modules": "Encryption module from Marketplace"
+      },
+      "in_transit": {
+        "description": "Encrypt data during transmission",
+        "requirement": "HTTPS for all external communication",
+        "mendix_cloud": "TLS 1.2+ enforced"
+      }
+    },
+    "pii_handling": {
+      "identification": "Identify all PII (names, emails, SSN, addresses, etc.)",
+      "protection": [
+        "Encrypt sensitive attributes",
+        "Apply strict entity access",
+        "XPath constraints to limit visibility",
+        "Audit all PII access",
+        "Don't log PII"
+      ],
+      "retention": "Define retention policy, delete after period",
+      "gdpr_compliance": [
+        "Right to access (export user data)",
+        "Right to deletion (delete user data)",
+        "Consent management",
+        "Data minimization"
+      ]
+    },
+    "audit_logging": {
+      "purpose": "Track security-relevant events for detection and forensics",
+      "log_events": [
+        "Authentication (success, failure)",
+        "Authorization failures",
+        "Data access (who, what, when)",
+        "Data modifications",
+        "Admin actions",
+        "Security configuration changes"
+      ],
+      "implementation": "Custom audit module or commercial solutions (Splunk, etc.)",
+      "retention": "7 years typical for compliance",
+      "protection": "Audit logs must be tamper-proof, separate access control"
+    }
+  },
+  "compliance_frameworks": {
+    "gdpr": {
+      "requirements": [
+        "Consent management",
+        "Right to access (data export)",
+        "Right to erasure (data deletion)",
+        "Data minimization",
+        "Purpose limitation",
+        "Data protection by design and default"
+      ],
+      "implementation": [
+        "Inventory all PII",
+        "Implement consent module",
+        "Create data export microflow",
+        "Create data deletion microflow",
+        "Document data processing activities",
+        "Appoint DPO if required"
+      ]
+    },
+    "hipaa": {
+      "requirements": [
+        "Access control",
+        "Audit logging",
+        "Encryption (at rest and in transit)",
+        "Authentication",
+        "Integrity controls",
+        "Business Associate Agreements"
+      ],
+      "mendix_cloud": "HIPAA-compliant when configured properly"
+    },
+    "pci_dss": {
+      "requirements": [
+        "Never store full credit card numbers",
+        "Tokenize payment data",
+        "Strong access control",
+        "Encrypted transmission",
+        "Regular security testing",
+        "Maintain firewall"
+      ],
+      "recommendation": "Use payment gateway (Stripe, etc.), don't handle card data directly"
+    },
+    "sox": {
+      "requirements": [
+        "Audit trail of all financial data changes",
+        "Segregation of duties",
+        "Access controls",
+        "Change management controls"
+      ],
+      "implementation": [
+        "Comprehensive audit logging",
+        "Separate roles (creator ≠ approver)",
+        "Documented approval workflows"
+      ]
+    }
+  },
+  "security_testing": {
+    "approaches": [
+      {
+        "type": "Role-Based Testing",
+        "description": "Test all functionality with each role",
+        "process": "Log in as each role → Test CRUD operations → Verify appropriate access",
+        "tools": "Manual testing, automated ATS tests"
+      },
+      {
+        "type": "Penetration Testing",
+        "description": "Simulate attacker attempting to breach security",
+        "techniques": "SQL injection, XSS, CSRF, authentication bypass, privilege escalation",
+        "frequency": "Annually or after major changes",
+        "who": "Third-party security firm recommended"
+      },
+      {
+        "type": "Vulnerability Scanning",
+        "description": "Automated tools scan for known vulnerabilities",
+        "tools": "OWASP ZAP, Burp Suite, Nessus",
+        "frequency": "Monthly or continuous"
+      },
+      {
+        "type": "Code Review",
+        "description": "Manual review of security-critical code",
+        "focus": "Authentication, authorization, input validation, API security",
+        "frequency": "For all security changes"
+      }
+    ],
+    "owasp_top_10": {
+      "description": "Top 10 web application security risks",
+      "mendix_protection": {
+        "injection": "Mendix ORM prevents SQL injection (use XPath, not SQL)",
+        "broken_auth": "Configure properly (strong passwords, session timeout, MFA)",
+        "sensitive_data": "Encrypt PII, HTTPS enforced",
+        "xxe": "Not applicable (Mendix handles XML securely)",
+        "broken_access": "Configure entity access and microflow security",
+        "security_misconfig": "Follow security best practices, regular reviews",
+        "xss": "Mendix escapes output automatically, validate input",
+        "insecure_deserialization": "Not applicable (Mendix handles)",
+        "vulnerable_components": "Keep Mendix and modules updated",
+        "logging": "Implement audit logging, monitor"
+      }
+    }
+  },
+  "security_checklist": [
+    "✅ Define user roles aligned with business functions",
+    "✅ Configure entity access rules for ALL entities",
+    "✅ Apply XPath constraints for row-level security",
+    "✅ Set microflow allowed roles explicitly",
+    "✅ Use strong authentication (SAML, OIDC, not local accounts)",
+    "✅ Implement MFA for high-security apps",
+    "✅ Configure session timeout appropriately",
+    "✅ Use HTTPS everywhere (enforced automatically on Mendix Cloud)",
+    "✅ Implement API authentication (JWT, OAuth, API keys)",
+    "✅ Apply rate limiting on APIs",
+    "✅ Validate all input (forms, APIs)",
+    "✅ Encrypt sensitive data (PII, financial data)",
+    "✅ Implement comprehensive audit logging",
+    "✅ Test with different roles (verify access control)",
+    "✅ Regular security reviews and updates",
+    "✅ Keep Mendix platform and modules updated",
+    "✅ Document security architecture",
+    "✅ Security training for development team",
+    "✅ Penetration testing annually",
+    "✅ Monitor for security events and respond"
+  ],
+  "incident_response": {
+    "preparation": [
+      "Document security contacts",
+      "Define escalation procedures",
+      "Maintain audit logs",
+      "Regular backups"
+    ],
+    "detection": [
+      "Monitor audit logs for suspicious activity",
+      "Alert on authentication failures",
+      "Alert on authorization failures",
+      "Monitor for data exfiltration"
+    ],
+    "response": [
+      "Isolate affected systems",
+      "Investigate scope of breach",
+      "Contain damage",
+      "Notify stakeholders (legal, customers if required)",
+      "Remediate vulnerabilities",
+      "Document incident",
+      "Post-mortem and lessons learned"
+    ]
+  },
+  "summary": "Security is multi-layered: authentication, authorization, entity access, XPath constraints, microflow security, API security, encryption, audit logging. Apply principle of least privilege. Test thoroughly with different roles. Keep system updated. Regular security reviews. Follow compliance requirements (GDPR, HIPAA, PCI-DSS). Security is ongoing, not one-time.",
+  "categories": {
+    "security": [
+      {
+        "topic": "Official Mendix Security Best Practices",
+        "description": "Comprehensive security best practices from official Mendix documentation covering access rules, authentication, injection prevention, encryption, and app hygiene.",
+        "source_url": "https://docs.mendix.com/howto/security/best-practices-security/",
+        "last_updated": "July 7, 2025",
+        "mendix_version": "11.x",
+        "access_rules": {
+          "overview": "Access rules define what end-users can do with objects - create, delete, view, edit members. Applied via XPath constraints when queries are executed.",
+          "best_practices": [
+            "System-determined attributes (like order status) should NEVER be writable",
+            "For anonymous user object creation, constrain objects to owner",
+            "Do NOT set default rule for read-and-write access - forces thinking about each attribute",
+            "Security constraints should be formed as entity access rules, NOT page widget constraints",
+            "Keep attributes editable in data views - let access rules control display as non-editable"
+          ],
+          "xpath_constraints": {
+            "purpose": "Limit object visibility based on user context",
+            "common_patterns": [
+              "[System.owner='[%CurrentUser%]'] - Only show objects owned by current user",
+              "Path to user - Associate entities to System.User for row-level security"
+            ],
+            "limitations": "XPath constraints only apply to persistable entities, not non-persistable"
+          },
+          "evaluation": {
+            "new_objects": "XPath constraints evaluate as true for new objects during request lifetime",
+            "committed_objects": "Access rules evaluated based on current database state when object retrieved",
+            "non_persistable": "Cannot have XPath constraints"
+          }
+        },
+        "authentication": {
+          "approaches": [
+            {
+              "type": "Local Authentication",
+              "description": "End-users managed within app, passwords stored (hashed) in app database",
+              "module": "Administration module (default in starter apps)"
+            },
+            {
+              "type": "Mendix Identity Provider",
+              "description": "SSO using Mendix credentials, default for Mendix Cloud deployments",
+              "module": "Mendix SSO module"
+            },
+            {
+              "type": "Third-Party IdP",
+              "description": "SAML 2.0 (ADFS), OIDC, SAP XSUAA integration",
+              "modules": [
+                "SAML module",
+                "OIDC SSO module",
+                "XSUAA connector"
+              ]
+            }
+          ],
+          "api_authentication": {
+            "options": [
+              "Username and Password (Basic auth)",
+              "Active Session (CSRF token)",
+              "Custom (microflow-based JWT/OAuth)"
+            ],
+            "rest_vs_soap": "REST/OData requires WebServiceUser=FALSE; SOAP requires WebServiceUser=TRUE",
+            "best_practice": "When Requires Authentication is No, implement custom header validation and return 401/403 appropriately"
+          }
+        },
+        "injection_prevention": {
+          "mendix_native": "XPath queries are parameterized - SQL injection impossible. UI output is HTML-escaped.",
+          "external_components": [
+            "Use XSSSanitize from CommunityCommons for HTML input",
+            "Use prepared statements for database connectors",
+            "Sanity-check user input with regex for alphanumeric validation"
+          ]
+        },
+        "encryption": {
+          "module": "Encryption module from Marketplace",
+          "use_cases": [
+            "Connection credentials",
+            "Personal information (bank accounts, SSN)"
+          ],
+          "key_storage": "Encryption key stored at Mendix application server"
+        },
+        "credentials_best_practices": [
+          "Store credentials in constants, not database",
+          "Leave constants blank by default, set during deployment",
+          "Use configurations for local testing values",
+          "Limit constant access via app roles and node permissions"
+        ],
+        "password_policy": {
+          "default": "Mendix enforces strong password policy",
+          "warning": "Do not simplify for development - deployments will enforce production policy"
+        },
+        "administrator_security": [
+          "Rename default MxAdmin user to prevent guessing attacks",
+          "Mendix blocks user after 3 failed login attempts for ~5 minutes",
+          "Old admin account must be manually removed after renaming"
+        ],
+        "ssl_best_practices": [
+          "Always use SSL for consumed web services",
+          "Add public key certificates to app",
+          "Upload certificates to Mendix Cloud for production"
+        ],
+        "http_headers": {
+          "purpose": "Additional security layer against attacks like clickjacking",
+          "default": "X-Frame-Options blocks iframe embedding by default",
+          "configuration": "Set in Mendix Portal Environment Details or buildpack config"
+        },
+        "app_hygiene": [
+          "Remove unused modules, widgets, Java libraries",
+          "Remove unused microflows (appear as warnings)",
+          "Avoid components with known vulnerabilities (check CVE database)"
+        ],
+        "user_role_guidelines": [
+          "Disable anonymous access if not needed",
+          "Replace custom login pages with modified login.html in theme",
+          "Make role management as strict as possible",
+          "MxAdmin role should only create admin accounts or configure SSO"
+        ],
+        "file_scanning": "Mendix does NOT scan uploaded files for viruses - implement via before-commit event or Marketplace modules",
+        "_metadata": {
+          "id": "4d9c4f33-0601-48f0-ae62-3ea0aea76069",
+          "added_at": "2025-12-08T00:35:59.627Z",
+          "source": "https://docs.mendix.com/howto/security/best-practices-security/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-08T00:39:31.405Z"
+        }
+      },
+      {
+        "topic": "Official Mendix Security Architecture",
+        "description": "Security architecture overview from official Mendix documentation covering security levels, user roles vs module roles, entity vs document access.",
+        "source_url": "https://docs.mendix.com/refguide/security/",
+        "last_updated": "June 3, 2025",
+        "mendix_version": "11.x",
+        "security_aspects": {
+          "team_security": "Control who can access and modify app during development - managed in Apps portal",
+          "app_security": "Control who can access running app and what they can see - managed in Studio Pro"
+        },
+        "security_levels": {
+          "prototype_demo": "Easier security for prototypes and demos",
+          "production": "Full security - no one can access anything by default"
+        },
+        "app_vs_module_security": {
+          "app_level": "Global settings: security level, administrator account, anonymous access",
+          "module_level": "Most settings - access to forms, entities, microflows, workflows, datasets",
+          "benefit": "Modules can specify own security and be distributed/reused"
+        },
+        "user_roles_vs_module_roles": {
+          "user_roles": {
+            "level": "App level",
+            "assignment": "Assigned to end-users when creating/editing them",
+            "definition": "Combination of module roles"
+          },
+          "module_roles": {
+            "level": "Module level",
+            "purpose": "Define security within module scope",
+            "example": "Email module: User, Administrator roles"
+          },
+          "relationship": "User role = collection of module roles. End-user gets all access rights from all their user roles' module roles"
+        },
+        "entity_vs_document_access": {
+          "entity_access": {
+            "what": "Who can read/write which members under what circumstances",
+            "how": "XPath constraints for powerful row-level security",
+            "example": "Employee can only see orders from their department"
+          },
+          "document_access": {
+            "what": "Additional access rules per page, microflow, OData",
+            "purpose": "Control who can access specific documents"
+          }
+        },
+        "system_module": {
+          "contents": "Essential functionalities - User entity, UserRole entity",
+          "ShowHomePage": "Enforces secure default for entity access in Studio Pro 11+",
+          "breaking_change": "Apply entity access now restricted by default when using ShowHomePage"
+        },
+        "security_overview": {
+          "access": "App menu > Show Security Overview",
+          "purpose": "Overview of entire app's security configuration"
+        },
+        "important_note": "Mendix does NOT scan uploaded files for viruses/malware - implement via before-commit events or Marketplace modules",
+        "_metadata": {
+          "id": "affd5f25-b40b-4e3f-a225-8acc7b2eacfc",
+          "added_at": "2025-12-08T00:38:58.390Z",
+          "source": "https://docs.mendix.com/refguide/security/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-08T00:39:31.405Z"
+        }
+      }
+    ],
+    "access_rules": [
+      {
+        "topic": "Official Mendix Access Rules Reference",
+        "description": "Comprehensive access rules reference from official Mendix documentation covering entity rights, member rights, XPath constraints, and evaluation behavior.",
+        "source_url": "https://docs.mendix.com/refguide/access-rules/",
+        "last_updated": "May 21, 2025",
+        "mendix_version": "11.x",
+        "overview": {
+          "definition": "Access rules define what end-users with specific roles can do with entity objects",
+          "capabilities": [
+            "Create objects",
+            "Delete objects",
+            "View member values",
+            "Edit member values"
+          ],
+          "member_definition": "An attribute or association of an entity",
+          "rule_behavior": "Rules are ADDITIVE - multiple rules for same role combine all access rights"
+        },
+        "visibility": {
+          "requirement": "Access rules section only visible when App Security set to Production",
+          "location": "Entity properties dialog > Access rules tab"
+        },
+        "inheritance_warning": {
+          "important": "Access rules are NOT inherited from generalization",
+          "implication": "Security for every entity must be specified explicitly",
+          "action": "When adding access rule to specialization, ensure all required XPath constraints are applied"
+        },
+        "system_user_note": "System.User has inbuilt access rules - specializations cannot override with their own access rules",
+        "editor_layout": {
+          "columns": "Each access rule shown as column",
+          "header": "Shows module role(s) the rule applies to",
+          "icons": {
+            "create": "Create icon if entity creation allowed",
+            "delete": "Delete icon if entity deletion allowed",
+            "read": "Read icon for read access",
+            "write": "Write icon for write access"
+          }
+        },
+        "entity_rights": {
+          "create_objects": "Allow creating new objects (XPath constraints NOT applied to create)",
+          "delete_objects": "Allow deleting objects (XPath constraints ARE applied to delete)"
+        },
+        "member_rights": {
+          "none": "No access",
+          "read": "View only",
+          "read_write": "View and edit",
+          "calculated_restriction": "Cannot set Write access on calculated attributes or Autonumber"
+        },
+        "xpath_constraint_buttons": {
+          "owner": "Adds [System.owner='[%CurrentUser%]'] - requires Store 'owner' checked",
+          "path_to_user": "Select path to associated System.User for user-based filtering"
+        },
+        "xpath_limitations": {
+          "only_persistable": "XPath constraints only for persistable entities",
+          "non_persistable": "Defining XPath on non-persistable creates consistency errors"
+        },
+        "access_rule_evaluation": {
+          "new_objects": {
+            "behavior": "All XPath constraints evaluate as TRUE",
+            "duration": "Valid for lifetime of request",
+            "commit_effect": "Committing does NOT re-evaluate rules"
+          },
+          "committed_objects": {
+            "behavior": "Access rules evaluated based on CURRENT database state",
+            "process": "Object retrieved by ID → rules evaluated on DB values → changes applied",
+            "duration": "Result stored in memory for object/request lifetime",
+            "commit_effect": "Committing does NOT cause re-evaluation"
+          },
+          "non_persistable": "Cannot have XPath constraints"
+        },
+        "attribute_change_warning": {
+          "issue": "If user cannot view attribute due to security, it's never sent to client",
+          "consequence": "Stateless nature can cause unexpected loss of changes if microflow changes are not committed immediately",
+          "reference": "See Basic CRUD Communication Pattern documentation"
+        },
+        "default_rights_for_new_members": "Specifies rights automatically applied to new attributes/associations added to entity",
+        "_metadata": {
+          "id": "7fac32bb-0920-48f2-87c5-9a5919be5ef7",
+          "added_at": "2025-12-08T00:38:19.176Z",
+          "source": "https://docs.mendix.com/refguide/access-rules/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-08T00:39:31.406Z"
+        }
+      }
+    ]
+  }
+}

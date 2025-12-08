@@ -1,0 +1,935 @@
+{
+  "topic": "Mendix Troubleshooting Guide",
+  "description": "Common issues, error messages, solutions, and workarounds for Mendix development, runtime, and deployment problems. Practical solutions from real-world experience.",
+  "mendix_versions": [
+    "10.x and 11.x (up to 11.5.0)",
+    "Version-specific issues noted where applicable"
+  ],
+  "last_updated": "2025-12-01",
+  "categories": {
+    "studio_pro_issues": [
+      {
+        "issue": "Studio Pro won't start or crashes on startup",
+        "symptoms": [
+          "Application fails to launch",
+          "Crashes immediately",
+          "Stuck on loading screen"
+        ],
+        "causes": [
+          "Corrupted settings",
+          "Java version mismatch",
+          "Incompatible Windows update"
+        ],
+        "solutions": [
+          "Reset settings: Delete %APPDATA%\\Mendix folder",
+          "Verify Java 21 installed (required for Mendix 11)",
+          "Run as administrator",
+          "Check Windows Event Viewer for errors",
+          "Reinstall Studio Pro",
+          "Note: 11.5.0 allows first-time users to use Studio Pro without login"
+        ],
+        "prevention": "Keep Studio Pro and Java updated"
+      },
+      {
+        "issue": "Memory leaks in Studio Pro (fixed in 11.4/11.5)",
+        "symptoms": [
+          "Memory grows over time",
+          "Slow performance after extended use"
+        ],
+        "causes": [
+          "Re-opening projects",
+          "Switching branches",
+          "Editing microflows",
+          "Style document editor"
+        ],
+        "solutions": [
+          "Update to Studio Pro 11.4.0 or 11.5.0 which fixes multiple memory leaks",
+          "Restart Studio Pro periodically for older versions"
+        ],
+        "fixed_in": [
+          "11.4.0",
+          "11.5.0"
+        ],
+        "tickets": [
+          "Memory leak when editing Microflow action",
+          "Memory leak when re-opening project or switching branches"
+        ]
+      },
+      {
+        "issue": "Cannot open project - version mismatch",
+        "symptoms": [
+          "Error: Project created with newer version",
+          "Cannot open .mpr file"
+        ],
+        "causes": [
+          "Project created with newer Studio Pro version",
+          "Metamodel version mismatch"
+        ],
+        "solutions": [
+          "Upgrade Studio Pro to match project version or newer",
+          "Check project .mpr file properties for Mendix version",
+          "Ask team for correct Studio Pro version"
+        ],
+        "prevention": "Team aligns on Studio Pro version, document in README"
+      },
+      {
+        "issue": "Slow Studio Pro performance",
+        "symptoms": [
+          "Lag when editing",
+          "Slow project opening",
+          "High memory usage"
+        ],
+        "causes": [
+          "Large project",
+          "Insufficient RAM",
+          "Many marketplace modules"
+        ],
+        "solutions": [
+          "Increase JVM heap: Edit studioproprefs.txt, add -Xmx4096m",
+          "Close unused tabs",
+          "Remove unused marketplace modules",
+          "Upgrade to SSD",
+          "Close other applications"
+        ],
+        "prevention": "16GB+ RAM, SSD storage, clean project regularly"
+      },
+      {
+        "issue": "Changes not showing in app",
+        "symptoms": [
+          "Code changes don't apply",
+          "Old version still running"
+        ],
+        "causes": [
+          "Browser cache",
+          "Not redeployed",
+          "Wrong environment"
+        ],
+        "solutions": [
+          "Clear browser cache (Ctrl+Shift+Delete)",
+          "Hard refresh (Ctrl+F5)",
+          "Stop and restart locally (F5)",
+          "Verify correct URL/environment",
+          "Check deployment logs"
+        ],
+        "prevention": "Use incognito mode for testing, proper deployment process"
+      }
+    ],
+    "runtime_errors": [
+      {
+        "error": "ConcurrentModificationRuntimeException (11.5.0+)",
+        "symptoms": [
+          "Object cannot be updated, as it is modified by someone else",
+          "Optimistic locking error"
+        ],
+        "causes": [
+          "Multiple users/processes modifying same object simultaneously",
+          "Object changed between retrieve and commit"
+        ],
+        "solutions": [
+          "Enable optimistic locking error handling in microflow",
+          "Set error handling to 'Custom with/without Rollback'",
+          "Check $latestError/ErrorType for ConcurrentModificationRuntimeException",
+          "Retrieve fresh copy of object from database",
+          "Reapply changes and retry the operation",
+          "For client: Show 'refresh and try again' message"
+        ],
+        "code_pattern": "Change action → Error handler → Check error type → Retrieve fresh → Reapply → Retry",
+        "docs": "https://docs.mendix.com/refguide/optimistic-locking/",
+        "version": "11.5.0+ (when optimistic locking enabled)"
+      },
+      {
+        "error": "CardinalityViolationException in OQL UPDATE (11.5.0+)",
+        "symptoms": [
+          "OQL UPDATE statement fails with CardinalityViolationException"
+        ],
+        "causes": [
+          "SET expression returns multiple rows when only one expected"
+        ],
+        "solutions": [
+          "Review OQL UPDATE SET expressions",
+          "Ensure subqueries return single values",
+          "Use aggregates (MAX, MIN) if multiple values possible"
+        ],
+        "version": "11.5.0+ (improved error message)"
+      },
+      {
+        "error": "NullPointerException in microflow",
+        "symptoms": [
+          "Error: NullPointerException at line X",
+          "Microflow fails"
+        ],
+        "causes": [
+          "Accessing attribute/association of null object",
+          "Object not committed before use"
+        ],
+        "solutions": [
+          "Add null checks before accessing object",
+          "Verify object exists: $Object != empty",
+          "Debug: Add breakpoints, inspect variables",
+          "Check retrieve actions return results"
+        ],
+        "code_fix": "Add decision: $Object != empty before using $Object",
+        "prevention": "Always check object existence before use"
+      },
+      {
+        "error": "Database constraint violation",
+        "symptoms": [
+          "Error: Unique constraint violated",
+          "Foreign key constraint failed"
+        ],
+        "causes": [
+          "Duplicate unique values",
+          "Deleting object with references",
+          "Association integrity"
+        ],
+        "solutions": [
+          "Check for existing records before creating",
+          "Delete child objects before parent",
+          "Use Before Delete event to handle cleanup",
+          "Review database constraints and associations"
+        ],
+        "prevention": "Proper validation, cascade delete configuration"
+      },
+      {
+        "error": "Session timeout / Not authenticated",
+        "symptoms": [
+          "User logged out unexpectedly",
+          "Session expired"
+        ],
+        "causes": [
+          "Session timeout configured too short",
+          "Inactivity",
+          "Server restart"
+        ],
+        "solutions": [
+          "Increase session timeout: Runtime settings → Session timeout",
+          "Implement keep-alive mechanism",
+          "Show warning before timeout",
+          "Gracefully handle session expiration"
+        ],
+        "configuration": "Development: long timeout. Production: balance security and UX"
+      },
+      {
+        "error": "Out of memory error",
+        "symptoms": [
+          "Error: java.lang.OutOfMemoryError",
+          "Application crashes"
+        ],
+        "causes": [
+          "Memory leak",
+          "Processing too much data",
+          "Insufficient JVM heap"
+        ],
+        "solutions": [
+          "Increase JVM heap: -Xmx4096m in settings",
+          "Find memory leak: Profile with Performance Tool",
+          "Batch large operations: Process 1000 records at a time",
+          "Optimize queries: Retrieve less data",
+          "Review calculated attributes and events"
+        ],
+        "prevention": "Proper memory management, batch processing, monitoring"
+      },
+      {
+        "error": "Transaction timeout",
+        "symptoms": [
+          "Error: Transaction timeout",
+          "Long-running operation fails"
+        ],
+        "causes": [
+          "Operation takes too long",
+          "Database lock",
+          "Expensive events"
+        ],
+        "solutions": [
+          "Increase transaction timeout: Runtime settings",
+          "Optimize microflow: Profile and improve slow parts",
+          "Batch operations: Commit every N records",
+          "Move to async: Use scheduled events or task queue",
+          "Review Before Commit events for heavy logic"
+        ],
+        "prevention": "Keep transactions short, profile performance"
+      }
+    ],
+    "security_issues": [
+      {
+        "issue": "User cannot see data",
+        "symptoms": [
+          "Data grids empty",
+          "Objects not visible",
+          "Access denied"
+        ],
+        "causes": [
+          "No entity access rules",
+          "XPath constraints too restrictive",
+          "Wrong user role"
+        ],
+        "solutions": [
+          "Check entity access rules for user role",
+          "Review XPath constraints: Entity → Access Rules",
+          "Verify user has correct role assigned",
+          "Test: Log in as user, check data visibility",
+          "Check module roles are mapped to user roles"
+        ],
+        "debugging": "Enable security logging, check applied constraints"
+      },
+      {
+        "issue": "ShowHomePage security error (Mendix 11)",
+        "symptoms": [
+          "Error when navigating home",
+          "Security exception on ShowHomePage"
+        ],
+        "causes": [
+          "Mendix 11 breaking change: ShowHomePage now respects entity access"
+        ],
+        "solutions": [
+          "Add Read access to entities shown on home page",
+          "Review home page data sources and entities",
+          "Grant appropriate entity access for user roles",
+          "Update microflows calling ShowHomePage"
+        ],
+        "version_specific": "Mendix 11+ only"
+      },
+      {
+        "issue": "Microflow security not working",
+        "symptoms": [
+          "Users can execute restricted microflows",
+          "Security bypassed"
+        ],
+        "causes": [
+          "Microflow has no allowed roles configured",
+          "Entity access doesn't protect microflows"
+        ],
+        "solutions": [
+          "Set microflow allowed roles: Microflow → Properties → Allowed roles",
+          "Don't rely solely on entity access for security",
+          "Review all microflows exposed to pages/APIs",
+          "Test with different user roles"
+        ],
+        "prevention": "Always configure microflow security explicitly"
+      }
+    ],
+    "performance_issues": [
+      {
+        "issue": "Slow data grid loading",
+        "symptoms": [
+          "Grid takes seconds to load",
+          "Poor user experience"
+        ],
+        "causes": [
+          "Missing indexes",
+          "Too many columns",
+          "Calculated attributes",
+          "Large dataset"
+        ],
+        "solutions": [
+          "Add indexes to queried attributes",
+          "Reduce number of columns shown",
+          "Replace calculated attributes with stored values",
+          "Add pagination: Limit results per page",
+          "Use microflow data source for complex filtering",
+          "Profile query: Find slow parts"
+        ],
+        "quick_wins": "Add indexes (biggest impact), reduce columns"
+      },
+      {
+        "issue": "Microflow takes too long",
+        "symptoms": [
+          "Timeout errors",
+          "Poor performance",
+          "User complaints"
+        ],
+        "causes": [
+          "Loops with commits",
+          "N+1 queries",
+          "Inefficient retrieves",
+          "No batching"
+        ],
+        "solutions": [
+          "Profile microflow: Identify slow activities",
+          "Remove commits from inside loops",
+          "Use Change List instead of loop with Change",
+          "Retrieve over association instead of XPath",
+          "Batch operations: Process 100-1000 at a time",
+          "Use aggregates instead of retrieving all"
+        ],
+        "profiling": "Performance Tool → Run microflow → Analyze results"
+      },
+      {
+        "issue": "High memory usage",
+        "symptoms": [
+          "Memory grows over time",
+          "Out of memory errors"
+        ],
+        "causes": [
+          "Memory leak",
+          "Processing too much data at once",
+          "Not releasing resources"
+        ],
+        "solutions": [
+          "Profile memory: Find leaking objects",
+          "Batch large operations: Process in chunks",
+          "Retrieve only needed attributes",
+          "Limit data retrieved: Use XPath, pagination",
+          "Review calculated attributes in grids",
+          "Check for circular references"
+        ],
+        "monitoring": "Use application monitoring tools (Datadog, New Relic)"
+      }
+    ],
+    "integration_issues": [
+      {
+        "issue": "REST API call fails",
+        "symptoms": [
+          "Error calling API",
+          "Timeout",
+          "401/403 errors"
+        ],
+        "causes": [
+          "Wrong URL",
+          "Authentication failure",
+          "Network issues",
+          "API rate limits"
+        ],
+        "solutions": [
+          "Verify URL and endpoint in REST configuration",
+          "Check authentication: Headers, tokens, credentials",
+          "Test API with Postman first",
+          "Review API documentation",
+          "Check firewall/proxy settings",
+          "Add retry logic with exponential backoff",
+          "Log full request/response for debugging"
+        ],
+        "debugging": "Enable request logging, use Postman to test API separately"
+      },
+      {
+        "issue": "OData service not working",
+        "symptoms": [
+          "OData endpoint returns errors",
+          "Cannot query entities"
+        ],
+        "causes": [
+          "Entity not published",
+          "Security rules block access",
+          "Wrong OData version"
+        ],
+        "solutions": [
+          "Publish entity in OData service: Add to published resources",
+          "Configure entity access for service user",
+          "Check OData URL format",
+          "Verify OData version (v3 vs v4)",
+          "Test with OData client tool"
+        ],
+        "testing": "Use Postman or OData client to test service"
+      },
+      {
+        "issue": "Web service call timeout",
+        "symptoms": [
+          "SOAP call fails",
+          "Timeout error"
+        ],
+        "causes": [
+          "External service slow",
+          "Network issues",
+          "Large payload"
+        ],
+        "solutions": [
+          "Increase timeout: Web Service Call → Timeout settings",
+          "Optimize request payload: Send only needed data",
+          "Implement async pattern: Don't wait for response",
+          "Add retry logic",
+          "Contact API provider about performance"
+        ],
+        "configuration": "Set realistic timeout based on expected response time"
+      }
+    ],
+    "deployment_issues": [
+      {
+        "issue": "Deployment fails",
+        "symptoms": [
+          "Deployment package creation fails",
+          "Cannot deploy to cloud"
+        ],
+        "causes": [
+          "Build errors",
+          "Module incompatibilities",
+          "Missing dependencies"
+        ],
+        "solutions": [
+          "Check consistency errors: F8 in Studio Pro",
+          "Review error log during deployment",
+          "Verify all modules compatible with target version",
+          "Check Java version matches requirements",
+          "Ensure all dependencies available",
+          "Try clean and rebuild"
+        ],
+        "prevention": "Run consistency check before deployment, test in acceptance first"
+      },
+      {
+        "issue": "App won't start after deployment",
+        "symptoms": [
+          "App fails to start in cloud",
+          "Constant crashes"
+        ],
+        "causes": [
+          "Missing constants",
+          "Database migration failure",
+          "Insufficient memory"
+        ],
+        "solutions": [
+          "Check application logs in cloud portal",
+          "Verify all constants configured",
+          "Review database migration errors",
+          "Increase memory allocation",
+          "Check scheduled events not causing issues",
+          "Rollback to previous version if needed"
+        ],
+        "debugging": "Cloud Portal → Logs → Application logs"
+      },
+      {
+        "issue": "Environment constants not set",
+        "symptoms": [
+          "App behavior incorrect",
+          "Features not working"
+        ],
+        "causes": [
+          "Constants not configured in target environment",
+          "Wrong values"
+        ],
+        "solutions": [
+          "Cloud Portal → Environments → Constants → Set values",
+          "Document all required constants in README",
+          "Use naming convention for environment-specific constants",
+          "Verify constants after deployment"
+        ],
+        "prevention": "Maintain constants checklist, automate where possible"
+      }
+    ],
+    "marketplace_module_issues": [
+      {
+        "issue": "Module incompatibility",
+        "symptoms": [
+          "Cannot import module",
+          "Errors after adding module"
+        ],
+        "causes": [
+          "Module built for different Mendix version",
+          "Conflicting dependencies"
+        ],
+        "solutions": [
+          "Check module compatibility: Marketplace page → Requirements",
+          "Download version matching your Studio Pro",
+          "Contact module maintainer",
+          "Consider alternative module",
+          "Update Studio Pro if possible"
+        ],
+        "prevention": "Check compatibility before importing"
+      },
+      {
+        "issue": "Module configuration not working",
+        "symptoms": [
+          "Module features not functioning",
+          "Errors when using module"
+        ],
+        "causes": [
+          "Missing configuration",
+          "Constants not set",
+          "Security not configured"
+        ],
+        "solutions": [
+          "Read module documentation thoroughly",
+          "Set required constants",
+          "Configure security: Map module roles",
+          "Run module's setup microflow if provided",
+          "Check module dependencies installed"
+        ],
+        "documentation": "Marketplace page → Documentation tab"
+      }
+    ],
+    "troubleshooting": [
+      {
+        "topic": "Common Errors and Solutions",
+        "description": "Quick reference for resolving common Mendix development errors and issues.",
+        "mendix_version": "11.x",
+        "consistency_errors": {
+          "CE0001_object_not_found": {
+            "message": "Object of type X not found",
+            "cause": "Referenced entity/microflow was deleted or renamed",
+            "solution": "Update reference to correct element or recreate"
+          },
+          "CE0002_attribute_not_found": {
+            "message": "Attribute X not found in entity Y",
+            "cause": "Attribute was renamed or deleted",
+            "solution": "Update references or restore attribute"
+          },
+          "CE0003_type_mismatch": {
+            "message": "Expected X but found Y",
+            "cause": "Wrong data type used in expression or parameter",
+            "solution": "Convert types or fix the expression"
+          },
+          "CE0004_security_not_defined": {
+            "message": "No access rules defined for entity X",
+            "cause": "Entity missing access rules in production security",
+            "solution": "Add entity access rules for all module roles"
+          }
+        },
+        "runtime_errors": {
+          "null_pointer": {
+            "message": "Cannot perform operation on null object",
+            "cause": "Object is empty but operation requires value",
+            "solution": "Add null check before operation"
+          },
+          "constraint_violation": {
+            "message": "Unique constraint violated",
+            "cause": "Duplicate value in unique field",
+            "solution": "Check for existing record before insert"
+          },
+          "association_owner": {
+            "message": "Cannot set association from non-owner side",
+            "cause": "Trying to set reference from wrong entity",
+            "solution": "Set from owner side (entity with asterisk)"
+          },
+          "transaction_timeout": {
+            "message": "Transaction timed out after 30 minutes",
+            "cause": "Long-running microflow",
+            "solution": "Split into smaller transactions, use Task Queue"
+          },
+          "memory_exceeded": {
+            "message": "Out of memory / Heap space",
+            "cause": "Too many objects in memory",
+            "solution": "Process in batches, close large datasets"
+          }
+        },
+        "xpath_errors": {
+          "syntax_error": {
+            "message": "Invalid XPath syntax",
+            "cause": "Malformed XPath expression",
+            "solution": "Check brackets, quotes, operators"
+          },
+          "association_not_found": {
+            "message": "Association X not found",
+            "cause": "Wrong association path in XPath",
+            "solution": "Verify association exists and path is correct"
+          },
+          "invalid_comparison": {
+            "message": "Cannot compare X with Y",
+            "cause": "Comparing incompatible types",
+            "solution": "Ensure both sides are same type"
+          }
+        },
+        "deployment_errors": {
+          "mda_too_large": {
+            "message": "Deployment package exceeds size limit",
+            "cause": "Too many files or large resources",
+            "solution": "Remove unused resources, optimize images"
+          },
+          "database_sync_failed": {
+            "message": "Database synchronization failed",
+            "cause": "Incompatible schema changes",
+            "solution": "Review migration, may need manual data fix"
+          },
+          "constants_missing": {
+            "message": "Required constant not set",
+            "cause": "Environment-specific constant not configured",
+            "solution": "Set constant value in target environment"
+          }
+        },
+        "integration_errors": {
+          "rest_timeout": {
+            "message": "Request timed out",
+            "cause": "External service too slow or unreachable",
+            "solution": "Increase timeout, add retry logic, check service"
+          },
+          "ssl_certificate": {
+            "message": "SSL certificate error",
+            "cause": "Certificate not trusted or expired",
+            "solution": "Import certificate to runtime, or fix external cert"
+          },
+          "json_parse_error": {
+            "message": "Cannot parse JSON response",
+            "cause": "Response format doesn't match import mapping",
+            "solution": "Log response, update import mapping"
+          },
+          "authentication_failed": {
+            "message": "401 Unauthorized",
+            "cause": "Invalid or missing credentials",
+            "solution": "Verify API key, token, or credentials"
+          }
+        },
+        "debugging_tips": [
+          "Read the full error message carefully",
+          "Check the log for stack trace details",
+          "Reproduce the issue consistently",
+          "Use debugger to step through logic",
+          "Add log messages to narrow down location",
+          "Test with simplified data",
+          "Check recent changes that might have caused it",
+          "Search Mendix Forum for similar issues"
+        ],
+        "useful_resources": {
+          "mendix_forum": "https://community.mendix.com",
+          "documentation": "https://docs.mendix.com",
+          "support": "Mendix Support Portal for licensed issues"
+        },
+        "_metadata": {
+          "id": "586c427d-3771-453c-9ae8-c40648710859",
+          "added_at": "2025-12-07T23:51:09.933Z",
+          "source": "Mendix Documentation and Community",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-08T00:39:31.405Z"
+        }
+      }
+    ],
+    "sdk_errors_troubleshooting": [
+      {
+        "title": "Common SDK Errors and Troubleshooting",
+        "description": "Frequently encountered errors and their solutions",
+        "delta_rejected_error": {
+          "error": "Delta was rejected. Delta is based on revision X but latest revision is Y",
+          "cause": "Someone else committed changes while you were working",
+          "solution": "Create new working copy from latest revision and reapply changes",
+          "prevention": "Use short-lived working copies, commit quickly"
+        },
+        "memory_errors": {
+          "error": "FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory",
+          "cause": "Model too large for default Node.js memory",
+          "solution": "node --max-old-space-size=4096 script.js",
+          "values": "4096 = 4GB, 8192 = 8GB"
+        },
+        "property_not_loaded": {
+          "error": "Cannot read property 'xyz' of undefined",
+          "cause": "Trying to access property on interface (not loaded) object",
+          "solution": "Call await element.load() before accessing non-public properties"
+        },
+        "authentication_errors": {
+          "401_unauthorized": "Check MENDIX_TOKEN environment variable is set correctly",
+          "token_expired": "Generate new Personal Access Token at warden.mendix.com",
+          "insufficient_scope": "Token needs mx:modelrepository:repo:write scope"
+        },
+        "element_not_found": {
+          "error": "findXXXByQualifiedName returns null",
+          "causes": [
+            "Qualified name typo (case-sensitive)",
+            "Element doesn't exist in model",
+            "Wrong module name"
+          ],
+          "debug": "console.log(model.allXXX().map(x => x.qualifiedName))"
+        },
+        "cannot_modify": {
+          "error": "Cannot modify readonly unit",
+          "cause": "Trying to modify protected/marketplace module",
+          "solution": "Only modify your own modules, not protected ones"
+        },
+        "_metadata": {
+          "id": "eab28450-ba4f-4560-a844-d6b8a6c13e80",
+          "added_at": "2025-12-08T00:51:02.066Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-faq/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ]
+  },
+  "debugging_techniques": [
+    {
+      "technique": "Use breakpoints in microflows",
+      "how": "Right-click activity → Add breakpoint → Run locally (F5) → Step through",
+      "benefit": "See exact execution flow, inspect variables",
+      "use_when": "Microflow not working as expected"
+    },
+    {
+      "technique": "Enable detailed logging",
+      "how": "Settings → Logging → Set log level to Debug for specific nodes",
+      "benefit": "See detailed operation logs",
+      "use_when": "Need to understand what's happening internally"
+    },
+    {
+      "technique": "Use Performance Tool",
+      "how": "Run → Performance Tool → Execute action → Analyze results",
+      "benefit": "Identify slow queries and microflows",
+      "use_when": "Performance issues"
+    },
+    {
+      "technique": "Check consistency errors (F8)",
+      "how": "Press F8 or Consistency Errors pane",
+      "benefit": "Find errors before runtime",
+      "use_when": "Before deployment, when things not working"
+    },
+    {
+      "technique": "Use log message actions",
+      "how": "Add Log Message action to microflow with variables",
+      "benefit": "Track execution and variable values",
+      "use_when": "Debugging complex logic"
+    }
+  ],
+  "migration_issues_mendix_11": [
+    {
+      "issue": "Database version no longer supported (11.4.0+)",
+      "cause": "MariaDB 10.5, SQL Server 2019, MySQL 8.0 dropped",
+      "solution": "Upgrade database: MariaDB 10.6+, SQL Server 2022+, MySQL 8.4+",
+      "new_support": "Oracle 23 now supported",
+      "version": "11.4.0+",
+      "impact": "HIGH - must upgrade before migrating"
+    },
+    {
+      "issue": "MxObjectVersion attribute conflict (11.5.0+ with optimistic locking)",
+      "cause": "App already has MxObjectVersion attribute when enabling optimistic locking",
+      "solution": "Rename existing MxObjectVersion attribute - system attribute cannot be renamed",
+      "version": "11.5.0+",
+      "impact": "MEDIUM - requires attribute rename"
+    },
+    {
+      "issue": "Offline PWA first load slow (11.5.0+)",
+      "cause": "Storage migrated from IndexedDB to OPFS",
+      "solution": "One-time migration delay is expected; inform users",
+      "version": "11.5.0+",
+      "impact": "LOW - one-time migration"
+    },
+    {
+      "issue": "JDBC driver update required for SQL Server (11.5.0+)",
+      "cause": "JDBC driver upgraded to 13.2.1",
+      "solution": "If using Database Connector with integrated security, update JDBC driver in userlib",
+      "version": "11.5.0+",
+      "impact": "MEDIUM - may require manual driver update"
+    },
+    {
+      "issue": "XPath math operator errors",
+      "cause": "Strict typing in Mendix 11",
+      "solution": "Use explicit type casting: to-Decimal($IntValue)",
+      "example": "to-Decimal($Order/IntegerAttr) + $Order/DecimalAttr"
+    },
+    {
+      "issue": "String concatenation warnings",
+      "cause": "+ operator deprecated for strings",
+      "solution": "Use concat() function instead",
+      "example": "concat($FirstName, ' ', $LastName)"
+    },
+    {
+      "issue": "Date formatting issues",
+      "cause": "ISO 8601 patterns now default",
+      "solution": "Update formatDateTime patterns to ISO 8601",
+      "example": "formatDateTime($Date, 'yyyy-MM-dd')"
+    },
+    {
+      "issue": "ShowHomePage security errors",
+      "cause": "Now respects entity access rules",
+      "solution": "Add Read access to home page entities for all roles",
+      "impact": "HIGH - may break existing apps"
+    },
+    {
+      "issue": "Dojo widgets not working",
+      "cause": "React client is default in Mendix 11",
+      "solution": "Migrate widgets to React or use batch conversion tool (11.4.0+)",
+      "tool": "Use Studio Pro batch conversion capability or MigrateToReact module from Marketplace",
+      "docs": "https://docs.mendix.com/refguide/mendix-client/batch-conversion/"
+    },
+    {
+      "issue": "10.24 to 11.x offline database migration error",
+      "cause": "Attempted to recreate already existing column",
+      "solution": "Fixed in 11.5.0 - update to latest version",
+      "version": "Fixed in 11.5.0"
+    }
+  ],
+  "emergency_procedures": [
+    {
+      "scenario": "Production app down",
+      "steps": [
+        "Check Cloud Portal → Application logs",
+        "Verify environment status (running/stopped)",
+        "If crashed, try restart from Cloud Portal",
+        "If persistent, rollback to previous deployment package",
+        "Monitor logs during rollback",
+        "Notify stakeholders",
+        "Investigate root cause in logs",
+        "Fix and redeploy to acceptance first"
+      ]
+    },
+    {
+      "scenario": "Data corruption",
+      "steps": [
+        "Stop app immediately to prevent further damage",
+        "Restore from most recent backup",
+        "Identify corrupted data scope",
+        "Fix data with SQL scripts or microflows",
+        "Test thoroughly before reopening",
+        "Document incident and root cause",
+        "Implement prevention measures"
+      ]
+    },
+    {
+      "scenario": "Performance degradation",
+      "steps": [
+        "Check Cloud Portal → Metrics for CPU/memory/database",
+        "Identify if specific operation or general",
+        "Review recent changes/deployments",
+        "Check for runaway scheduled events",
+        "Increase resources if needed (short-term)",
+        "Profile and optimize (long-term)",
+        "Consider scaling horizontally"
+      ]
+    }
+  ],
+  "support_resources": [
+    {
+      "resource": "Mendix Forum",
+      "url": "https://forum.mendix.com/",
+      "use_for": "Community help, troubleshooting, best practices",
+      "tip": "Search before asking, provide details"
+    },
+    {
+      "resource": "Mendix Documentation",
+      "url": "https://docs.mendix.com/",
+      "use_for": "Official guidance, API reference, how-tos",
+      "tip": "Start here for official information"
+    },
+    {
+      "resource": "Mendix Support Portal",
+      "url": "https://support.mendix.com/",
+      "use_for": "Official support tickets (licensed customers)",
+      "tip": "Include logs, screenshots, reproduction steps"
+    },
+    {
+      "resource": "Mendix Academy",
+      "url": "https://academy.mendix.com/",
+      "use_for": "Learning, certification, training",
+      "tip": "Great for understanding fundamentals"
+    }
+  ],
+  "logging_best_practices": [
+    {
+      "practice": "Use appropriate log levels",
+      "guideline": "Error: failures. Warning: potential issues. Info: important events. Debug: detailed flow.",
+      "example": "Error: 'Failed to process order'; Info: 'Order 123 submitted'; Debug: 'Processing step 3 of 5'"
+    },
+    {
+      "practice": "Include context in log messages",
+      "guideline": "Add identifiers, variable values, operation details",
+      "example": "Order processing failed for OrderID=$Order/ID, Customer=$Customer/Name: $latestError"
+    },
+    {
+      "practice": "Don't log sensitive data",
+      "guideline": "Never log passwords, tokens, PII unless absolutely necessary and secured",
+      "example": "Log 'User authentication failed' NOT 'Password abc123 incorrect'"
+    }
+  ]
+}

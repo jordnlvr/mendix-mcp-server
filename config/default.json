@@ -1,0 +1,89 @@
+{
+  "server": {
+    "name": "mendix-expert",
+    "version": "2.1.0",
+    "description": "Universal Mendix development knowledge server with self-learning capabilities"
+  },
+  "paths": {
+    "knowledgeBase": "./knowledge",
+    "cache": "./cache",
+    "logs": "./logs"
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "maxSize": 100,
+    "strategy": "lru"
+  },
+  "search": {
+    "engine": "memory",
+    "minRelevanceScore": 0.3,
+    "maxResults": 10,
+    "enableSemanticSearch": false,
+    "enableStemming": true,
+    "enableSynonyms": true,
+    "phraseBoostFactor": 0.2
+  },
+  "knowledge": {
+    "autoResearch": true,
+    "qualityThreshold": 0.7,
+    "enableVersioning": true,
+    "enableConflictDetection": true,
+    "sourceWeights": {
+      "docs.mendix.com": 1.0,
+      "Mendix Documentation": 1.0,
+      "Official Mendix Documentation": 1.0,
+      "academy.mendix.com": 0.95,
+      "Mendix Academy": 0.95,
+      "forum.mendix.com": 0.85,
+      "Mendix Forum": 0.85,
+      "Mendix Community": 0.85,
+      "community.mendix.com": 0.85,
+      "marketplace.mendix.com": 0.9,
+      "Mendix Marketplace": 0.9,
+      "github.com/mendix": 0.9,
+      "Mendix GitHub": 0.9,
+      "medium.com": 0.7,
+      "archive.ph": 0.75,
+      "npmjs.com": 0.8,
+      "npm registry": 0.8,
+      "github.com": 0.8,
+      "GitHub": 0.8,
+      "linkedin.com": 0.75,
+      "youtube.com": 0.7,
+      "stackoverflow.com": 0.8,
+      "Stack Overflow": 0.8,
+      "Mendix Expert": 0.9,
+      "Best Practices": 0.9,
+      "sdk-community-resources": 0.85,
+      "community research": 0.8,
+      "deep research": 0.85,
+      "blog": 0.65,
+      "expert research": 0.85,
+      "verified solution": 1.0
+    }
+  },
+  "projects": {
+    "maxConcurrent": 5,
+    "cacheDuration": 7200,
+    "enableAutoDiscovery": true,
+    "supportedVersions": ["10.0+", "11.0+"]
+  },
+  "quality": {
+    "enableScoring": true,
+    "enableUsageTracking": true,
+    "enableFeedback": false,
+    "scoreWeights": {
+      "sourceReliability": 0.5,
+      "recency": 0.25,
+      "usage": 0.05,
+      "verification": 0.2
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "includeTimestamp": true,
+    "includeComponent": true
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "mendix-expert-mcp-server",
+  "version": "2.1.0",
+  "description": "Modular, scalable, self-learning MCP server for Mendix development knowledge with dynamic project analysis",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "node --test tests/**/*.test.js",
+    "legacy": "node server.js"
+  },
+  "keywords": [
+    "mcp",
+    "mendix",
+    "studio-pro",
+    "model-sdk",
+    "platform-sdk",
+    "knowledge-base",
+    "self-learning",
+    "quality-scoring"
+  ],
+  "author": "Kelly Seale",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^10.3.10",
+    "uuid": "^11.0.3",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

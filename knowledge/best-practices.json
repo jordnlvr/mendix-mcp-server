@@ -1,0 +1,787 @@
+{
+  "topic": "Mendix Development Best Practices",
+  "description": "Comprehensive collection of Mendix development best practices covering domain modeling, microflows, pages, security, performance, and architecture. Based on official Mendix guidelines, community consensus, and enterprise experience.",
+  "last_updated": "2025-12-01",
+  "mendix_versions": [
+    "10.24 (LTS)",
+    "11.4.0",
+    "11.5.0",
+    "Most practices are version-agnostic"
+  ],
+  "official_docs": [
+    "https://docs.mendix.com/refguide/community-best-practices-for-app-performance/",
+    "https://docs.mendix.com/refguide/performance-best-practices/",
+    "https://docs.mendix.com/refguide/security/",
+    "https://docs.mendix.com/howto/",
+    "https://academy.mendix.com/"
+  ],
+  "mendix_11_specific": {
+    "optimistic_locking": {
+      "practice": "Use optimistic locking for concurrent modification protection (11.5.0+)",
+      "rationale": "Prevents lost updates when multiple users edit same object",
+      "implementation": "Enable in Runtime tab of App Settings",
+      "handling": "Catch ConcurrentModificationRuntimeException, retrieve fresh object, reapply changes, retry",
+      "docs": "https://docs.mendix.com/refguide/optimistic-locking/"
+    },
+    "action_return_mapping": {
+      "practice": "Use action return value mapping for cleaner page-microflow integration (11.5.0+)",
+      "rationale": "Pages can use microflow return values without passing objects",
+      "use_cases": [
+        "Update page variables from microflow results",
+        "Transform return values before assignment"
+      ]
+    },
+    "batch_widget_conversion": {
+      "practice": "Use batch conversion tool when migrating Dojo widgets to React (11.4.0+)",
+      "rationale": "More efficient than manual widget-by-widget conversion",
+      "docs": "https://docs.mendix.com/refguide/mendix-client/batch-conversion/"
+    }
+  },
+  "categories": {
+    "domain_modeling": [
+      {
+        "practice": "Use meaningful, business-oriented entity names",
+        "rationale": "Makes model understandable to non-technical stakeholders",
+        "good": "Customer, Order, Invoice, Product",
+        "bad": "Cust, Ord, Inv, Prod, Entity1",
+        "impact": "Maintainability, communication"
+      },
+      {
+        "practice": "Add documentation to all entities and attributes",
+        "rationale": "Essential for team collaboration and long-term maintenance",
+        "implementation": "Right-click → Properties → Documentation tab",
+        "example": "Customer entity: 'Represents a B2B customer account with billing and shipping information'",
+        "impact": "Knowledge transfer, onboarding"
+      },
+      {
+        "practice": "Use enumerations for status fields",
+        "rationale": "Type safety, compile-time checking, prevents invalid values",
+        "good": "OrderStatus enum: New, Processing, Shipped, Delivered",
+        "bad": "Status as String with values 'new', 'processing', etc.",
+        "impact": "Data quality, fewer bugs"
+      },
+      {
+        "practice": "Index frequently queried attributes",
+        "rationale": "Dramatically improves query performance",
+        "implementation": "Entity → Attributes → Select attribute → Index: Yes",
+        "example": "Index Customer.Email if searching by email, Order.OrderNumber if looking up orders",
+        "impact": "Performance (10-100x faster queries)"
+      },
+      {
+        "practice": "Use associations instead of duplicating attributes",
+        "rationale": "Single source of truth, referential integrity, easier updates",
+        "good": "Order → Customer association (1-*)",
+        "bad": "Order has CustomerName, CustomerEmail attributes (duplication)",
+        "impact": "Data consistency, maintainability"
+      },
+      {
+        "practice": "Choose correct association type (1-*, *-*, 1-1)",
+        "rationale": "Impacts performance, storage, and query patterns",
+        "guideline": "1-* for most cases, *-* when truly bidirectional many, 1-1 for optional extensions",
+        "example": "Order → OrderLines (1-*), Student ↔ Course (*-*), User → UserProfile (1-1)",
+        "impact": "Performance, storage efficiency"
+      },
+      {
+        "practice": "Limit calculated attributes usage",
+        "rationale": "Computed on every access, causes N+1 problems in lists",
+        "use_when": "Single-object display, infrequently accessed",
+        "avoid_when": "Data grids, list views, frequent retrieval",
+        "alternative": "Store as regular attribute, update via events or microflows",
+        "impact": "Performance"
+      },
+      {
+        "practice": "Use event handlers wisely",
+        "rationale": "Events fire on all CRUD operations, can impact performance",
+        "best_for": "Before Commit: validation, computed updates; After Commit: notifications",
+        "avoid": "Complex logic, external API calls in Before Commit",
+        "impact": "Performance, reliability"
+      },
+      {
+        "practice": "Organize entities into modules by domain",
+        "rationale": "Cohesion, reusability, clear boundaries",
+        "example": "CustomerManagement module: Customer, Contact, Address entities",
+        "bad": "All entities in one module",
+        "impact": "Maintainability, team collaboration"
+      },
+      {
+        "practice": "Use generalization sparingly",
+        "rationale": "All child attributes in single table, can't modify parent after children created",
+        "use_when": "True IS-A relationship, shared behavior and data",
+        "alternative": "Composition (separate entities with associations)",
+        "example": "Good: Vehicle → Car/Truck. Bad: Person → Customer/Supplier (use association)",
+        "impact": "Flexibility, performance"
+      },
+      {
+        "pattern": "Reference Data Hierarchy Pattern",
+        "description": "Model hierarchical reference data (categories) with parent-child associations",
+        "implementation": {
+          "structure": "Top → Middle → Bottom (e.g., Area → Specialty → Focus)",
+          "entities": [
+            "Area (parent)",
+            "Specialty (child of Area)",
+            "Focus (child of Specialty)"
+          ],
+          "associations": [
+            "Area_Specialty (1-*)",
+            "Specialty_Focus (1-*)"
+          ],
+          "seeding": "Use After Startup microflow (ASU_) to seed reference data"
+        },
+        "naming_convention": {
+          "entities": "Singular names (Area, Specialty, Focus)",
+          "seed_microflows": "SUB_Seed[Entity] for each level",
+          "startup": "ASU_InitializeApplicationData calls all seed microflows"
+        },
+        "real_world_example": {
+          "project": "SmartHub (RequestHub module)",
+          "areas": [
+            "Mendix",
+            "RapidMiner",
+            "Siemens",
+            "Other"
+          ],
+          "specialties_per_area": "Technical skill areas within each Area",
+          "focus_per_specialty": "Specific products/topics within Specialty"
+        },
+        "benefits": [
+          "Clean data organization",
+          "Easy filtering in dropdowns",
+          "Scalable categorization"
+        ],
+        "source": "SmartHub project implementation - December 2025",
+        "_metadata": {
+          "id": "18ead522-f11d-45b6-a168-0e9f9fb9da43",
+          "added_at": "2025-12-07T23:33:01.856Z",
+          "source": "SmartHub project - Kelly Seale - December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-08T01:01:51.862Z"
+        }
+      }
+    ],
+    "microflows": [
+      {
+        "practice": "Follow naming conventions consistently",
+        "rationale": "Makes purpose immediately clear, easier navigation",
+        "convention": "ACT_EntityName_Action, SUB_Purpose, DS_EntityName_Filter, BCO/ACO_EntityName_Logic",
+        "example": "ACT_Customer_Save, SUB_Order_CalculateTotal, DS_Customer_Search, BCO_Order_Validate",
+        "impact": "Maintainability, clarity"
+      },
+      {
+        "practice": "Keep microflows small and focused",
+        "rationale": "Easier to understand, test, reuse; follows single responsibility principle",
+        "guideline": "Target < 30 activities per microflow",
+        "approach": "Break into sub-microflows for distinct steps",
+        "impact": "Maintainability, testability"
+      },
+      {
+        "practice": "Use sub-microflows for reusable logic",
+        "rationale": "Avoid duplication, centralize business rules",
+        "example": "SUB_Customer_Validate called by ACT_Customer_Save, API endpoint, scheduled event",
+        "benefit": "Single source of truth, easier updates",
+        "impact": "Consistency, maintainability"
+      },
+      {
+        "practice": "Always handle errors explicitly",
+        "rationale": "Prevent unhandled exceptions, provide user feedback",
+        "implementation": "Add error event to risky activities (API calls, Java actions)",
+        "error_flow": "Catch → Log details → Show user message → Return gracefully",
+        "impact": "User experience, debuggability"
+      },
+      {
+        "practice": "Minimize database commits",
+        "rationale": "Commits are expensive (transaction + events)",
+        "guideline": "Commit after processing batch, not every iteration",
+        "example": "Process 100 objects → Commit. NOT: Loop 100 objects with commit inside",
+        "impact": "Performance (10-50x faster)"
+      },
+      {
+        "practice": "Use 'Retrieve over association' instead of XPath when possible",
+        "rationale": "Faster, uses foreign key indexes",
+        "good": "Retrieve $Order/OrderLines",
+        "bad": "Retrieve OrderLine where [OrderLine_Order = $Order]",
+        "impact": "Performance (2-10x faster)"
+      },
+      {
+        "practice": "Batch operations with Change/Delete List actions",
+        "rationale": "Single query instead of N queries",
+        "good": "Change list of 1000 objects",
+        "bad": "Loop over 1000 objects with Change inside",
+        "impact": "Performance (10-100x faster)"
+      },
+      {
+        "practice": "Use XPath for simple filtering, microflows for complex logic",
+        "rationale": "XPath executes in database (faster), microflows in memory (flexible)",
+        "example": "Simple: Retrieve Customer [Status='Active']. Complex: Retrieve + microflow logic",
+        "impact": "Performance vs flexibility trade-off"
+      },
+      {
+        "practice": "Add annotations for complex logic",
+        "rationale": "Explains business rules and decisions",
+        "implementation": "Drag annotation box to microflow, explain logic",
+        "example": "'Discount calculation: 10% if order > $100, 15% if order > $500, 20% if VIP customer'",
+        "impact": "Understanding, maintenance"
+      },
+      {
+        "practice": "Use transactions appropriately",
+        "rationale": "Keep transactions short, commit regularly in long operations",
+        "guideline": "Commit every 100-1000 objects in batch operations",
+        "example": "Import 10,000 records → Commit every 500 to prevent transaction timeout",
+        "impact": "Reliability, performance"
+      }
+    ],
+    "pages": [
+      {
+        "practice": "Use data views for single objects, data grids for lists",
+        "rationale": "Matches UI patterns to data retrieval patterns",
+        "data_view": "Customer details form",
+        "data_grid": "List of all customers with search/filter",
+        "impact": "User experience, performance"
+      },
+      {
+        "practice": "Minimize data grid columns",
+        "rationale": "Each column triggers retrieval and rendering",
+        "guideline": "Show 5-8 most important columns",
+        "approach": "Use show/hide columns, detail popup for full info",
+        "impact": "Performance, usability"
+      },
+      {
+        "practice": "Use microflow data sources for complex filtering",
+        "rationale": "More control, can implement complex logic not possible in XPath",
+        "example": "Filter orders by multi-criteria form, dynamic XPath construction",
+        "impact": "Flexibility"
+      },
+      {
+        "practice": "Avoid calculated attributes in data grids",
+        "rationale": "Calculated per row (N+1 problem)",
+        "alternative": "Store as attribute or compute in data source microflow",
+        "impact": "Performance"
+      },
+      {
+        "practice": "Use list view for mobile, data grid for web",
+        "rationale": "List view optimized for mobile touch, data grid for desktop",
+        "mobile": "List view with swipe actions",
+        "web": "Data grid with sorting, filtering, pagination",
+        "impact": "User experience"
+      },
+      {
+        "practice": "Implement proper validation on forms",
+        "rationale": "Catch errors early, guide users",
+        "approach": "Required fields, validation rules on entities, validation microflows",
+        "example": "Email format validation, unique constraints, business rules",
+        "impact": "Data quality, user experience"
+      },
+      {
+        "practice": "Use layouts for consistent page structure",
+        "rationale": "Reusable page templates, consistent look and feel",
+        "example": "Main layout with header/menu/content/footer used by all pages",
+        "impact": "Consistency, maintainability"
+      },
+      {
+        "practice": "Optimize image sizes",
+        "rationale": "Large images slow page load",
+        "guideline": "Compress images, use appropriate dimensions, lazy loading",
+        "impact": "Performance, bandwidth"
+      }
+    ],
+    "security": [
+      {
+        "practice": "Apply principle of least privilege",
+        "rationale": "Users should only have access they need",
+        "approach": "Start with no access, grant incrementally",
+        "example": "Regular users: Read-only. Managers: Read/Write. Admins: Full access",
+        "impact": "Security, compliance"
+      },
+      {
+        "practice": "Define entity access rules for ALL entities",
+        "rationale": "Default is no access - must explicitly grant",
+        "approach": "For each entity, define create/read/write/delete per role",
+        "impact": "Security"
+      },
+      {
+        "practice": "Use XPath constraints for row-level security",
+        "rationale": "Filter data at database level",
+        "example": "[System.owner = '[%CurrentUser%]'] to show only user's own data",
+        "impact": "Security, automatic enforcement"
+      },
+      {
+        "practice": "Secure microflows separately from entities",
+        "rationale": "Entity access doesn't protect microflow actions",
+        "approach": "Set allowed roles on microflows, especially those exposed to pages/APIs",
+        "impact": "Security"
+      },
+      {
+        "practice": "Never bypass security unless absolutely necessary",
+        "rationale": "System context undermines security model",
+        "use_when": "System processes, carefully documented",
+        "alternative": "Proper security rules instead of workarounds",
+        "impact": "Security integrity"
+      },
+      {
+        "practice": "Test security with different user roles",
+        "rationale": "Easy to misconfigure and leak data",
+        "approach": "Log in as different roles, verify data visibility and actions",
+        "impact": "Security validation"
+      },
+      {
+        "practice": "Use strong authentication for production",
+        "rationale": "Local accounts are weak, single sign-on is better",
+        "production": "SAML 2.0, OIDC, Mendix SSO",
+        "development": "Local accounts acceptable",
+        "impact": "Security, user experience"
+      },
+      {
+        "practice": "Document security architecture",
+        "rationale": "Makes security model clear to team and auditors",
+        "document": "Roles, entity access, XPath constraints, authentication method",
+        "impact": "Compliance, maintainability"
+      }
+    ],
+    "performance": [
+      {
+        "practice": "Use indexes on frequently queried attributes",
+        "rationale": "Most impactful performance improvement (10-100x)",
+        "identify": "Profile queries, find slow retrievals",
+        "implement": "Add index to queried attributes",
+        "impact": "Performance"
+      },
+      {
+        "practice": "Minimize loops in microflows",
+        "rationale": "Loops are expensive, batch operations much faster",
+        "alternatives": "Change List, Delete List, aggregate functions, XPath",
+        "example": "Count with aggregate, not loop counting",
+        "impact": "Performance (5-50x)"
+      },
+      {
+        "practice": "Use aggregate functions instead of retrieving all",
+        "rationale": "Database does aggregation, not application",
+        "example": "Count aggregate instead of retrieving all and counting in microflow",
+        "impact": "Performance, memory"
+      },
+      {
+        "practice": "Limit retrieved data",
+        "rationale": "Only fetch what you need",
+        "approach": "XPath constraints, limit/offset, select specific attributes",
+        "example": "Retrieve first 50 orders, not all 100,000",
+        "impact": "Performance, memory"
+      },
+      {
+        "practice": "Use non-persistable entities for temporary data",
+        "rationale": "No database overhead",
+        "use_for": "Form data, API models, calculations",
+        "impact": "Performance"
+      },
+      {
+        "practice": "Profile before optimizing",
+        "rationale": "Optimize actual bottlenecks, not assumptions",
+        "tool": "Built-in Performance Tool in Studio Pro",
+        "approach": "Identify slow queries/microflows, then optimize",
+        "impact": "Efficient optimization"
+      },
+      {
+        "practice": "Cache frequently accessed data",
+        "rationale": "Avoid repeated database queries",
+        "approach": "Non-persistable entities, microflow variables, consider TTL",
+        "example": "Cache configuration data, lookup values",
+        "impact": "Performance"
+      },
+      {
+        "practice": "Optimize database queries",
+        "rationale": "Database is often the bottleneck",
+        "techniques": "Indexes, retrieve over association, batch operations, limit results",
+        "impact": "Performance"
+      }
+    ],
+    "architecture": [
+      {
+        "practice": "Organize into domain modules",
+        "rationale": "Cohesion, reusability, clear boundaries",
+        "structure": "CustomerManagement, OrderProcessing, Inventory, Reporting modules",
+        "bad": "Everything in one module",
+        "impact": "Maintainability, team collaboration"
+      },
+      {
+        "practice": "Keep modules loosely coupled",
+        "rationale": "Changes in one module don't ripple",
+        "approach": "Minimize cross-module dependencies, use well-defined interfaces",
+        "example": "OrderProcessing calls CustomerManagement via exposed microflows, not direct entity access",
+        "impact": "Maintainability, reusability"
+      },
+      {
+        "practice": "Use module roles consistently",
+        "rationale": "Clear security model",
+        "approach": "Define module roles, map to user roles",
+        "example": "CustomerManagement.User, CustomerManagement.Admin roles",
+        "impact": "Security, clarity"
+      },
+      {
+        "practice": "Separate concerns (UI, logic, data)",
+        "rationale": "Makes testing easier, clear responsibilities",
+        "approach": "Pages call action microflows, action microflows call sub-microflows",
+        "impact": "Testability, maintainability"
+      },
+      {
+        "practice": "Use Marketplace modules for common functionality",
+        "rationale": "Don't reinvent the wheel, community-tested",
+        "examples": "Email Module, Excel Importer, Deep Link Module",
+        "caution": "Check compatibility, maintenance status",
+        "impact": "Development speed, quality"
+      },
+      {
+        "practice": "Plan for scalability from the start",
+        "rationale": "Refactoring for scale is expensive",
+        "considerations": "Database indexes, batch processing, caching strategy, API rate limits",
+        "impact": "Scalability, future-proofing"
+      }
+    ],
+    "testing": [
+      {
+        "practice": "Use UnitTesting module from Marketplace",
+        "rationale": "Automate testing of microflows",
+        "approach": "Create test microflows, assert expected outcomes",
+        "impact": "Quality, regression prevention"
+      },
+      {
+        "practice": "Test with different user roles",
+        "rationale": "Verify security rules work correctly",
+        "approach": "Log in as different roles, test CRUD operations",
+        "impact": "Security validation"
+      },
+      {
+        "practice": "Use Application Test Suite (ATS) for UI testing",
+        "rationale": "Automate end-to-end testing",
+        "use_for": "Critical user workflows, regression testing",
+        "impact": "Quality, confidence in releases"
+      },
+      {
+        "practice": "Test error handling paths",
+        "rationale": "Errors will happen in production",
+        "approach": "Force errors (API failures, invalid data), verify graceful handling",
+        "impact": "Reliability, user experience"
+      },
+      {
+        "topic": "Testing Mendix Applications",
+        "description": "Comprehensive testing strategies for Mendix applications including unit testing, integration testing, UI testing, and quality assurance.",
+        "mendix_version": "11.x",
+        "testing_types": {
+          "unit_testing": {
+            "description": "Test individual microflows in isolation",
+            "tool": "UnitTesting module from Mendix Marketplace",
+            "setup": "Install module, create test microflows, run via Test Suite page",
+            "naming": "TEST_[MicroflowName] or UT_[MicroflowName]",
+            "assertions": "Assert.AreEqual, Assert.IsTrue, Assert.Throws",
+            "best_practices": [
+              "Test business logic microflows",
+              "Create test data, run logic, assert results, clean up",
+              "Test edge cases and error conditions",
+              "Keep tests independent (no dependencies between tests)"
+            ]
+          },
+          "integration_testing": {
+            "description": "Test integration with external services",
+            "approach": "Mock external services or use test environments",
+            "considerations": [
+              "Test happy path and error responses",
+              "Handle timeouts",
+              "Test authentication"
+            ],
+            "tools": "Postman, Insomnia for manual API testing"
+          },
+          "ui_testing": {
+            "description": "End-to-end testing of user interfaces",
+            "tool": "Mendix Application Test Suite (ATS)",
+            "alternatives": [
+              "Selenium",
+              "Cypress",
+              "Playwright"
+            ],
+            "ats_features": [
+              "Record and playback",
+              "Mendix-aware element selection",
+              "Data-driven testing",
+              "CI/CD integration"
+            ]
+          },
+          "performance_testing": {
+            "description": "Test application under load",
+            "tools": [
+              "JMeter",
+              "Gatling",
+              "k6",
+              "Azure Load Testing"
+            ],
+            "metrics": [
+              "Response time",
+              "Throughput",
+              "Error rate",
+              "Resource utilization"
+            ],
+            "best_practices": [
+              "Test realistic user scenarios",
+              "Gradually increase load",
+              "Monitor database and server resources",
+              "Identify bottlenecks before production"
+            ]
+          },
+          "security_testing": {
+            "description": "Verify security controls",
+            "areas": [
+              "Authentication",
+              "Authorization",
+              "XPath constraints",
+              "API security"
+            ],
+            "approach": "Test as different user roles, verify data isolation",
+            "tools": [
+              "OWASP ZAP",
+              "Burp Suite for penetration testing"
+            ]
+          }
+        },
+        "test_data_management": {
+          "strategies": [
+            "Create test data in Before Suite microflow",
+            "Clean up in After Suite microflow",
+            "Use dedicated test database",
+            "Factory pattern for creating test objects"
+          ],
+          "considerations": [
+            "Tests should be repeatable",
+            "Avoid dependencies on existing data",
+            "Consider data privacy in test environments"
+          ]
+        },
+        "cicd_integration": {
+          "automated_testing": {
+            "unit_tests": "Run via UnitTesting module API after deployment",
+            "ats_tests": "Trigger ATS test suites via API",
+            "pipeline_integration": "Fail pipeline if tests fail"
+          },
+          "test_environments": {
+            "approach": "Dedicated test environment for automated testing",
+            "data": "Seed with known test data before each run",
+            "isolation": "Don't run tests against shared environments"
+          }
+        },
+        "best_practices": [
+          "Write tests for critical business logic",
+          "Test security with different user roles",
+          "Automate regression testing",
+          "Include negative tests (error conditions)",
+          "Keep tests maintainable and readable",
+          "Run tests in CI/CD pipeline",
+          "Monitor test coverage",
+          "Test integrations with mocks in unit tests, real services in integration tests"
+        ],
+        "common_issues": {
+          "flaky_tests": "Tests that pass/fail inconsistently - fix timing issues, use explicit waits",
+          "slow_tests": "Optimize data setup, parallelize where possible",
+          "brittle_tests": "Tests break with minor UI changes - use data-testid or robust selectors"
+        },
+        "_metadata": {
+          "id": "c5eb5388-da98-4733-807d-28165995ef47",
+          "added_at": "2025-12-07T23:44:22.625Z",
+          "source": "Mendix Documentation - Testing Best Practices",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      }
+    ],
+    "deployment": [
+      {
+        "practice": "Use CI/CD for automated deployment",
+        "rationale": "Consistent, repeatable, faster",
+        "tools": "Platform SDK, Build API, Jenkins, GitHub Actions, Azure DevOps",
+        "impact": "Deployment speed, reliability"
+      },
+      {
+        "practice": "Deploy to development → acceptance → production",
+        "rationale": "Test in each environment before promotion",
+        "approach": "Automated to acceptance, manual approval to production",
+        "impact": "Reliability, risk reduction"
+      },
+      {
+        "practice": "Use environment-specific constants",
+        "rationale": "Different configuration per environment",
+        "examples": "API URLs, credentials, feature flags",
+        "impact": "Flexibility, security"
+      },
+      {
+        "practice": "Monitor applications in production",
+        "rationale": "Detect issues quickly",
+        "tools": "Application Insights, Datadog, New Relic, Mendix alerts",
+        "impact": "Reliability, rapid response"
+      },
+      {
+        "practice": "Have rollback plan",
+        "rationale": "Things can go wrong",
+        "approach": "Keep previous deployment package, documented rollback procedure",
+        "impact": "Risk mitigation"
+      }
+    ],
+    "reference_data_patterns": [
+      {
+        "pattern": "Reference Data Hierarchy Pattern",
+        "description": "Model hierarchical reference/lookup data (categories, classifications) with parent-child associations",
+        "implementation": {
+          "structure": "Top → Middle → Bottom levels (e.g., Country → State → City, or Category → Subcategory → Item)",
+          "associations": "Each level has 1-* association to the next level down",
+          "seeding": "Use After Startup microflow (ASU_) to seed reference data on first deploy"
+        },
+        "naming_convention": {
+          "entities": "Use singular names (Country, State, City - not Countries, States, Cities)",
+          "seed_microflows": "SUB_Seed[Entity] pattern for each level"
+        },
+        "benefits": [
+          "Clean data organization",
+          "Easy filtering in cascading dropdowns",
+          "Scalable categorization"
+        ],
+        "example": "Product classification: Department → Category → Subcategory"
+      }
+    ],
+    "naming_conventions": [
+      {
+        "pattern": "Mendix Microflow Naming Conventions",
+        "description": "Industry-standard prefixes for microflows that indicate their purpose and make navigation easier",
+        "prefixes": {
+          "ACT_": "Action microflows triggered by user interaction (buttons, menu items)",
+          "DS_": "Data source microflows for widgets (data grids, list views, dropdowns)",
+          "SUB_": "Sub-microflows called by other microflows (reusable helper logic)",
+          "VAL_": "Validation microflows for input checking",
+          "OCH_": "On-change handlers triggered when attribute values change",
+          "BCO_": "Before commit event handlers",
+          "ACO_": "After commit event handlers",
+          "BDE_": "Before delete event handlers",
+          "ADE_": "After delete event handlers",
+          "ASU_": "After startup microflows (app initialization)",
+          "SCH_": "Scheduled event microflows",
+          "WS_": "Web service operation implementations",
+          "API_": "REST API endpoint implementations"
+        },
+        "entity_naming": {
+          "standard": "PascalCase, singular (Customer, Order, Product)",
+          "junction_tables": "Combine parent and child names (CustomerOrder, StudentCourse)",
+          "non_persistent": "NP_ prefix (NP_SearchCriteria, NP_ReportData)",
+          "system_entities": "Prefix with module name for clarity"
+        },
+        "attribute_naming": {
+          "standard": "PascalCase (FirstName, EmailAddress, CreatedDate)",
+          "booleans": "Use Is/Has/Can prefix (IsActive, HasChildren, CanEdit)",
+          "dates": "Use Date/Time suffix (CreatedDate, ModifiedDateTime)",
+          "counts": "Use Count suffix (OrderCount, ItemCount)"
+        },
+        "page_naming": {
+          "overview": "Entity_Overview (Customer_Overview)",
+          "detail": "Entity_Detail or Entity_Edit (Customer_Detail)",
+          "new": "Entity_New (Customer_New)",
+          "popup": "Entity_Popup or Entity_Select (Customer_Select)"
+        },
+        "source": "Mendix Best Practices and Community Standards"
+      }
+    ]
+  },
+  "expert_tips": [
+    {
+      "tip": "Use System.owner for quick user-object ownership",
+      "context": "Every persistable entity can associate to System.User",
+      "usage": "Set owner on create, use [System.owner = '[%CurrentUser%]'] in XPath",
+      "benefit": "Simple row-level security"
+    },
+    {
+      "tip": "Mendix uses optimistic locking",
+      "context": "No pessimistic locking - last write wins",
+      "workaround": "Add Version attribute (AutoNumber), check in Before Commit for concurrent updates",
+      "impact": "Concurrent update handling"
+    },
+    {
+      "tip": "Non-persistable entities are lost on commit",
+      "context": "Only exist during request lifecycle",
+      "use_for": "Form data, temporary calculations",
+      "avoid_for": "Data that needs to survive page navigation"
+    },
+    {
+      "tip": "Use enums for all status/type fields",
+      "context": "Type safety vs string typing",
+      "benefit": "Compile-time checking, refactoring support, dropdowns",
+      "example": "OrderStatus enum instead of String"
+    },
+    {
+      "tip": "Event handlers don't fire for bulk operations",
+      "context": "Only fire for individual Create/Change/Delete actions",
+      "workaround": "Use microflows for bulk operations that need events",
+      "impact": "Be aware when using events"
+    }
+  ],
+  "common_mistakes": [
+    {
+      "mistake": "Not using indexes",
+      "consequence": "Slow queries, poor performance",
+      "fix": "Add indexes to frequently queried attributes",
+      "impact": "10-100x performance improvement"
+    },
+    {
+      "mistake": "Committing inside loops",
+      "consequence": "Massive performance degradation",
+      "fix": "Commit after loop or in batches",
+      "impact": "10-50x performance improvement"
+    },
+    {
+      "mistake": "Not handling errors in microflows",
+      "consequence": "App crashes, poor user experience",
+      "fix": "Add error handlers to all risky operations",
+      "impact": "Reliability, UX"
+    },
+    {
+      "mistake": "Calculated attributes in data grids",
+      "consequence": "N+1 query problem",
+      "fix": "Store as regular attribute or compute in data source",
+      "impact": "Major performance improvement"
+    },
+    {
+      "mistake": "Everything in one module",
+      "consequence": "Unmaintainable, hard to understand",
+      "fix": "Organize into domain modules",
+      "impact": "Maintainability"
+    },
+    {
+      "mistake": "Bypassing security frequently",
+      "consequence": "Security vulnerabilities",
+      "fix": "Properly configure entity access rules",
+      "impact": "Security"
+    },
+    {
+      "mistake": "Not testing with different roles",
+      "consequence": "Security leaks",
+      "fix": "Test as each role type",
+      "impact": "Security validation"
+    },
+    {
+      "mistake": "Ignoring documentation",
+      "consequence": "Knowledge loss, onboarding difficulty",
+      "fix": "Document entities, microflows, architecture",
+      "impact": "Knowledge transfer"
+    }
+  ],
+  "summary": "Following these best practices leads to maintainable, performant, secure Mendix applications. Focus on: proper domain modeling, efficient microflows, appropriate security, performance optimization, and clean architecture. Test thoroughly and document comprehensively. When in doubt, consult official Mendix documentation and community resources."
+}

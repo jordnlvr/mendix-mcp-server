@@ -1,0 +1,2470 @@
+{
+  "topic": "Mendix Studio Pro 10.23+ and 11.0+",
+  "description": "Complete reference for Mendix Studio Pro including Mendix 11 features, domain modeling, microflows, pages, security, and breaking changes. Covers all aspects of visual development in Mendix's desktop IDE.",
+  "mendix_versions": [
+    "10.24 (LTS)",
+    "11.4.0",
+    "11.5.0 (latest - Nov 25, 2025)"
+  ],
+  "last_updated": "2025-12-01",
+  "official_docs": [
+    "https://docs.mendix.com/releasenotes/studio-pro/11.0/",
+    "https://docs.mendix.com/refguide/domain-model/",
+    "https://docs.mendix.com/refguide/microflows/",
+    "https://docs.mendix.com/refguide/pages/",
+    "https://docs.mendix.com/refguide/security/",
+    "https://docs.mendix.com/refguide/entities/",
+    "https://docs.mendix.com/refguide/associations/",
+    "https://docs.mendix.com/refguide/access-rules/",
+    "https://docs.mendix.com/refguide/xpath-constraints/"
+  ],
+  "mendix_11_features": [
+    {
+      "feature": "Optimistic Locking (Beta - 11.5.0)",
+      "description": "Built-in optimistic locking to prevent lost updates during concurrent modifications. Adds MxObjectVersion system attribute to all entities.",
+      "impact": "Safe-guards against concurrent modifications without requiring custom versioning logic",
+      "version": "11.5.0+",
+      "how_to_enable": "Runtime tab in App Settings dialog → Enable Optimistic Locking",
+      "behavior": {
+        "create": "MxObjectVersion initialized to 0",
+        "commit": "Compares MxObjectVersion with database; throws ConcurrentModificationRuntimeException if different",
+        "delete": "Same version check as commit"
+      },
+      "error_handling": "Catch ConcurrentModificationRuntimeException, retrieve fresh object, reapply changes, retry",
+      "docs": "https://docs.mendix.com/refguide/optimistic-locking/"
+    },
+    {
+      "feature": "Action Return Value Mapping (11.5.0)",
+      "description": "Pages and snippets can capture and use return values from microflows/nanoflows by mapping to variables or attributes",
+      "impact": "Enhanced microflow reusability - pages can update local values without passing objects",
+      "version": "11.5.0+",
+      "use_cases": [
+        "Assign primitive return values to attributes or page variables",
+        "Map multiple attributes from object return values",
+        "Transform return values using expressions before assignment"
+      ]
+    },
+    {
+      "feature": "History Pane (Beta - 11.4.0)",
+      "description": "View changes and navigate to modified documents without closing the history view. Shows both local and server commits.",
+      "impact": "Easier tracking of changes and collaboration",
+      "version": "11.4.0+",
+      "access": "View menu → History",
+      "capabilities": [
+        "Filter by date (11.5.0)",
+        "Document type icons (11.5.0)",
+        "Server commits visibility"
+      ]
+    },
+    {
+      "feature": "Batch Widget Conversion (11.4.0)",
+      "description": "Convert old Dojo widgets no longer supported by React client in batches",
+      "impact": "Easier migration from Dojo to React client",
+      "version": "11.4.0+",
+      "docs": "https://docs.mendix.com/refguide/mendix-client/batch-conversion/"
+    },
+    {
+      "feature": "New Fetch Options (11.4.0)",
+      "description": "Manually fetch changes from version control server without applying to local copy",
+      "impact": "Better inspection of server-side changes before pulling",
+      "version": "11.4.0+",
+      "access": [
+        "Version Control menu → Fetch submenu",
+        "Changes pane → Fetch icon button"
+      ]
+    },
+    {
+      "feature": "OQL UPDATE Association Support (11.4.0)",
+      "description": "OQL UPDATE statements can now update associations via experimental Java API OqlStatement",
+      "impact": "More powerful bulk data operations",
+      "version": "11.4.0+"
+    },
+    {
+      "feature": "AbsoluteSessionTimeout Setting (11.4.0)",
+      "description": "Sessions expire after configured time regardless of activity",
+      "impact": "Enhanced security for sensitive applications",
+      "version": "11.4.0+",
+      "configuration": "Runtime settings → AbsoluteSessionTimeout"
+    },
+    {
+      "feature": "Start with Maia - AI Assistant",
+      "description": "Conversational AI assistant integrated into Studio Pro that helps build domain models, workflows, pages, and generate OQL",
+      "impact": "Accelerates development by 30-50% for common tasks through natural language interaction",
+      "version": "11.0.0+",
+      "use_cases": [
+        "Generate domain models from requirements",
+        "Create workflows with natural language",
+        "Build pages and layouts quickly",
+        "Write OQL queries conversationally"
+      ]
+    },
+    {
+      "feature": "React Client Default",
+      "description": "React-based client is now the default for all new apps. Dojo client deprecated and will be removed in future versions.",
+      "impact": "Better performance, modern development patterns, improved mobile support",
+      "version": "11.0.0+",
+      "migration_notes": "Existing Dojo apps can continue but should plan migration. Use MigrateToReact module from Marketplace."
+    },
+    {
+      "feature": "Enhanced Workflows",
+      "description": "Workflows now support interrupting boundary events, recurrence patterns, and improved error handling",
+      "impact": "More robust business process automation with complex scenarios",
+      "version": "11.0.0+",
+      "new_capabilities": [
+        "Interrupting boundary events (timers, error catchers)",
+        "Recurring workflow instances (daily, weekly, monthly)",
+        "Improved workflow versioning",
+        "Better workflow monitoring and debugging"
+      ]
+    },
+    {
+      "feature": "View Entities (Read-Only)",
+      "description": "Define read-only entities based on OQL queries for complex data aggregation without performance impact",
+      "impact": "Enables complex reporting without custom Java or stored procedures",
+      "version": "11.0.0+",
+      "limitations": [
+        "Read-only - cannot modify data",
+        "No associations to persistable entities",
+        "Must define OQL query explicitly",
+        "Performance depends on query complexity"
+      ]
+    },
+    {
+      "feature": "OpenTelemetry Tracing",
+      "description": "Built-in distributed tracing with OpenTelemetry standard for monitoring microservice architectures",
+      "impact": "Better observability in production systems, easier debugging of performance issues",
+      "version": "11.0.0+",
+      "integration": "Works with Datadog, New Relic, Azure Monitor, AWS X-Ray"
+    }
+  ],
+  "breaking_changes_mendix_11": [
+    {
+      "change": "Database Version Support Dropped (11.4.0)",
+      "description": "MariaDB 10.5, Microsoft SQL Server 2019, and MySQL 8.0 are no longer supported",
+      "impact": "Must upgrade database versions before upgrading to 11.4+",
+      "fix": "Upgrade to: MariaDB 10.6+, SQL Server 2022+, MySQL 8.4+, or Oracle 23 (newly supported)",
+      "severity": "HIGH",
+      "version": "11.4.0+"
+    },
+    {
+      "change": "Semantic Versioning Change (11.5.0)",
+      "description": "Version schema now follows SemVer (major.minor.patch) - build number dropped",
+      "impact": "Scripts parsing version numbers may need updates",
+      "fix": "Update version parsing logic to handle 3-part versions",
+      "severity": "LOW",
+      "version": "11.5.0+"
+    },
+    {
+      "change": "Offline PWA Storage Migration (11.5.0)",
+      "description": "Switched from IndexedDB to OPFS storage for offline apps. First load triggers data migration.",
+      "impact": "First app load after upgrade will be slower due to migration",
+      "fix": "Inform users about one-time migration delay",
+      "severity": "MEDIUM",
+      "version": "11.5.0+"
+    },
+    {
+      "change": "ShowHomePage microflow action security",
+      "description": "ShowHomePage action now respects entity access rules. Previously bypassed security checks.",
+      "impact": "May break existing microflows if entities lack proper access rules",
+      "fix": "Review all ShowHomePage actions and ensure proper entity access rules configured",
+      "severity": "HIGH"
+    },
+    {
+      "change": "XPath math operators strict typing",
+      "description": "XPath expressions with +, -, *, / now require matching types. Automatic type coercion removed.",
+      "impact": "XPath constraints with mixed integer/decimal operations will fail",
+      "fix": "Use explicit type casting: to-Decimal($Entity/IntegerAttr) + $Entity/DecimalAttr",
+      "severity": "MEDIUM"
+    },
+    {
+      "change": "String concatenation in XPath",
+      "description": "String concatenation using + operator deprecated. Use concat() function instead.",
+      "impact": "XPath expressions like $Name + ' - ' + $Description will warn",
+      "fix": "Use concat($Name, ' - ', $Description) instead",
+      "severity": "LOW"
+    },
+    {
+      "change": "Date formatting functions",
+      "description": "formatDateTime and parseDateTime now use ISO 8601 patterns by default",
+      "impact": "Custom date formats may render differently",
+      "fix": "Review all date formatting and update patterns to ISO 8601 standard",
+      "severity": "MEDIUM"
+    },
+    {
+      "change": "Dojo client deprecated",
+      "description": "Dojo-based client officially deprecated. React client is now default.",
+      "impact": "Custom widgets using Dojo APIs need migration",
+      "fix": "Plan migration to React widgets using MigrateToReact module",
+      "severity": "MEDIUM"
+    },
+    {
+      "change": "Java 21 requirement",
+      "description": "Mendix 11 requires Java 21. Java 17 no longer supported.",
+      "impact": "Deployment environments must upgrade to Java 21",
+      "fix": "Update runtime environments to Java 21 before upgrading",
+      "severity": "HIGH"
+    },
+    {
+      "change": "Marketplace module compatibility",
+      "description": "Many Marketplace modules require updates for Mendix 11 compatibility",
+      "impact": "Apps may fail to start if modules are incompatible",
+      "fix": "Check Marketplace for updated module versions before upgrading",
+      "severity": "HIGH"
+    }
+  ],
+  "domain_modeling": {
+    "entity_types": [
+      {
+        "type": "Persistable Entity",
+        "description": "Standard database-backed entity stored in project database",
+        "use_when": "Need to store data permanently, support CRUD operations, define associations",
+        "storage": "Database table with columns per attribute",
+        "performance": "Fast for indexed queries, slower for large unindexed datasets",
+        "capabilities": [
+          "Full CRUD",
+          "Associations",
+          "Events",
+          "Validation",
+          "Security rules"
+        ],
+        "example": "Customer, Order, Product entities"
+      },
+      {
+        "type": "Non-Persistable Entity",
+        "description": "Temporary entities stored only in memory during request lifecycle",
+        "use_when": "Form data, API request/response models, temporary calculations",
+        "storage": "Memory only - lost after commit or page navigation",
+        "performance": "Very fast, no database overhead",
+        "capabilities": [
+          "No database storage",
+          "No events",
+          "Basic validation",
+          "Page-level security"
+        ],
+        "example": "SearchFilter, UploadForm, CalculationResult"
+      },
+      {
+        "type": "External Entity",
+        "description": "Entity defined in external system accessed via OData or REST",
+        "use_when": "Integration with external services (SAP, Salesforce, custom APIs)",
+        "storage": "External system - Mendix only caches metadata",
+        "performance": "Depends on external API latency",
+        "capabilities": [
+          "Read/write via API",
+          "Limited querying",
+          "No events",
+          "External security"
+        ],
+        "example": "Salesforce_Account, SAP_SalesOrder"
+      },
+      {
+        "type": "View Entity",
+        "description": "Read-only entity based on OQL query for complex data aggregation (Mendix 11+)",
+        "use_when": "Complex reporting, data aggregation, joining multiple entities",
+        "storage": "No storage - query executed on retrieval",
+        "performance": "Depends on OQL complexity and database indexes",
+        "capabilities": [
+          "Read-only",
+          "No associations to persistable entities",
+          "OQL-defined",
+          "Custom attributes"
+        ],
+        "example": "OrderStatistics, CustomerRevenue, DashboardMetrics"
+      }
+    ],
+    "associations": [
+      {
+        "type": "One-to-Many (1 - *)",
+        "description": "One parent entity relates to multiple child entities",
+        "storage": "Foreign key in child table pointing to parent",
+        "delete_behavior": "Delete parent can cascade delete children or prevent deletion",
+        "performance": "Excellent - single foreign key lookup",
+        "use_cases": [
+          "Customer → Orders",
+          "Order → OrderLines",
+          "Department → Employees"
+        ],
+        "best_practice": "Most common pattern, use as default unless many-to-many needed",
+        "ownership": "Child owns the association (foreign key in child table)"
+      },
+      {
+        "type": "Many-to-Many (* - *)",
+        "description": "Multiple entities on both sides can relate to each other",
+        "storage": "Join table with two foreign keys (automatically created by Mendix)",
+        "delete_behavior": "Delete either side removes join table entries",
+        "performance": "Good but requires join table lookup",
+        "use_cases": [
+          "Student ↔ Course",
+          "Product ↔ Category",
+          "User ↔ Role"
+        ],
+        "best_practice": "Use when entities truly have bidirectional many relationship",
+        "ownership": "Neither owns - Mendix creates System.Association table"
+      },
+      {
+        "type": "One-to-One (1 - 1)",
+        "description": "One entity relates to exactly one other entity",
+        "storage": "Foreign key in child table with unique constraint",
+        "delete_behavior": "Similar to one-to-many but enforces uniqueness",
+        "performance": "Excellent - single foreign key with unique index",
+        "use_cases": [
+          "User → UserProfile",
+          "Order → Invoice",
+          "Employee → EmployeeDetail"
+        ],
+        "best_practice": "Use when truly one-to-one. Consider embedding attributes if always loaded together",
+        "ownership": "Child owns the association"
+      },
+      {
+        "type": "Self-Association",
+        "description": "Entity relates to itself (tree/hierarchy structures)",
+        "storage": "Foreign key in same table",
+        "delete_behavior": "Must handle carefully to avoid orphans",
+        "performance": "Good but complex recursive queries can be slow",
+        "use_cases": [
+          "Employee → Manager",
+          "Category → ParentCategory",
+          "Task → SubTask"
+        ],
+        "best_practice": "Limit depth, consider materialized path pattern for deep hierarchies",
+        "ownership": "Self-referencing foreign key"
+      }
+    ],
+    "generalization": {
+      "description": "Entity inheritance - child entities inherit attributes and associations from parent",
+      "use_when": "Entities share common attributes but have specialized behavior",
+      "storage": "All attributes stored in parent table with Type discriminator column",
+      "performance": "Good - single table, but larger rows",
+      "advantages": [
+        "Share common attributes and associations",
+        "Polymorphic queries (retrieve all types via parent)",
+        "Centralized security rules on parent"
+      ],
+      "disadvantages": [
+        "Cannot add associations from parent after children created",
+        "All child attributes in single table (larger row size)",
+        "Type checking required in microflows"
+      ],
+      "example": {
+        "parent": "Vehicle (Attributes: LicensePlate, Year, Color)",
+        "children": [
+          "Car (Attributes: NumDoors, TrunkSize)",
+          "Truck (Attributes: PayloadCapacity, AxleCount)"
+        ],
+        "use_case": "Vehicle management system with different vehicle types"
+      },
+      "best_practice": "Use for true IS-A relationships. Avoid deep hierarchies (max 2-3 levels). Consider composition if not true inheritance."
+    },
+    "calculated_attributes": {
+      "description": "Virtual attributes computed from other attributes or associations",
+      "storage": "Not stored - computed on access",
+      "performance": "Can be slow if accessed frequently or involves complex logic",
+      "use_when": "Value derived from other attributes, infrequently accessed, no need to query",
+      "alternatives": [
+        "Store as regular attribute and update via events (faster reads, more storage)",
+        "Compute in microflow when needed (explicit control)",
+        "Use view entity with OQL (for complex aggregations)"
+      ],
+      "example": {
+        "attribute": "FullName",
+        "expression": "$FirstName + ' ' + $LastName",
+        "use_case": "Display full name without storing redundantly"
+      },
+      "best_practice": "Avoid in data grids or lists (N+1 problem). Use only for display in forms or single-object contexts."
+    },
+    "event_handlers": {
+      "types": [
+        {
+          "event": "Before Commit",
+          "fires": "Immediately before object saved to database",
+          "use_case": "Validation, computed attribute updates, audit logging",
+          "can_prevent": true,
+          "example": "Calculate OrderTotal before saving Order"
+        },
+        {
+          "event": "After Commit",
+          "fires": "Immediately after object saved to database",
+          "use_case": "Notifications, external API calls, triggering workflows",
+          "can_prevent": false,
+          "example": "Send email notification after Customer created"
+        },
+        {
+          "event": "Before Delete",
+          "fires": "Before object deleted from database",
+          "use_case": "Validation, prevent delete under conditions, cleanup associated data",
+          "can_prevent": true,
+          "example": "Prevent Order deletion if status is 'Shipped'"
+        },
+        {
+          "event": "After Delete",
+          "fires": "After object deleted from database",
+          "use_case": "Audit logging, cleanup external resources",
+          "can_prevent": false,
+          "example": "Delete associated files from external storage"
+        },
+        {
+          "event": "Before Rollback",
+          "fires": "Before transaction rolled back",
+          "use_case": "Cleanup, logging",
+          "can_prevent": false,
+          "example": "Log rollback reason"
+        }
+      ],
+      "best_practices": [
+        "Keep events fast - avoid complex logic or external calls in Before Commit",
+        "Use After Commit for notifications and external APIs",
+        "Be careful with infinite loops (event triggers another event)",
+        "Events don't fire for bulk operations (use microflows instead)",
+        "Consider transaction boundaries - Before Commit is inside transaction"
+      ],
+      "anti_patterns": [
+        {
+          "mistake": "External API calls in Before Commit",
+          "why_bad": "Slows down all saves, can cause timeouts, hard to handle failures",
+          "alternative": "Use After Commit or async microflow"
+        },
+        {
+          "mistake": "Complex calculations in events",
+          "why_bad": "Impacts performance of all CRUD operations",
+          "alternative": "Use scheduled events or microflows"
+        }
+      ]
+    }
+  },
+  "microflows": {
+    "naming_conventions": [
+      {
+        "prefix": "ACT_",
+        "purpose": "Action microflows called from pages (buttons, on-click)",
+        "example": "ACT_Customer_Save, ACT_Order_Submit",
+        "visibility": "Usually exposed to pages"
+      },
+      {
+        "prefix": "SUB_",
+        "purpose": "Sub-microflows (reusable logic called by other microflows)",
+        "example": "SUB_Customer_Validate, SUB_Order_CalculateTotal",
+        "visibility": "Internal only, not exposed"
+      },
+      {
+        "prefix": "DS_",
+        "purpose": "Data source microflows for data grids and list views",
+        "example": "DS_Customer_Search, DS_Order_Recent",
+        "visibility": "Used as data sources"
+      },
+      {
+        "prefix": "BCO_",
+        "purpose": "Before Commit event handlers",
+        "example": "BCO_Order_CalculateTotal, BCO_Customer_ValidateEmail",
+        "visibility": "Event handler only"
+      },
+      {
+        "prefix": "ACO_",
+        "purpose": "After Commit event handlers",
+        "example": "ACO_Order_SendNotification, ACO_Customer_CreateAccount",
+        "visibility": "Event handler only"
+      },
+      {
+        "prefix": "SE_",
+        "purpose": "Scheduled event microflows",
+        "example": "SE_Order_CleanupOld, SE_Customer_SendReminders",
+        "visibility": "Scheduled event only"
+      }
+    ],
+    "bpmn_elements": [
+      {
+        "element": "Start Event",
+        "description": "Entry point of microflow with input parameters",
+        "icon": "Green circle",
+        "best_practice": "Clearly name parameters, use strict types"
+      },
+      {
+        "element": "End Event",
+        "description": "Exit point returning value or void",
+        "icon": "Red circle",
+        "best_practice": "Multiple end events for different outcomes (success, error)"
+      },
+      {
+        "element": "Activity",
+        "description": "Action to perform (Create, Change, Retrieve, Delete, etc.)",
+        "icon": "Rectangle",
+        "types": [
+          "Create object",
+          "Change object",
+          "Retrieve",
+          "Delete",
+          "Call microflow",
+          "Java action"
+        ]
+      },
+      {
+        "element": "Decision (XPath)",
+        "description": "Conditional branching based on XPath expression",
+        "icon": "Diamond",
+        "best_practice": "Use XPath for simple conditions, microflow for complex logic"
+      },
+      {
+        "element": "Exclusive Split",
+        "description": "Branch to one path based on conditions",
+        "icon": "Diamond with X",
+        "best_practice": "Always have 'else' path to handle unexpected cases"
+      },
+      {
+        "element": "Loop",
+        "description": "Iterate over list of objects",
+        "icon": "Rectangle with loop arrows",
+        "best_practice": "Minimize loops, use batch operations when possible"
+      },
+      {
+        "element": "Error Handler",
+        "description": "Catch and handle errors",
+        "icon": "Lightning bolt connector",
+        "best_practice": "Always have error paths for risky operations (API calls, Java actions)"
+      }
+    ],
+    "best_practices": [
+      {
+        "practice": "Keep microflows focused and small",
+        "rationale": "Easier to maintain, test, and reuse. Follows single responsibility principle.",
+        "example": "Instead of one 500-line microflow, create multiple sub-microflows for different steps",
+        "source": "Mendix Best Practices Guide"
+      },
+      {
+        "practice": "Use Sub-microflows for reusable logic",
+        "rationale": "Avoid duplication, centralize business logic, easier to update",
+        "example": "SUB_Customer_Validate called by ACT_Customer_Save and API operations",
+        "source": "Mendix Expert Consensus"
+      },
+      {
+        "practice": "Minimize database commits",
+        "rationale": "Each commit is expensive (database transaction + events). Batch when possible.",
+        "example": "In loops, commit after processing batch of 100 instead of every iteration",
+        "source": "Mendix Performance Best Practices"
+      },
+      {
+        "practice": "Retrieve over association instead of by XPath",
+        "rationale": "Faster performance, uses foreign key index",
+        "example": "Retrieve Order/OrderLines instead of Retrieve OrderLine where Order = $Order",
+        "source": "Mendix Performance Guide"
+      },
+      {
+        "practice": "Use Change Lists for batch updates",
+        "rationale": "Single database query instead of N queries",
+        "example": "Change list of OrderLine to set Status = 'Processed' instead of loop with Change",
+        "source": "Mendix 10+ Documentation"
+      },
+      {
+        "practice": "Always handle errors explicitly",
+        "rationale": "Prevent unhandled exceptions, provide user feedback, log for debugging",
+        "example": "Add error handlers to all API calls and Java actions",
+        "source": "Mendix Security & Reliability Guide"
+      },
+      {
+        "practice": "Use transactions wisely",
+        "rationale": "Keep transactions short, commit regularly in long operations",
+        "example": "Process 1000 orders in batches of 100 with commits between",
+        "source": "Mendix Expert Consensus"
+      }
+    ],
+    "performance_optimization": [
+      {
+        "technique": "Batch Processing",
+        "description": "Process multiple objects together instead of one at a time",
+        "implementation": "Use Change List, Delete List actions instead of loops with Change/Delete",
+        "performance_gain": "10-100x faster for large datasets",
+        "example": "Change list of 1000 OrderLines instead of loop with 1000 Change actions"
+      },
+      {
+        "technique": "Minimize Loops",
+        "description": "Avoid loops when possible, use batch operations or XPath",
+        "implementation": "Use aggregate functions, batch retrievals, Change List",
+        "performance_gain": "5-50x faster",
+        "example": "Aggregate 'Count' instead of loop counting objects"
+      },
+      {
+        "technique": "Retrieve Over Association",
+        "description": "Use association navigation instead of XPath queries",
+        "implementation": "Retrieve $Order/OrderLines instead of Retrieve OrderLine[Order=$Order]",
+        "performance_gain": "2-10x faster, uses indexes",
+        "example": "Navigate associations in data grids and microflows"
+      },
+      {
+        "technique": "Limit Retrieved Objects",
+        "description": "Use XPath constraints and limit/offset to retrieve only needed data",
+        "implementation": "Add 'Limit' in Retrieve action, use XPath constraints",
+        "performance_gain": "Linear reduction in data transferred and processed",
+        "example": "Retrieve first 50 Orders instead of all 10,000"
+      },
+      {
+        "technique": "Avoid Calculated Attributes in Lists",
+        "description": "Calculated attributes execute per object in lists (N+1 problem)",
+        "implementation": "Store calculated values as regular attributes or compute in microflow",
+        "performance_gain": "Eliminates N+1 queries",
+        "example": "Store OrderTotal as attribute instead of calculating in each row"
+      }
+    ],
+    "error_handling": [
+      {
+        "pattern": "Wrap External Calls",
+        "description": "All external API calls and Java actions should have error handlers",
+        "implementation": "Add Error Event to activity, create error flow with logging and user message",
+        "example": "API call fails → Log error → Show user-friendly message → Return gracefully"
+      },
+      {
+        "pattern": "Custom Error Messages",
+        "description": "Provide context-specific error messages instead of generic 'An error occurred'",
+        "implementation": "Use $latestError variables and Show Message action with details",
+        "example": "'Failed to save Order #123: Customer not found' instead of 'Save failed'"
+      },
+      {
+        "pattern": "Rollback on Error",
+        "description": "Explicitly rollback transaction when critical operation fails",
+        "implementation": "Use Rollback action in error handler",
+        "example": "Payment fails → Rollback Order changes → Show error"
+      },
+      {
+        "pattern": "Log Errors for Debugging",
+        "description": "Log all errors with context for troubleshooting",
+        "implementation": "Use Log Message action with error details and variables",
+        "example": "Log 'Order ACT_Order_Submit failed for OrderID=$Order/ID: $latestError'"
+      }
+    ],
+    "anti_patterns": [
+      {
+        "mistake": "Commit inside loops",
+        "why_bad": "Massive performance impact - each commit is expensive",
+        "alternative": "Commit after loop or in batches (every 100 objects)",
+        "example": "Loop over 1000 objects → Change object → Commit (1000 commits!). Instead: Loop → Change → Commit after loop (1 commit)"
+      },
+      {
+        "mistake": "Retrieve entire list when checking existence",
+        "why_bad": "Wastes memory and database resources",
+        "alternative": "Use Count aggregate or Retrieve with Limit 1",
+        "example": "Use 'Retrieve Order count' > 0 instead of 'List of Orders isEmpty'"
+      },
+      {
+        "mistake": "No error handling on external operations",
+        "why_bad": "Application crashes on external failures, poor user experience",
+        "alternative": "Always add error handlers to API calls, Java actions",
+        "example": "API call without handler crashes app. Add error handler → Show message"
+      },
+      {
+        "mistake": "Deeply nested microflows",
+        "why_bad": "Hard to debug, understand, and maintain",
+        "alternative": "Extract sub-microflows, flatten structure",
+        "example": "5 levels deep → Extract to separate sub-microflows with clear names"
+      }
+    ]
+  },
+  "security": {
+    "entity_access_rules": {
+      "description": "Control create, read, update, delete permissions per entity per user role",
+      "granularity": "Entity level with XPath constraints for row-level security",
+      "evaluation": "Checked on every retrieve, create, change, delete operation",
+      "rules": [
+        {
+          "permission": "Create",
+          "description": "Allow user to create new objects of this entity",
+          "typical_use": "Users can create their own Orders"
+        },
+        {
+          "permission": "Read",
+          "description": "Allow user to retrieve and view objects",
+          "typical_use": "Users can view their own Orders"
+        },
+        {
+          "permission": "Write",
+          "description": "Allow user to modify existing objects",
+          "typical_use": "Users can edit their own Orders before submission"
+        },
+        {
+          "permission": "Delete",
+          "description": "Allow user to delete objects",
+          "typical_use": "Admins can delete any Order"
+        }
+      ],
+      "member_access": {
+        "description": "Control visibility and editability of individual attributes",
+        "options": [
+          "Read",
+          "Write",
+          "None"
+        ],
+        "best_practice": "Hide sensitive attributes from roles that shouldn't see them"
+      }
+    },
+    "xpath_constraints": {
+      "description": "Row-level security rules to filter which objects users can access",
+      "evaluation": "Automatically appended to all retrieves for constrained entities",
+      "common_patterns": [
+        {
+          "pattern": "Owner-based",
+          "xpath": "[System.owner = '[%CurrentUser%]']",
+          "use_case": "Users can only see their own objects",
+          "example": "Customer sees only their own Orders"
+        },
+        {
+          "pattern": "Path to User",
+          "xpath": "[Module.Association/Module.User = '[%CurrentUser%]']",
+          "use_case": "Objects associated with current user through relationship",
+          "example": "Team members see Orders assigned to their Team"
+        },
+        {
+          "pattern": "Status-based",
+          "xpath": "[Status = 'Active'] or [Status = 'Pending']",
+          "use_case": "Users only see objects in certain states",
+          "example": "Regular users see only Active Orders, Admins see all"
+        },
+        {
+          "pattern": "Date range",
+          "xpath": "[CreatedDate >= '[%BeginOfCurrentMonth%]']",
+          "use_case": "Limit access to recent data",
+          "example": "Users see only current month's Orders"
+        },
+        {
+          "pattern": "Complex multi-condition",
+          "xpath": "[Owner = '[%CurrentUser%]' or AssignedTo = '[%CurrentUser%]'] and [Status != 'Deleted']",
+          "use_case": "Combine multiple security rules",
+          "example": "Users see Orders they own OR are assigned to, excluding deleted"
+        }
+      ],
+      "best_practices": [
+        {
+          "practice": "Always test XPath constraints thoroughly",
+          "rationale": "Incorrect constraints can leak data or block legitimate access",
+          "example": "Test with different user roles and data scenarios"
+        },
+        {
+          "practice": "Keep constraints simple for performance",
+          "rationale": "Complex XPath constraints impact query performance",
+          "example": "Use direct associations instead of multi-hop paths when possible"
+        },
+        {
+          "practice": "Document business logic in constraint description",
+          "rationale": "Makes security rules understandable and maintainable",
+          "example": "'Users can only access Orders they created or that are assigned to their department'"
+        }
+      ]
+    },
+    "authentication_methods": [
+      {
+        "method": "Local Accounts",
+        "description": "Username/password stored in Mendix database",
+        "use_when": "Simple apps, internal tools, proof of concepts",
+        "security_level": "Basic",
+        "configuration": "Built-in, no setup required",
+        "best_for": "Development and small internal applications"
+      },
+      {
+        "method": "Mendix SSO",
+        "description": "Single sign-on using Mendix platform accounts",
+        "use_when": "Mendix Cloud deployment, want seamless platform integration",
+        "security_level": "High",
+        "configuration": "Enable in Cloud Portal settings",
+        "best_for": "Production apps on Mendix Cloud"
+      },
+      {
+        "method": "SAML 2.0",
+        "description": "Enterprise SSO integration (Okta, Azure AD, OneLogin)",
+        "use_when": "Enterprise environments with existing identity providers",
+        "security_level": "High",
+        "configuration": "SAML module from Marketplace + IDP configuration",
+        "best_for": "Enterprise applications with SAML infrastructure"
+      },
+      {
+        "method": "OpenID Connect (OIDC)",
+        "description": "Modern authentication protocol (Google, Microsoft, Auth0)",
+        "use_when": "Modern identity providers, social login",
+        "security_level": "High",
+        "configuration": "OIDC module from Marketplace + provider configuration",
+        "best_for": "Customer-facing apps, modern SSO requirements"
+      }
+    ],
+    "best_practices": [
+      {
+        "practice": "Apply principle of least privilege",
+        "rationale": "Users should only have access to data and operations they need",
+        "example": "Regular users have Read-only access, Managers have Write, Admins have Delete",
+        "source": "Security Best Practices"
+      },
+      {
+        "practice": "Never bypass security in microflows",
+        "rationale": "Using 'sudo' or system context undermines entity access rules",
+        "example": "Don't use System.owner override unless absolutely necessary and well-documented",
+        "source": "Mendix Security Guide"
+      },
+      {
+        "practice": "Secure microflows separately",
+        "rationale": "Entity access doesn't protect microflow actions",
+        "example": "Set microflow execution roles even if entities are secured",
+        "source": "Mendix Security Documentation"
+      },
+      {
+        "practice": "Test security with different roles",
+        "rationale": "Easy to misconfigure and leak data",
+        "example": "Log in as different roles and verify data visibility",
+        "source": "Security Testing Best Practices"
+      }
+    ]
+  },
+  "best_practices": [
+    {
+      "practice": "Use indexes on frequently queried attributes",
+      "rationale": "Dramatically improves query performance",
+      "implementation": "Add index to attributes used in XPath, data source constraints, searches",
+      "example": "Add index to Customer.Email if searching by email frequently",
+      "source": "Mendix Performance Guide"
+    },
+    {
+      "practice": "Avoid calculated attributes in data grids",
+      "rationale": "N+1 query problem - calculated per row",
+      "implementation": "Store as regular attribute or compute in data source microflow",
+      "example": "Store OrderTotal instead of calculating from OrderLines each time",
+      "source": "Mendix Expert Consensus"
+    },
+    {
+      "practice": "Use domain model validation over microflow validation",
+      "rationale": "Centralized, enforced everywhere, better UX",
+      "implementation": "Add validation rules to entity instead of checks in every microflow",
+      "example": "Email format validation on Customer.Email entity",
+      "source": "Mendix Best Practices"
+    },
+    {
+      "practice": "Keep modules cohesive and loosely coupled",
+      "rationale": "Easier to maintain, test, and reuse",
+      "implementation": "Group related entities and logic, minimize cross-module dependencies",
+      "example": "OrderManagement module contains Order, OrderLine, OrderStatus entities and related microflows",
+      "source": "Software Architecture Principles"
+    },
+    {
+      "practice": "Document complex logic with annotations",
+      "rationale": "Makes microflows understandable for other developers",
+      "implementation": "Add annotation boxes explaining business logic and decisions",
+      "example": "'Calculate discount: 10% for orders > $100, 15% for orders > $500'",
+      "source": "Development Best Practices"
+    }
+  ],
+  "common_patterns": [
+    {
+      "pattern": "Master-Detail Pages",
+      "use_case": "Display list with details panel",
+      "implementation": "Data grid with on-click microflow setting context object for detail data view",
+      "example": "Customer list → Click customer → Show customer details and related orders"
+    },
+    {
+      "pattern": "Wizard/Multi-Step Forms",
+      "use_case": "Complex data entry broken into steps",
+      "implementation": "Multiple pages with non-persistable entity holding form data, commit on last step",
+      "example": "Order creation: Step 1 (Customer info) → Step 2 (Products) → Step 3 (Review) → Submit"
+    },
+    {
+      "pattern": "Search/Filter Pattern",
+      "use_case": "Dynamic data filtering",
+      "implementation": "Non-persistable SearchFilter entity, microflow data source applying XPath",
+      "example": "Customer search by name, email, status with dynamic XPath construction"
+    }
+  ],
+  "anti_patterns": [
+    {
+      "mistake": "Everything in one module",
+      "why_bad": "Unmaintainable, hard to understand, prevents reuse",
+      "alternative": "Organize into logical domain modules (Customer, Order, Product, etc.)",
+      "example": "Split monolithic 'App' module into CustomerManagement, OrderProcessing, Inventory"
+    },
+    {
+      "mistake": "God microflow (one microflow does everything)",
+      "why_bad": "Hard to debug, test, maintain, reuse",
+      "alternative": "Break into smaller sub-microflows with clear responsibilities",
+      "example": "Split 500-line ACT_Order_Process into ACT_Order_Validate, SUB_Order_Calculate, SUB_Order_Notify"
+    },
+    {
+      "mistake": "Ignoring entity events",
+      "why_bad": "Business logic scattered across many microflows",
+      "alternative": "Use Before/After Commit events for universal logic",
+      "example": "Audit logging in After Commit event instead of every save microflow"
+    }
+  ],
+  "expert_tips": [
+    {
+      "tip": "Use System.owner association for quick user-object ownership",
+      "source": "Mendix MVP",
+      "context": "Every persistable entity can associate to System.User via owner",
+      "example": "Set owner on create, use XPath [System.owner = '[%CurrentUser%]'] for security"
+    },
+    {
+      "tip": "Mendix uses optimistic locking - last write wins",
+      "source": "Mendix Documentation",
+      "context": "No pessimistic locking. Handle concurrent updates with version attributes if needed",
+      "example": "Add Version (AutoNumber) attribute and check in Before Commit"
+    },
+    {
+      "tip": "Microflows execute in single thread per request",
+      "source": "Mendix Runtime Documentation",
+      "context": "No parallelism within microflow. Use multiple requests or Java actions for concurrency",
+      "example": "Batch processing can benefit from parallel task execution in Java"
+    },
+    {
+      "tip": "Use ENUM for status fields instead of String",
+      "source": "Best Practices",
+      "context": "Type safety, dropdown support, easier refactoring",
+      "example": "OrderStatus enum (New, Processing, Shipped, Delivered) instead of String"
+    }
+  ],
+  "real_world_examples": [
+    {
+      "scenario": "E-commerce order processing",
+      "solution": "Order entity with associations to Customer, OrderLine (1-*), Product. Before Commit event calculates total. After Commit triggers notification workflow.",
+      "source": "Mendix Retail Template"
+    },
+    {
+      "scenario": "Multi-tenant SaaS application",
+      "solution": "Tenant entity associated to all data entities. XPath constraints filter by current user's tenant. Index on TenantID for performance.",
+      "source": "Mendix Multi-Tenant Guide"
+    },
+    {
+      "scenario": "Document management with approval workflow",
+      "solution": "Document entity with FileDocument generalization. Workflow entity tracks approval steps. Event handlers update status.",
+      "source": "Mendix Workflow Examples"
+    }
+  ],
+  "performance_notes": "Studio Pro 11 introduces improved caching and query optimization. React client has better performance than Dojo. View entities enable complex queries without custom Java. Always profile with built-in Performance Tool before optimizing.",
+  "security_notes": "Mendix 11 enforces stricter security by default. ShowHomePage now respects entity access. Always define explicit access rules. Use XPath constraints for row-level security. Never bypass security unless absolutely necessary and well-documented.",
+  "testing_strategy": "Use built-in unit testing (UnitTesting module from Marketplace). Test microflows with different roles. Use Application Test Suite (ATS) for UI testing. Test security rules with different user roles. Profile performance with Performance Tool.",
+  "migration_to_mendix_11": {
+    "preparation": [
+      "Review release notes for breaking changes",
+      "Check Marketplace module compatibility",
+      "Update Java to version 21",
+      "Test in development environment first",
+      "Plan Dojo to React migration if needed"
+    ],
+    "common_issues": [
+      "ShowHomePage security changes",
+      "XPath math operator strict typing",
+      "Marketplace module incompatibilities",
+      "Custom widget Dojo dependencies",
+      "Java version requirements"
+    ],
+    "best_practices": [
+      "Migrate in phases (dev → test → production)",
+      "Comprehensive testing with all user roles",
+      "Monitor performance after upgrade",
+      "Update custom widgets to React",
+      "Review and update XPath constraints"
+    ]
+  },
+  "categories": {
+    "nanoflows": [
+      {
+        "topic": "Nanoflows - Client-Side Logic in Mendix",
+        "description": "Nanoflows execute in the browser/client, providing fast user interactions without server round-trips. Essential for offline-first apps and responsive UIs.",
+        "mendix_version": "11.x",
+        "when_to_use_nanoflows": [
+          "Quick UI updates without server calls",
+          "Offline mobile applications",
+          "Client-side validation",
+          "Manipulating non-persistable entities",
+          "Calling JavaScript actions",
+          "Simple calculations that don't need database access"
+        ],
+        "when_to_use_microflows": [
+          "Database operations (CRUD on persistable entities)",
+          "Complex business logic",
+          "Integration with external services",
+          "Scheduled events",
+          "Security-sensitive operations",
+          "Operations requiring system context"
+        ],
+        "key_differences": {
+          "execution": "Nanoflows run in browser, microflows run on server",
+          "database_access": "Nanoflows cannot directly access database - must use data sources or call microflows",
+          "security": "Nanoflows are visible to users - never put secrets in them",
+          "offline": "Nanoflows work offline, microflows require connectivity",
+          "performance": "Nanoflows are instant, microflows have network latency"
+        },
+        "nanoflow_best_practices": [
+          "Keep nanoflows simple - complex logic belongs in microflows",
+          "Use for UI responsiveness (show/hide, enable/disable)",
+          "Perfect for client-side validation before submit",
+          "Use with non-persistable entities for form state",
+          "Call microflows via 'Call microflow' action when database access needed",
+          "Test both online and offline behavior"
+        ],
+        "offline_specific": {
+          "sync_patterns": "Configure which entities sync to device",
+          "conflict_resolution": "Handle sync conflicts in After Synchronization microflow",
+          "storage": "Mendix uses OPFS (Origin Private File System) for PWA offline storage in 11.x",
+          "testing": "Test with airplane mode to verify offline behavior"
+        },
+        "common_activities": [
+          "Change object (non-persistable)",
+          "Create object (non-persistable)",
+          "Show message",
+          "Close page",
+          "Call nanoflow",
+          "Call microflow",
+          "JavaScript action"
+        ],
+        "restrictions": [
+          "Cannot commit persistable entities directly",
+          "Cannot use Retrieve from database",
+          "Limited error handling compared to microflows",
+          "Cannot run scheduled events"
+        ],
+        "_metadata": {
+          "id": "e2eef6b3-2393-4af3-9e48-01087ee9aaf0",
+          "added_at": "2025-12-07T23:42:22.734Z",
+          "source": "Mendix Documentation - Studio Pro 11.x",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-07T23:51:15.409Z"
+        }
+      }
+    ],
+    "workflows": [
+      {
+        "topic": "Mendix Workflows - Business Process Automation",
+        "description": "Workflows in Mendix 11 provide visual business process automation with human tasks, system activities, and decision points. Built on BPMN concepts.",
+        "mendix_version": "11.x",
+        "workflow_components": {
+          "user_tasks": {
+            "description": "Tasks assigned to users requiring human action",
+            "properties": [
+              "Task name",
+              "Assignees (user, user task assignment microflow)",
+              "Due date",
+              "Task page",
+              "Outcomes"
+            ],
+            "task_assignment_options": [
+              "Specific user",
+              "XPath expression",
+              "Microflow returning users",
+              "User task assignment microflow for complex logic"
+            ]
+          },
+          "system_activities": {
+            "description": "Automated activities executed by the system",
+            "types": [
+              "Call microflow",
+              "Call workflow",
+              "Generate document"
+            ]
+          },
+          "decisions": {
+            "description": "Branching logic based on expressions",
+            "exclusive_split": "Only one path taken based on condition",
+            "parallel_split": "Multiple paths executed simultaneously",
+            "merge": "Combines parallel paths back together"
+          },
+          "events": {
+            "start_event": "Entry point of workflow",
+            "end_event": "Completion point (can have multiple)",
+            "boundary_events": "Attached to activities - timers, error handlers (11.x feature)",
+            "intermediate_events": "Wait for external signals"
+          }
+        },
+        "mendix_11_workflow_features": [
+          "Interrupting boundary events (timers, error handlers)",
+          "Non-interrupting boundary events",
+          "Multi-instance user tasks",
+          "Parallel execution support",
+          "Improved workflow monitoring",
+          "Workflow versioning and migration",
+          "Enhanced workflow Admin page"
+        ],
+        "workflow_entities": {
+          "System.WorkflowUserTask": "Represents a user task instance",
+          "System.Workflow": "The workflow instance itself",
+          "workflow_context_entity": "Your custom entity passed through the workflow"
+        },
+        "best_practices": [
+          "Keep workflows focused on orchestration, put logic in microflows",
+          "Use meaningful task names that users understand",
+          "Always set due dates for user tasks",
+          "Configure task page for optimal user experience",
+          "Test all workflow paths including timeouts and errors",
+          "Use workflow admin page for monitoring and troubleshooting",
+          "Handle workflow aborts and errors gracefully",
+          "Version workflows carefully - running instances use old version"
+        ],
+        "common_patterns": {
+          "approval_workflow": "Request → Manager Approval → Director Approval (if > threshold) → Complete",
+          "onboarding_workflow": "New Employee → IT Setup → HR Orientation → Manager Introduction → Complete",
+          "document_review": "Submit → Parallel Review (Legal + Compliance + Technical) → Merge → Final Approval"
+        },
+        "integration_with_pages": {
+          "task_inbox": "Use Workflow Commons module for pre-built task inbox",
+          "task_pages": "Design clear task pages with all info needed for decision",
+          "workflow_status": "Show workflow progress on detail pages"
+        },
+        "monitoring": {
+          "admin_page": "Built-in workflow administration for monitoring instances",
+          "metrics": "Track completion times, bottlenecks, SLA compliance",
+          "debugging": "Use workflow instance details to see current state and history"
+        },
+        "_metadata": {
+          "id": "d1baab56-121d-4ece-bf3c-8b2570f4ea86",
+          "added_at": "2025-12-07T23:42:43.404Z",
+          "source": "Mendix Documentation - Workflows in Mendix 11",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      }
+    ],
+    "integrations": [
+      {
+        "topic": "Mendix Integration Patterns - REST, OData, SOAP",
+        "description": "Comprehensive guide to integrating Mendix with external systems using REST APIs, OData services, and legacy SOAP services.",
+        "mendix_version": "11.x",
+        "rest_services": {
+          "published_rest": {
+            "description": "Expose Mendix data and logic as REST APIs",
+            "setup": "Right-click module → Add other → Published REST Service",
+            "resources": "Define resources (e.g., /customers, /orders)",
+            "operations": "GET (retrieve), POST (create), PUT (update), PATCH (partial update), DELETE (remove)",
+            "authentication": [
+              "No auth",
+              "Basic auth",
+              "Custom (microflow)",
+              "OAuth/JWT via module"
+            ],
+            "response_formats": "JSON (default), XML",
+            "best_practices": [
+              "Use meaningful resource names (nouns, plural)",
+              "Version your APIs (/api/v1/customers)",
+              "Return appropriate HTTP status codes",
+              "Implement pagination for large datasets",
+              "Document with OpenAPI/Swagger"
+            ]
+          },
+          "consumed_rest": {
+            "description": "Call external REST APIs from Mendix",
+            "activity": "Call REST service activity in microflow",
+            "request": "Configure URL, method, headers, body",
+            "response": "Map to Mendix entities (import mapping) or handle as string",
+            "authentication": [
+              "Headers",
+              "Basic auth",
+              "OAuth tokens",
+              "API keys"
+            ],
+            "error_handling": "Handle HTTP errors, timeouts, connection failures"
+          }
+        },
+        "odata_services": {
+          "published_odata": {
+            "description": "Expose entities as OData feed for BI tools (Excel, Power BI, Tableau)",
+            "setup": "Right-click module → Add other → Published OData Service",
+            "entities": "Select which entities to expose",
+            "capabilities": "Query ($filter, $select, $expand), pagination, sorting",
+            "use_cases": [
+              "Business intelligence",
+              "Reporting",
+              "Data exports",
+              "Excel integration"
+            ]
+          },
+          "consumed_odata": {
+            "description": "Consume external OData services",
+            "wizard": "Right-click module → Add other → Consumed OData Service → Import from URL",
+            "entities": "External entities appear like local entities",
+            "limitations": "Read-only by default, limited query capabilities"
+          }
+        },
+        "import_export_mappings": {
+          "import_mapping": {
+            "description": "Transform JSON/XML to Mendix objects",
+            "creation": "Right-click module → Add other → Import Mapping",
+            "source": "JSON structure, XML schema, or message definition",
+            "usage": "Used in Call REST service, Import from message activities"
+          },
+          "export_mapping": {
+            "description": "Transform Mendix objects to JSON/XML",
+            "creation": "Right-click module → Add other → Export Mapping",
+            "usage": "Used in Call REST service body, Export to message activities"
+          }
+        },
+        "message_definitions": {
+          "description": "Define the structure of messages for mappings",
+          "json_structure": "Import from JSON sample or schema",
+          "xml_schema": "Import XSD for SOAP/XML services",
+          "entity_based": "Generate from existing Mendix entity"
+        },
+        "authentication_patterns": {
+          "api_key": {
+            "description": "Simple key in header or query parameter",
+            "implementation": "Add X-API-Key header in REST call",
+            "security": "Store keys in constants or encrypted attributes"
+          },
+          "basic_auth": {
+            "description": "Username:password base64 encoded",
+            "implementation": "Built-in support in REST activity",
+            "security": "Always use HTTPS"
+          },
+          "oauth2": {
+            "description": "Token-based authentication",
+            "flows": [
+              "Client credentials (service-to-service)",
+              "Authorization code (user login)",
+              "Password grant (legacy)"
+            ],
+            "implementation": "Use OIDC SSO module or custom token handling",
+            "tokens": "Store access tokens, handle refresh"
+          },
+          "jwt": {
+            "description": "JSON Web Tokens for stateless auth",
+            "implementation": "JWT module from Marketplace",
+            "validation": "Verify signature, check expiration, extract claims"
+          }
+        },
+        "best_practices": [
+          "Always use HTTPS for external calls",
+          "Implement retry logic for transient failures",
+          "Set appropriate timeouts (default may be too long)",
+          "Log integration calls for debugging",
+          "Handle rate limiting (429 responses)",
+          "Cache responses where appropriate",
+          "Use constants for URLs and credentials",
+          "Test with mock services during development"
+        ],
+        "error_handling": {
+          "http_errors": "Check response code, handle 4xx and 5xx appropriately",
+          "timeouts": "Configure timeout, implement fallback behavior",
+          "connection_errors": "Handle network failures gracefully",
+          "circuit_breaker": "Prevent cascading failures with circuit breaker pattern"
+        },
+        "_metadata": {
+          "id": "54e85da1-cc24-4eee-b25f-54e9af2e8f6a",
+          "added_at": "2025-12-07T23:43:06.548Z",
+          "source": "Mendix Documentation - Integration Best Practices",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      }
+    ],
+    "deployment": [
+      {
+        "topic": "Mendix Deployment and DevOps",
+        "description": "Guide to deploying Mendix applications to Mendix Cloud, private cloud, and on-premises environments with CI/CD practices.",
+        "mendix_version": "11.x",
+        "deployment_options": {
+          "mendix_cloud": {
+            "description": "Mendix-managed cloud platform (recommended)",
+            "environments": [
+              "Free sandbox (development)",
+              "Licensed: Dev/Test/Accept/Production"
+            ],
+            "features": [
+              "Auto-scaling",
+              "Backups",
+              "Monitoring",
+              "Logging",
+              "Metrics"
+            ],
+            "deployment": "One-click from Studio Pro or Developer Portal",
+            "regions": "Multiple regions available (EU, US, Asia-Pacific)"
+          },
+          "mendix_private_cloud": {
+            "description": "Mendix runtime on customer Kubernetes",
+            "platforms": [
+              "AWS EKS",
+              "Azure AKS",
+              "Google GKE",
+              "Red Hat OpenShift",
+              "On-prem Kubernetes"
+            ],
+            "management": "Mendix Operator handles deployments",
+            "control": "Customer controls infrastructure, Mendix handles runtime"
+          },
+          "on_premises": {
+            "description": "Traditional server deployment",
+            "requirements": [
+              "Java 21 (Mendix 11)",
+              "Supported database",
+              "Load balancer",
+              "File storage"
+            ],
+            "deployment_package": "Export .mda file from Studio Pro",
+            "configuration": "m2ee-tools or manual setup"
+          }
+        },
+        "environment_configuration": {
+          "constants": {
+            "description": "Configuration values that differ per environment",
+            "examples": [
+              "API URLs",
+              "Feature flags",
+              "Credentials"
+            ],
+            "best_practice": "Never hardcode - use constants and set per environment"
+          },
+          "scheduled_events": {
+            "description": "Enable/disable per environment",
+            "example": "Disable data cleanup in dev, enable in production"
+          },
+          "runtime_settings": {
+            "description": "JVM and runtime configuration",
+            "examples": [
+              "Memory settings",
+              "Log levels",
+              "Custom settings"
+            ]
+          }
+        },
+        "cicd_patterns": {
+          "mendix_build_api": {
+            "description": "Build deployment packages via API",
+            "usage": "Jenkins, GitHub Actions, Azure DevOps, GitLab CI",
+            "steps": [
+              "Create package from revision",
+              "Wait for build",
+              "Deploy to environment"
+            ]
+          },
+          "platform_sdk": {
+            "description": "Programmatic project and deployment management",
+            "capabilities": [
+              "Create apps",
+              "Manage branches",
+              "Deploy packages",
+              "Environment management"
+            ]
+          },
+          "typical_pipeline": [
+            "Developer commits to branch",
+            "CI builds deployment package",
+            "Automated tests run",
+            "Deploy to test environment",
+            "QA validation",
+            "Approval gate",
+            "Deploy to production"
+          ]
+        },
+        "database_considerations": {
+          "supported_databases": {
+            "mendix_11": [
+              "PostgreSQL (Mendix Cloud default)",
+              "SQL Server 2022+",
+              "MySQL 8.4+",
+              "MariaDB 10.6+",
+              "Oracle 23",
+              "SAP HANA"
+            ],
+            "dropped_11_4": [
+              "SQL Server 2019",
+              "MySQL 8.0",
+              "MariaDB 10.5"
+            ]
+          },
+          "migrations": {
+            "automatic": "Mendix handles schema changes automatically",
+            "caution": "Large data migrations may need manual optimization",
+            "best_practice": "Test migrations in acceptance environment first"
+          }
+        },
+        "monitoring_and_observability": {
+          "mendix_cloud": {
+            "built_in": [
+              "Application metrics",
+              "Trends",
+              "Logs",
+              "Alerts"
+            ],
+            "access": "Developer Portal → Environments → Metrics/Logs"
+          },
+          "external_apm": {
+            "supported": [
+              "Datadog",
+              "New Relic",
+              "Dynatrace",
+              "Application Insights"
+            ],
+            "opentelemetry": "Mendix 11 supports OpenTelemetry for distributed tracing",
+            "setup": "Configure APM agent in runtime settings"
+          },
+          "logging": {
+            "log_nodes": "Create module-specific log nodes",
+            "levels": [
+              "Trace",
+              "Debug",
+              "Info",
+              "Warning",
+              "Error",
+              "Critical"
+            ],
+            "best_practice": "Log key business events, not just errors"
+          }
+        },
+        "best_practices": [
+          "Use branching strategy (feature branches, main for releases)",
+          "Always deploy to test/acceptance before production",
+          "Configure environment-specific constants",
+          "Enable automatic backups in production",
+          "Set up monitoring and alerts",
+          "Document deployment procedures",
+          "Have rollback plan ready",
+          "Test database migrations in acceptance first",
+          "Use Blue-Green or Canary deployments for zero-downtime"
+        ],
+        "troubleshooting": {
+          "deployment_fails": "Check build logs, verify compatibility, check database connection",
+          "app_wont_start": "Check runtime logs, verify constants, check database access",
+          "performance_issues": "Check metrics, review slow queries, optimize microflows"
+        },
+        "_metadata": {
+          "id": "6c514a5b-304d-4852-912c-68616b82d096",
+          "added_at": "2025-12-07T23:43:47.277Z",
+          "source": "Mendix Documentation - Deployment Best Practices",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      }
+    ],
+    "pages": [
+      {
+        "topic": "Mendix Page Development - React Client (Mendix 11)",
+        "description": "Guide to building responsive, performant pages using the React client in Mendix 11. Covers widgets, layouts, data binding, and modern UI patterns.",
+        "mendix_version": "11.x",
+        "react_client": {
+          "description": "Default client in Mendix 11, replacing Dojo",
+          "benefits": [
+            "Better performance",
+            "Modern React ecosystem",
+            "Improved mobile support",
+            "Progressive Web App support"
+          ],
+          "migration": "Use Batch Widget Conversion tool for migrating from Dojo widgets"
+        },
+        "layouts": {
+          "description": "Templates that define page structure",
+          "components": {
+            "layout_containers": "Define regions where content goes (header, sidebar, content, footer)",
+            "placeholders": "Spots where page content is inserted",
+            "layout_widgets": "Widgets that appear on all pages using this layout"
+          },
+          "responsive_design": {
+            "approach": "Use layout grid with column weights",
+            "breakpoints": "Configure visibility and sizing per device type (phone/tablet/desktop)",
+            "atlas_ui": "Built-in responsive layouts from Atlas UI"
+          },
+          "best_practices": [
+            "Create consistent layouts for different page types",
+            "Use placeholders for flexible content areas",
+            "Keep navigation and branding in layout, content in pages",
+            "Design mobile-first, then enhance for desktop"
+          ]
+        },
+        "core_widgets": {
+          "data_containers": {
+            "data_view": {
+              "purpose": "Display/edit single object",
+              "data_source": [
+                "Context",
+                "Microflow",
+                "Nanoflow",
+                "Listen to widget"
+              ],
+              "use_for": "Detail pages, forms, edit screens"
+            },
+            "list_view": {
+              "purpose": "Display list of objects",
+              "optimization": "Use with templates for consistent item rendering",
+              "use_for": "Mobile lists, card layouts, repeated items"
+            },
+            "data_grid": {
+              "purpose": "Tabular data display with sorting/filtering",
+              "features": [
+                "Column sorting",
+                "Search",
+                "Pagination",
+                "Export"
+              ],
+              "use_for": "Admin screens, data management, reporting"
+            },
+            "template_grid": {
+              "purpose": "Grid of items using custom template",
+              "use_for": "Card layouts, product catalogs, dashboards"
+            }
+          },
+          "input_widgets": {
+            "text_box": "Single-line text input",
+            "text_area": "Multi-line text input",
+            "dropdown": "Select from list of options",
+            "radio_buttons": "Select one from visible options",
+            "check_box": "Boolean true/false",
+            "date_picker": "Date/time selection",
+            "reference_selector": "Select associated object",
+            "input_reference_set_selector": "Select multiple associated objects"
+          },
+          "display_widgets": {
+            "text": "Static or dynamic text display",
+            "image": "Display images from entities or URLs",
+            "dynamic_image": "Image based on object attribute"
+          },
+          "action_widgets": {
+            "button": "Trigger actions (microflow, nanoflow, page)",
+            "action_button": "Preconfigured button for common actions",
+            "link_button": "Navigation link styled as button"
+          }
+        },
+        "data_sources": {
+          "database": {
+            "description": "Direct database query",
+            "configuration": "Entity + XPath constraint",
+            "use_for": "Simple filtered lists"
+          },
+          "microflow": {
+            "description": "Microflow returns list/object",
+            "use_for": "Complex filtering, calculated data, external data"
+          },
+          "nanoflow": {
+            "description": "Client-side data retrieval",
+            "use_for": "Offline data, non-persistable entities"
+          },
+          "association": {
+            "description": "Follow association from context object",
+            "use_for": "Related data (order → order lines)"
+          }
+        },
+        "performance_optimization": [
+          "Limit data grid columns to essentials",
+          "Use pagination for large datasets",
+          "Avoid calculated attributes in lists",
+          "Lazy load images",
+          "Use microflow data source for complex filtering (moves logic to server)",
+          "Consider nanoflows for instant UI updates"
+        ],
+        "popup_patterns": {
+          "confirmation": "Confirm destructive actions before executing",
+          "selection": "Popup with data grid for selecting associated objects",
+          "wizard": "Multi-step form using popup navigation",
+          "quick_edit": "Edit related object without leaving main page"
+        },
+        "best_practices": [
+          "Design for mobile first, enhance for desktop",
+          "Use consistent layouts across similar pages",
+          "Group related fields logically",
+          "Provide clear labels and help text",
+          "Validate input on the client where possible",
+          "Show loading indicators for async operations",
+          "Use error messages that tell users how to fix issues",
+          "Test with different screen sizes and devices"
+        ],
+        "accessibility": {
+          "considerations": [
+            "Keyboard navigation",
+            "Screen reader support",
+            "Color contrast",
+            "Focus indicators"
+          ],
+          "implementation": "Use semantic widgets, add ARIA labels where needed",
+          "testing": "Test with keyboard only, use accessibility checkers"
+        },
+        "_metadata": {
+          "id": "dfe77a40-237b-4cf2-b5f4-d76ab5cf7f2b",
+          "added_at": "2025-12-07T23:45:31.603Z",
+          "source": "Mendix Documentation - Pages and Widgets",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      }
+    ],
+    "security": [
+      {
+        "topic": "Mendix Security Model - Complete Guide",
+        "description": "Comprehensive guide to implementing security in Mendix applications covering module roles, entity access, page access, and data constraints.",
+        "mendix_version": "11.x",
+        "security_levels": {
+          "app_security": {
+            "description": "Enable/configure security at application level",
+            "modes": [
+              "Off (development only)",
+              "Prototype/demo",
+              "Production"
+            ],
+            "production_requirements": [
+              "All user roles defined",
+              "All access rules configured",
+              "Administrator account set"
+            ]
+          },
+          "module_roles": {
+            "description": "Define roles within a module",
+            "purpose": "Logical grouping of permissions specific to module functionality",
+            "examples": [
+              "User",
+              "Manager",
+              "Administrator",
+              "Anonymous"
+            ],
+            "best_practice": "Create module roles that match business roles"
+          },
+          "user_roles": {
+            "description": "Application-wide roles assigned to users",
+            "mapping": "User roles contain one or more module roles",
+            "example": "AppAdmin user role → Administration.Admin + CustomerManagement.Admin"
+          }
+        },
+        "entity_access": {
+          "description": "Control Create/Read/Write/Delete per entity per module role",
+          "operations": {
+            "create": "Can create new instances",
+            "read": "Can see existing instances (filtered by XPath)",
+            "write": "Can modify existing instances (filtered by XPath)",
+            "delete": "Can delete instances (filtered by XPath)"
+          },
+          "xpath_constraints": {
+            "description": "Filter which objects a role can access",
+            "examples": [
+              "[System.owner = '[%CurrentUser%]']",
+              "[Status = 'Active']",
+              "[Module.Entity_Role/System.UserRole = '[%UserRole_Manager%]']"
+            ],
+            "tokens": [
+              "[%CurrentUser%]",
+              "[%CurrentDateTime%]",
+              "[%UserRole_X%]"
+            ]
+          },
+          "attribute_access": {
+            "description": "Control which attributes are readable/writable",
+            "options": [
+              "None",
+              "Read-only",
+              "Read/Write"
+            ]
+          }
+        },
+        "page_access": {
+          "description": "Control which roles can access which pages",
+          "configuration": "Per page, select allowed module roles",
+          "navigation": "Menu items auto-hide for unauthorized pages"
+        },
+        "microflow_access": {
+          "description": "Control which roles can execute microflows",
+          "importance": "Entity access doesn't restrict microflow operations",
+          "configuration": "Set allowed module roles on microflow properties",
+          "exposed_microflows": "Especially important for microflows exposed as APIs or widgets"
+        },
+        "common_patterns": {
+          "owner_based": {
+            "description": "Users can only see/edit their own data",
+            "xpath": "[System.owner = '[%CurrentUser%]']",
+            "setup": "Enable 'Store owner' on entity"
+          },
+          "role_hierarchy": {
+            "description": "Managers see their team's data",
+            "xpath": "[Module.Entity_Manager = '[%CurrentUser%]'] or [System.owner = '[%CurrentUser%]']"
+          },
+          "multi_tenant": {
+            "description": "Data isolation between tenants",
+            "xpath": "[Module.Entity_Tenant = $currentSession/Tenant]",
+            "setup": "Store tenant on session, filter all entities"
+          },
+          "status_based": {
+            "description": "Access based on workflow status",
+            "example": "Users can edit 'Draft', only managers can edit 'Approved'"
+          }
+        },
+        "authentication_options": {
+          "local_accounts": "Built-in username/password (development)",
+          "saml_sso": "Enterprise SSO via SAML 2.0",
+          "oidc": "OpenID Connect for modern identity providers",
+          "mendix_sso": "Mendix platform SSO",
+          "custom": "Custom authentication via microflows"
+        },
+        "demo_users": {
+          "description": "Predefined users for testing different roles",
+          "configuration": "Security → Demo users",
+          "use_for": "Quick role switching during development",
+          "caution": "Disable in production deployment"
+        },
+        "best_practices": [
+          "Apply principle of least privilege",
+          "Configure entity access for ALL entities",
+          "Use XPath constraints for row-level security",
+          "Test thoroughly with different user roles",
+          "Document security architecture",
+          "Never bypass security unless absolutely necessary",
+          "Use strong authentication in production",
+          "Regular security audits and penetration testing",
+          "Review microflow access especially for APIs"
+        ],
+        "common_mistakes": [
+          "Forgetting to set entity access rules (default is no access)",
+          "Not restricting microflow access",
+          "Putting sensitive logic in nanoflows (visible to users)",
+          "Overly permissive XPath constraints",
+          "Not testing as different user roles"
+        ],
+        "debugging": {
+          "approach": "Log in as different user roles, verify data visibility",
+          "tools": "Use demo users for quick role switching",
+          "logs": "Enable security logging for troubleshooting access issues"
+        },
+        "_metadata": {
+          "id": "1e0565ad-b6f1-43e1-a9f7-bd6044e3d0db",
+          "added_at": "2025-12-07T23:46:14.396Z",
+          "source": "Mendix Documentation - Security Best Practices",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-08T00:39:31.405Z"
+        }
+      }
+    ],
+    "offline": [
+      {
+        "topic": "Offline-First PWA Development",
+        "description": "Complete guide to building offline-capable Progressive Web Applications with Mendix, including OPFS storage, sync patterns, and conflict resolution.",
+        "mendix_version": "11.x",
+        "overview": {
+          "what_is_offline": "Apps that work without internet by storing data locally on device",
+          "technologies": [
+            "Progressive Web App (PWA)",
+            "OPFS (Origin Private File System)",
+            "Service Workers"
+          ],
+          "use_cases": [
+            "Field workers",
+            "Retail stores",
+            "Healthcare",
+            "Remote areas",
+            "Unreliable connectivity"
+          ]
+        },
+        "navigation_profiles": {
+          "description": "Define offline vs online experience",
+          "types": {
+            "responsive_web": "Traditional online-only web app",
+            "native_phone": "Mobile app with offline support",
+            "native_tablet": "Tablet app with offline support",
+            "pwa": "Progressive Web App with offline capability"
+          },
+          "configuration": "Project settings → Navigation → Configure profiles"
+        },
+        "offline_entities": {
+          "description": "Mark entities for offline storage",
+          "configuration": "Entity properties → Persistable → Set to 'Yes'",
+          "sync_mode": {
+            "all_objects": "Sync entire table (small reference data)",
+            "xpath": "Sync filtered subset based on XPath",
+            "nothing": "Don't sync to device"
+          },
+          "download_mode": {
+            "sync_to_device": "Available on device after sync",
+            "download_on_demand": "Fetch when needed (requires connectivity)"
+          }
+        },
+        "sync_patterns": {
+          "full_sync": {
+            "description": "Download all offline data",
+            "when_to_use": "Initial app load, after long offline period",
+            "activity": "Synchronize → Full"
+          },
+          "sync_to_device": {
+            "description": "Download changed data from server",
+            "when_to_use": "Refresh data periodically"
+          },
+          "sync_from_device": {
+            "description": "Upload local changes to server",
+            "when_to_use": "Before going online, commit changes"
+          },
+          "sync_all": {
+            "description": "Bi-directional sync",
+            "when_to_use": "Standard sync after user actions"
+          }
+        },
+        "conflict_resolution": {
+          "description": "Handle conflicting changes between device and server",
+          "strategies": {
+            "last_write_wins": "Most recent change takes precedence",
+            "server_wins": "Server data always overrides local",
+            "client_wins": "Local data always overrides server",
+            "manual_resolution": "Custom microflow to merge changes"
+          },
+          "implementation": "Configure in sync settings or custom microflow"
+        },
+        "nanoflow_vs_microflow": {
+          "offline_logic": "Use nanoflows - they run on device",
+          "server_logic": "Use microflows - require connectivity",
+          "hybrid": "Nanoflow can call microflow when online"
+        },
+        "offline_data_sources": {
+          "nanoflow_source": "Recommended - query local database",
+          "xpath_source": "Works but limited to offline entities",
+          "microflow_source": "NOT available offline"
+        },
+        "storage_limits": {
+          "opfs": "Browser-dependent, typically several GB",
+          "indexeddb": "Fallback storage, more limited",
+          "best_practice": "Keep offline data minimal, sync frequently"
+        },
+        "pwa_features": {
+          "installable": "Add to home screen",
+          "push_notifications": "Background notifications",
+          "background_sync": "Queue actions for when online",
+          "app_shell": "Fast loading cached UI"
+        },
+        "best_practices": [
+          "Design for offline-first, treat online as enhancement",
+          "Keep offline dataset small and focused",
+          "Show clear sync status to users",
+          "Handle sync errors gracefully",
+          "Test thoroughly in airplane mode",
+          "Use nanoflows for offline logic",
+          "Implement proper conflict resolution strategy",
+          "Cache images and files appropriately",
+          "Provide manual sync option for users"
+        ],
+        "common_issues": {
+          "data_too_large": "Reduce sync scope with XPath filters",
+          "sync_taking_too_long": "Optimize queries, reduce entity count",
+          "conflicts_not_resolved": "Implement custom conflict handling",
+          "storage_quota_exceeded": "Clean up old data, reduce cached files"
+        },
+        "testing_approach": [
+          "Use browser DevTools to simulate offline",
+          "Test with slow network throttling",
+          "Verify sync works after reconnection",
+          "Test conflict scenarios with two devices",
+          "Validate data integrity after sync"
+        ],
+        "_metadata": {
+          "id": "e331b525-c479-4d89-a04e-38e8095846d2",
+          "added_at": "2025-12-07T23:48:56.085Z",
+          "source": "Mendix Documentation - Offline-First Apps",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-07T23:51:15.408Z"
+        }
+      }
+    ],
+    "background_processing": [
+      {
+        "topic": "Scheduled Events and Background Processing",
+        "description": "Complete guide to implementing background jobs, scheduled tasks, task queues, and batch processing in Mendix applications.",
+        "mendix_version": "11.x",
+        "scheduled_events": {
+          "description": "Time-based triggers for automated tasks",
+          "location": "Module → Add other → Scheduled event",
+          "configuration": {
+            "start_time": "When to first execute",
+            "repeat": {
+              "interval": "Every X minutes/hours/days",
+              "end_time": "Optional end date",
+              "run_on": "Specific days of week (optional)"
+            }
+          },
+          "execution": {
+            "runtime": "Runs on single Mendix runtime instance",
+            "system_context": "Executes as system, no user context",
+            "error_handling": "Continues on error by default"
+          },
+          "use_cases": [
+            "Daily data cleanup",
+            "Hourly report generation",
+            "Periodic sync with external systems",
+            "Batch processing overnight"
+          ]
+        },
+        "task_queue": {
+          "description": "Mendix 11 feature for background job processing",
+          "module": "Task Queue module from Marketplace",
+          "components": {
+            "task": "Unit of work to be processed",
+            "queue": "Named queue that holds tasks",
+            "processor": "Microflow that processes tasks"
+          },
+          "configuration": {
+            "create_task": "QueueTask_Create activity",
+            "process_task": "QueueTask_Process activity",
+            "retry_policy": "Configure retries and backoff"
+          },
+          "advantages": [
+            "Distributed processing across instances",
+            "Retry failed tasks automatically",
+            "Priority queues",
+            "Rate limiting",
+            "Better monitoring and visibility"
+          ]
+        },
+        "batch_processing": {
+          "description": "Processing large datasets efficiently",
+          "patterns": {
+            "chunked_processing": {
+              "description": "Process data in batches of N",
+              "implementation": "Loop with offset/limit, commit per batch",
+              "example": "Process 1000 records, commit every 100"
+            },
+            "background_batch": {
+              "description": "Run batch job in scheduled event",
+              "implementation": "Scheduled event triggers batch microflow"
+            },
+            "user_initiated": {
+              "description": "User starts long-running process",
+              "implementation": "Use Task Queue, show progress to user"
+            }
+          },
+          "best_practices": [
+            "Commit in batches to avoid transaction timeout",
+            "Use 'Commit without events' for bulk operations",
+            "Log progress for monitoring",
+            "Handle errors per record, not whole batch",
+            "Consider memory limits"
+          ]
+        },
+        "async_processing": {
+          "description": "Run operations without blocking user",
+          "patterns": {
+            "fire_and_forget": {
+              "description": "Start task, don't wait for completion",
+              "implementation": "Call microflow with 'Execute async' setting"
+            },
+            "callback_pattern": {
+              "description": "Notify user when complete",
+              "implementation": "Store task status, poll or notify on completion"
+            }
+          }
+        },
+        "error_handling": {
+          "scheduled_events": {
+            "default": "Logs error, continues next execution",
+            "custom": "Try-catch in microflow, notify admins"
+          },
+          "task_queue": {
+            "retry": "Automatic retry with configurable policy",
+            "dead_letter": "Move failed tasks to separate queue",
+            "alerting": "Monitor failed task count"
+          }
+        },
+        "monitoring": {
+          "approaches": [
+            "Log activity start/end with timing",
+            "Track last successful run time",
+            "Count processed records",
+            "Alert on failures",
+            "Dashboard for background job status"
+          ],
+          "tools": [
+            "Mendix metrics",
+            "Application logs",
+            "Custom monitoring entity"
+          ]
+        },
+        "cloud_considerations": {
+          "single_instance": {
+            "issue": "Scheduled events run on one instance only",
+            "solution": "Task Queue for distributed processing"
+          },
+          "memory": {
+            "issue": "Large batches can exhaust memory",
+            "solution": "Process in chunks, release objects"
+          },
+          "timeout": {
+            "issue": "Long-running tasks may timeout",
+            "solution": "Break into smaller tasks, use Task Queue"
+          }
+        },
+        "common_patterns": {
+          "daily_cleanup": {
+            "description": "Remove old audit logs, temp files",
+            "schedule": "Daily at 2 AM",
+            "approach": "Delete in batches with date filter"
+          },
+          "data_sync": {
+            "description": "Sync with external system",
+            "schedule": "Every 15 minutes",
+            "approach": "Check last sync time, fetch delta"
+          },
+          "report_generation": {
+            "description": "Generate weekly reports",
+            "schedule": "Monday 6 AM",
+            "approach": "Aggregate data, create PDF, email"
+          }
+        },
+        "_metadata": {
+          "id": "28f4b70f-2396-43cc-b6a5-9ba0251281d7",
+          "added_at": "2025-12-07T23:48:56.130Z",
+          "source": "Mendix Documentation - Scheduled Events and Task Queue",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      }
+    ],
+    "debugging": [
+      {
+        "topic": "Debugging and Profiling Tools",
+        "description": "Complete guide to debugging Mendix applications including debugger usage, performance profiling, logging strategies, and troubleshooting common issues.",
+        "mendix_version": "11.x",
+        "studio_pro_debugger": {
+          "description": "Built-in debugger for microflows and nanoflows",
+          "access": "Run locally → Debug mode, or connect to cloud",
+          "features": {
+            "breakpoints": {
+              "description": "Pause execution at specific point",
+              "types": [
+                "Standard breakpoint",
+                "Conditional breakpoint"
+              ],
+              "usage": "Click gutter next to activity"
+            },
+            "stepping": {
+              "step_into": "Enter sub-microflow",
+              "step_over": "Execute current activity, move to next",
+              "step_out": "Complete current microflow, return to caller",
+              "continue": "Run until next breakpoint"
+            },
+            "inspection": {
+              "variables": "View all variables in scope",
+              "object_values": "Drill into entity attribute values",
+              "watch": "Monitor specific expressions"
+            }
+          },
+          "debug_settings": {
+            "local": "Debug button in toolbar",
+            "cloud": "Connect to Debug → Enter credentials",
+            "app_url": "Use ?_debugger=true query param"
+          }
+        },
+        "logging": {
+          "log_message_activity": {
+            "description": "Add log messages to microflows",
+            "parameters": {
+              "node": "Log node name (category)",
+              "level": "Trace, Debug, Info, Warning, Error, Critical",
+              "message": "String expression with context"
+            },
+            "best_practices": [
+              "Include entity IDs in log messages",
+              "Use appropriate log levels",
+              "Log entry and exit of key microflows",
+              "Include timing for performance tracking"
+            ]
+          },
+          "log_levels": {
+            "trace": "Detailed debugging, very verbose",
+            "debug": "Diagnostic information for development",
+            "info": "Normal operational messages",
+            "warning": "Potential issues, non-critical",
+            "error": "Errors that need attention",
+            "critical": "Severe errors, system may be unusable"
+          },
+          "viewing_logs": {
+            "local": "Console in Studio Pro, or command line",
+            "cloud": "Mendix Developer Portal → Logs",
+            "format": "Timestamp | Level | Node | Message"
+          },
+          "log_configuration": {
+            "location": "Runtime → Configure",
+            "per_node": "Set log level per node (category)",
+            "persistence": "Can be changed at runtime"
+          }
+        },
+        "performance_profiler": {
+          "description": "Analyze application performance",
+          "access": "View → Performance Tool (local)",
+          "metrics": {
+            "microflow_timing": "Execution time per activity",
+            "database_queries": "Query count and duration",
+            "memory_usage": "Object creation and garbage collection",
+            "http_requests": "External service call timing"
+          },
+          "usage": [
+            "Start profiler before test scenario",
+            "Perform the slow operation",
+            "Stop profiler and analyze results",
+            "Look for N+1 queries, slow activities"
+          ]
+        },
+        "common_issues": {
+          "n_plus_1_queries": {
+            "symptom": "Many similar queries in quick succession",
+            "cause": "Retrieving associations in a loop",
+            "fix": "Use retrieve with association depth, or batch retrieve"
+          },
+          "memory_issues": {
+            "symptom": "Out of memory errors, slow performance",
+            "cause": "Too many objects in memory",
+            "fix": "Process in batches, close datasets, reduce scope"
+          },
+          "slow_pages": {
+            "symptom": "Page takes long to load",
+            "causes": [
+              "Complex data source",
+              "Too many widgets",
+              "Large lists"
+            ],
+            "fix": "Optimize data source, pagination, lazy loading"
+          },
+          "transaction_timeout": {
+            "symptom": "Transaction rolled back after 30 min",
+            "cause": "Long-running microflow",
+            "fix": "Split into smaller transactions, use Task Queue"
+          }
+        },
+        "browser_devtools": {
+          "description": "Debug client-side issues",
+          "network_tab": {
+            "use": "See API calls, response times, errors",
+            "look_for": "Slow requests, 4xx/5xx errors, large payloads"
+          },
+          "console_tab": {
+            "use": "JavaScript errors, nanoflow debugging",
+            "look_for": "Red errors, warnings"
+          },
+          "application_tab": {
+            "use": "Offline storage, cookies, local storage",
+            "look_for": "PWA issues, storage limits"
+          }
+        },
+        "error_handling": {
+          "error_handler": {
+            "description": "Catch errors in microflows",
+            "setup": "Add error handler flow from activity",
+            "options": [
+              "Rollback",
+              "Continue",
+              "Custom handling"
+            ],
+            "access_error": "$latestError variable with details"
+          },
+          "validation_feedback": {
+            "description": "Show user-friendly errors",
+            "activity": "Validation feedback activity",
+            "location": "Associate with widget or general message"
+          },
+          "custom_error_pages": {
+            "description": "User-friendly error pages",
+            "setup": "Navigation → Error pages",
+            "types": [
+              "404 Not Found",
+              "403 Forbidden",
+              "500 Internal Error"
+            ]
+          }
+        },
+        "monitoring_checklist": {
+          "development": [
+            "Use debugger for logic issues",
+            "Check performance tool for slow operations",
+            "Enable debug logging"
+          ],
+          "acceptance": [
+            "Test with production-like data volume",
+            "Load testing for performance",
+            "Security testing"
+          ],
+          "production": [
+            "Monitor log levels (Info or above)",
+            "Set up alerts for errors",
+            "Regular performance baseline checks"
+          ]
+        },
+        "troubleshooting_flow": [
+          "1. Reproduce the issue consistently",
+          "2. Check logs for errors/warnings",
+          "3. Add debug logging if needed",
+          "4. Use debugger to step through logic",
+          "5. Profile for performance issues",
+          "6. Check browser DevTools for client issues",
+          "7. Verify data in database",
+          "8. Test with different user roles"
+        ],
+        "_metadata": {
+          "id": "2f9f5e16-d01e-47a6-92a9-9af2689fb638",
+          "added_at": "2025-12-07T23:48:56.131Z",
+          "source": "Mendix Documentation - Debugging and Profiling",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-07T23:51:15.409Z"
+        }
+      }
+    ],
+    "marketplace": [
+      {
+        "topic": "Mendix Marketplace and Modules",
+        "description": "Guide to using the Mendix Marketplace, importing modules, managing dependencies, and recommended modules for common functionality.",
+        "mendix_version": "11.x",
+        "marketplace_overview": {
+          "description": "Public repository of reusable components",
+          "url": "https://marketplace.mendix.com",
+          "content_types": {
+            "modules": "Complete functionality packages",
+            "widgets": "UI components",
+            "connectors": "Integration adapters",
+            "solutions": "Full application templates",
+            "industry_templates": "Vertical-specific starters"
+          }
+        },
+        "importing_modules": {
+          "steps": [
+            "App Explorer → right-click App → Add other → Module from Marketplace",
+            "Search for module",
+            "Check version compatibility",
+            "Import and resolve dependencies"
+          ],
+          "considerations": [
+            "Check Mendix version compatibility",
+            "Review module documentation",
+            "Understand licensing (free vs paid)",
+            "Check for required dependencies"
+          ]
+        },
+        "module_management": {
+          "updating": {
+            "steps": "Right-click module → Update",
+            "caution": "Test thoroughly after update",
+            "backup": "Commit before updating"
+          },
+          "customization": {
+            "approach": "Don't modify marketplace modules directly",
+            "reason": "Updates will overwrite changes",
+            "alternative": "Extend in your own module"
+          }
+        },
+        "essential_modules": {
+          "administration": {
+            "name": "Administration",
+            "purpose": "User management, account administration",
+            "includes": [
+              "User overview",
+              "Account creation",
+              "Password management"
+            ]
+          },
+          "atlas_core": {
+            "name": "Atlas_Core",
+            "purpose": "Design system foundation",
+            "includes": [
+              "Layout templates",
+              "Building blocks",
+              "Styling"
+            ]
+          },
+          "community_commons": {
+            "name": "Community Commons",
+            "purpose": "Utility functions library",
+            "includes": [
+              "String operations",
+              "Date functions",
+              "List utilities",
+              "Regex"
+            ]
+          },
+          "encryption": {
+            "name": "Encryption",
+            "purpose": "Data encryption capabilities",
+            "includes": [
+              "AES encryption",
+              "Key management",
+              "Hashing"
+            ]
+          },
+          "mx_model_reflection": {
+            "name": "MxModelReflection",
+            "purpose": "Runtime model introspection",
+            "includes": [
+              "Entity metadata",
+              "Microflow discovery",
+              "Dynamic processing"
+            ]
+          },
+          "email": {
+            "name": "Email Connector",
+            "purpose": "Send/receive emails",
+            "includes": [
+              "SMTP configuration",
+              "Templates",
+              "Attachments"
+            ]
+          },
+          "excel_importer": {
+            "name": "Excel Importer",
+            "purpose": "Import data from Excel files",
+            "includes": [
+              "Template mapping",
+              "Validation",
+              "Batch import"
+            ]
+          },
+          "deep_link": {
+            "name": "Deep Link",
+            "purpose": "Custom URL routing",
+            "includes": [
+              "Deep link handlers",
+              "Parameter passing"
+            ]
+          },
+          "push_notifications": {
+            "name": "Push Notifications Connector",
+            "purpose": "Mobile push notifications",
+            "includes": [
+              "FCM/APNS",
+              "Topic subscriptions"
+            ]
+          }
+        },
+        "recommended_widgets": {
+          "data_grid_2": "Modern data table with filtering/sorting",
+          "gallery": "Card-based data display",
+          "tree_view": "Hierarchical data visualization",
+          "maps": "Google/OpenStreetMap integration",
+          "charts": "Data visualization library",
+          "timeline": "Chronological event display",
+          "carousel": "Image/content slider",
+          "progress_bar": "Visual progress indicator",
+          "badge": "Status/count indicator",
+          "tooltips": "Contextual help"
+        },
+        "connectors": {
+          "description": "Pre-built integrations",
+          "examples": {
+            "database_connector": "Direct database queries",
+            "odata_connector": "OData service consumption",
+            "siemens_connectors": "TeamCenter, MindSphere, etc.",
+            "aws_connectors": "S3, Lambda, DynamoDB",
+            "azure_connectors": "Blob storage, Functions",
+            "salesforce": "Salesforce CRM integration"
+          }
+        },
+        "dependency_management": {
+          "auto_resolution": "Studio Pro attempts to resolve",
+          "conflicts": "May need manual version selection",
+          "orphaned": "Remove unused modules to reduce bloat",
+          "check": "Project → Show project directory → Review modules"
+        },
+        "publishing_to_marketplace": {
+          "requirements": [
+            "Clear documentation",
+            "Version compatibility stated",
+            "No hardcoded credentials",
+            "Example usage included",
+            "Proper error handling"
+          ],
+          "process": [
+            "Prepare module with documentation",
+            "Export as module package",
+            "Submit via Marketplace portal",
+            "Complete metadata and screenshots"
+          ]
+        },
+        "best_practices": [
+          "Research before building from scratch",
+          "Check ratings and download counts",
+          "Read recent reviews for issues",
+          "Test in sandbox before production",
+          "Keep modules updated (security)",
+          "Document which marketplace modules are used",
+          "Have fallback plan if module is discontinued"
+        ],
+        "_metadata": {
+          "id": "01e0bb9d-9126-4b0f-a8f6-d98a9ecadb8d",
+          "added_at": "2025-12-07T23:50:22.115Z",
+          "source": "Mendix Marketplace and Module Documentation",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      }
+    ]
+  }
+}

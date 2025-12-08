@@ -1,0 +1,426 @@
+/**
+ * Mendix Expert MCP Server v2.1
+ * Modular, scalable, self-learning knowledge server
+ * Updated for MCP SDK v1.x (ESM)
+ *
+ * Architecture:
+ * - Core: ProjectLoader, KnowledgeManager, SearchEngine, QualityScorer, CacheManager
+ * - Tools: QueryTool, AnalyzeTool, BestPracticeTool, AddKnowledgeTool
+ * - Utils: Logger, Validator, Config
+ *
+ * Features:
+ * - Dynamic project loading (any .mpr or extracted directory)
+ * - Intelligent search with relevance scoring
+ * - Automatic quality assessment
+ * - Version tracking and conflict detection
+ * - Self-learning with auto-research
+ * - Smart caching for performance
+ */
+
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+
+// Core components
+import Logger from './utils/logger.js';
+import { getConfig } from './utils/config.js';
+import CacheManager from './core/CacheManager.js';
+import ProjectLoader from './core/ProjectLoader.js';
+import KnowledgeManager from './core/KnowledgeManager.js';
+import SearchEngine from './core/SearchEngine.js';
+import QualityScorer from './core/QualityScorer.js';
+
+// Tools
+import { QueryTool, AnalyzeTool, BestPracticeTool, AddKnowledgeTool } from './tools/index.js';
+
+// Initialize
+const logger = new Logger('Server');
+const config = getConfig();
+
+// Validate configuration
+const configValidation = config.validate();
+if (!configValidation.valid) {
+  logger.error('Invalid configuration', { errors: configValidation.errors });
+  process.exit(1);
+}
+
+logger.info('Starting Mendix Expert MCP Server v2.0');
+
+// Create server
+const server = new Server(
+  {
+    name: config.get('server.name', 'mendix-expert'),
+    version: config.get('server.version', '2.0.0'),
+  },
+  {
+    capabilities: {
+      resources: {},
+      tools: {},
+      prompts: {},
+    },
+  }
+);
+
+// Initialize core components
+const cacheManager = new CacheManager();
+const projectLoader = new ProjectLoader(cacheManager);
+const knowledgeManager = new KnowledgeManager();
+const searchEngine = new SearchEngine();
+const qualityScorer = new QualityScorer();
+
+// Initialize tools
+const queryTool = new QueryTool(knowledgeManager, searchEngine);
+const analyzeTool = new AnalyzeTool(projectLoader);
+const bestPracticeTool = new BestPracticeTool(knowledgeManager, searchEngine);
+const addKnowledgeTool = new AddKnowledgeTool(knowledgeManager, searchEngine);
+
+// Resource handlers
+server.setRequestHandler(ListResourcesRequestSchema, async () => {
+  try {
+    const resources = [
+      {
+        uri: 'mendix://knowledge/all',
+        name: 'All Mendix Knowledge',
+        description: 'Complete knowledge base with search and quality metrics',
+        mimeType: 'application/json',
+      },
+      {
+        uri: 'mendix://stats/knowledge',
+        name: 'Knowledge Base Statistics',
+        description: 'Statistics about knowledge base content and quality',
+        mimeType: 'application/json',
+      },
+      {
+        uri: 'mendix://stats/search',
+        name: 'Search Engine Statistics',
+        description: 'Search index statistics and performance metrics',
+        mimeType: 'application/json',
+      },
+      {
+        uri: 'mendix://stats/projects',
+        name: 'Loaded Projects Statistics',
+        description: 'Information about currently loaded Mendix projects',
+        mimeType: 'application/json',
+      },
+    ];
+
+    return { resources };
+  } catch (error) {
+    logger.error('Failed to list resources', { error: error.message });
+    throw error;
+  }
+});
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+  try {
+    const uri = request.params.uri;
+
+    if (uri === 'mendix://knowledge/all') {
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(knowledgeManager.getAll(), null, 2),
+          },
+        ],
+      };
+    }
+
+    if (uri === 'mendix://stats/knowledge') {
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(knowledgeManager.getStats(), null, 2),
+          },
+        ],
+      };
+    }
+
+    if (uri === 'mendix://stats/search') {
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(searchEngine.getStats(), null, 2),
+          },
+        ],
+      };
+    }
+
+    if (uri === 'mendix://stats/projects') {
+      return {
+        contents: [
+          {
+            uri,
+            mimeType: 'application/json',
+            text: JSON.stringify(projectLoader.getStats(), null, 2),
+          },
+        ],
+      };
+    }
+
+    throw new Error(`Unknown resource: ${uri}`);
+  } catch (error) {
+    logger.error('Failed to read resource', { error: error.message });
+    throw error;
+  }
+});
+
+// Tool handlers
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  try {
+    const tools = [
+      queryTool.getSchema(),
+      analyzeTool.getSchema(),
+      bestPracticeTool.getSchema(),
+      addKnowledgeTool.getSchema(),
+    ];
+
+    return { tools };
+  } catch (error) {
+    logger.error('Failed to list tools', { error: error.message });
+    throw error;
+  }
+});
+
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  try {
+    const { name, arguments: args } = request.params;
+
+    logger.info('Tool called', { tool: name });
+
+    switch (name) {
+      case 'query_mendix_knowledge':
+        return await queryTool.execute(args);
+
+      case 'analyze_project':
+        return await analyzeTool.execute(args);
+
+      case 'get_best_practice':
+        return await bestPracticeTool.execute(args);
+
+      case 'add_to_knowledge_base':
+        return await addKnowledgeTool.execute(args);
+
+      default:
+        throw new Error(`Unknown tool: ${name}`);
+    }
+  } catch (error) {
+    logger.error('Tool execution failed', {
+      tool: request.params.name,
+      error: error.message,
+    });
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `Tool execution failed: ${error.message}`,
+        },
+      ],
+      isError: true,
+    };
+  }
+});
+
+// Prompt handlers
+server.setRequestHandler(ListPromptsRequestSchema, async () => {
+  return {
+    prompts: [
+      {
+        name: 'mendix_expert',
+        description: 'Act as a Mendix expert with deep knowledge and self-learning capabilities',
+        arguments: [
+          {
+            name: 'question',
+            description: 'Your Mendix development question',
+            required: true,
+          },
+        ],
+      },
+    ],
+  };
+});
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const { name, arguments: args } = request.params;
+
+  if (name === 'mendix_expert') {
+    const stats = knowledgeManager.getStats();
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `You are a Mendix expert with access to a self-learning knowledge base through the mendix-expert MCP server v2.0.
+
+## KNOWLEDGE BASE STATUS
+- ${stats.totalEntries} total knowledge entries
+- ${stats.filesLoaded} knowledge domains
+- Intelligent search with relevance scoring
+- Automatic quality assessment
+- Self-learning capabilities enabled
+
+## ENHANCED CAPABILITIES
+
+### 1. Universal Project Analysis
+Use \`analyze_project\` with ANY Mendix project:
+- Accepts any .mpr file or extracted directory
+- Dynamically discovers modules
+- Works with multiple projects simultaneously
+- Intelligent caching for performance
+
+### 2. Smart Knowledge Search
+Use \`query_mendix_knowledge\` with improved features:
+- Advanced search with relevance scoring
+- Quality-weighted results
+- Usage tracking
+- Similar topic suggestions
+
+### 3. Quality-Scored Knowledge
+Every knowledge entry has:
+- Source reliability score (official docs = highest)
+- Recency score (newer = better)
+- Usage score (frequently used = validated)
+- Verification status
+- Overall quality score (0-100%)
+
+### 4. Auto-Learning with Intelligence
+Use \`add_to_knowledge_base\` with automatic:
+- Duplicate detection (prevents redundancy)
+- Quality scoring (ensures high standards)
+- Version tracking (maintains history)
+- Conflict resolution (merges when appropriate)
+
+## YOUR WORKFLOW
+
+**STEP 1 - Search Knowledge Base:**
+\`\`\`
+Call: query_mendix_knowledge({ topic: "[user's topic]", detail_level: "detailed" })
+\`\`\`
+
+**STEP 2 - Evaluate Results:**
+✅ **Good Results (relevance > 50%, quality > 70%):** Use them directly
+⚠️ **Low Quality Results (quality < 70%):** Verify with official sources before using
+❌ **No Results or Poor Quality:** Perform deep research
+
+**STEP 3 - Research (if needed):**
+Search official and community sources:
+- docs.mendix.com (weight: 1.0 - highest)
+- academy.mendix.com (weight: 0.95)
+- forum.mendix.com (weight: 0.8)
+- marketplace.mendix.com (weight: 0.85)
+- github.com/mendix (weight: 0.9)
+- Community blogs (weight: 0.5-0.7)
+
+**STEP 4 - Add Knowledge (AUTO-IMPROVES):**
+\`\`\`
+Call: add_to_knowledge_base({
+  knowledge_file: "[appropriate file]",
+  category: "[relevant category]",
+  content: { [structured knowledge] },
+  source: "[URL with highest weight]"
+})
+\`\`\`
+
+The system will:
+- Check for duplicates (merges if similar)
+- Calculate quality score automatically
+- Track version history
+- Re-index for immediate availability
+
+**STEP 5 - Respond to User:**
+Provide comprehensive answer with:
+- Source citations (preferably high-weight sources)
+- Quality indicators
+- Examples and code snippets
+- Best practices and warnings
+
+## QUALITY GUIDELINES
+
+Prefer knowledge with:
+- Quality score ≥ 70%
+- Sources: docs.mendix.com, academy.mendix.com
+- Recent updates (< 6 months old)
+- Verified status
+- High usage count (community validated)
+
+Flag knowledge with:
+- Quality score < 60%
+- Unknown or low-weight sources
+- Age > 2 years without updates
+- No verification
+- Zero usage
+
+## USER'S QUESTION
+${args.question}
+
+Remember: Every knowledge gap you fill makes the system smarter for everyone. Add high-quality, well-sourced knowledge consistently.`,
+          },
+        },
+      ],
+    };
+  }
+
+  throw new Error(`Unknown prompt: ${name}`);
+});
+
+// Server lifecycle
+async function main() {
+  try {
+    // Load knowledge base
+    logger.info('Loading knowledge base...');
+    await knowledgeManager.load();
+
+    // Index for searching
+    logger.info('Building search index...');
+    const indexStats = searchEngine.indexKnowledgeBase(knowledgeManager.knowledgeBase);
+    logger.info('Search index ready', indexStats);
+
+    // Start cache cleanup interval (every hour)
+    setInterval(() => {
+      cacheManager.cleanup();
+    }, 60 * 60 * 1000);
+
+    // Connect to transport
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+
+    logger.info('Server running and ready', {
+      version: config.get('server.version'),
+      knowledgeEntries: knowledgeManager.getStats().totalEntries,
+      searchTerms: searchEngine.getStats().indexedTerms,
+    });
+  } catch (error) {
+    logger.error('Server startup failed', { error: error.message });
+    process.exit(1);
+  }
+}
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  logger.info('Shutting down gracefully...');
+
+  // Clear caches
+  cacheManager.clear();
+  projectLoader.clearAll();
+
+  logger.info('Shutdown complete');
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  logger.info('Received SIGTERM, shutting down...');
+  process.exit(0);
+});
+
+// Start server
+main().catch((error) => {
+  logger.error('Fatal error', { error: error.message });
+  process.exit(1);
+});

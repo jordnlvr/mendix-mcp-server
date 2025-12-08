@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Data files (generated at runtime)
+data/
+
+# Logs
+*.log
+logs/
+
+# Test files
+test-*.js
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+.env.local

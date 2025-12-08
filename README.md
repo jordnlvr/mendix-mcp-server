@@ -212,10 +212,11 @@ Quick steps:
 | `harvest_status`         | Check harvest status and available sources           |
 | `hello`                  | Get a welcome screen with status and examples        |
 | `beast_mode`             | 🔥 Get the exhaustive research protocol prompt       |
-| `vector_search`          | 🔮 **NEW!** Semantic search - find concepts          |
-| `hybrid_search`          | 🎯 **NEW!** Combined keyword + semantic search       |
+| `vector_search`          | 🔮 Semantic search - find concepts                   |
+| `hybrid_search`          | 🎯 Combined keyword + semantic search                |
 | `vector_status`          | Check Pinecone index and search stats                |
 | `reindex_vectors`        | Re-index knowledge for vector search                 |
+| `get_usage_analytics`    | 📊 **NEW!** View usage stats, popular topics, trends |
 
 ---
 

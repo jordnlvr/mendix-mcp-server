@@ -251,6 +251,25 @@ Welcome screen with status overview.
 
 ---
 
+## Analytics Tools
+
+### `get_usage_analytics`
+
+View usage statistics, popular topics, and trends.
+
+```
+@mendix-expert get_usage_analytics period="week" include_trends=true
+```
+
+| Parameter        | Type    | Default | Description                      |
+| ---------------- | ------- | ------- | -------------------------------- |
+| `period`         | enum    | `all`   | `day`, `week`, `month`, or `all` |
+| `include_trends` | boolean | true    | Include hourly/daily trends      |
+
+**Returns:** Tool usage counts, popular topics, query patterns, and trend data.
+
+---
+
 ## Tool Usage Patterns
 
 ### Finding Information
@@ -278,6 +297,13 @@ Welcome screen with status overview.
 
 # Find relevant patterns
 @mendix-expert hybrid_search query="domain model for [your entities]"
+```
+
+### Check Your Usage
+
+```
+# See what you've been searching for
+@mendix-expert get_usage_analytics period="week"
 ```
 
 ---

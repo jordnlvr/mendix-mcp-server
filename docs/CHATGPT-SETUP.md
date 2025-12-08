@@ -113,6 +113,7 @@ The following actions will be imported:
 - `hybridSearch` - Advanced keyword + semantic search
 - `getBestPractice` - Get best practice recommendations
 - `getStatus` - Check server status
+- `getAnalytics` - View usage statistics and trends (NEW!)
 - `analyzeProject` - Analyze .mpr files (requires local path)
 
 ---

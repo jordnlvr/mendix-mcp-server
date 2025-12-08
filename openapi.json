@@ -3,7 +3,7 @@
   "info": {
     "title": "Mendix Expert API",
     "description": "A self-learning knowledge base for Mendix development. Provides expert-level answers about SDK patterns, best practices, troubleshooting, and project analysis.",
-    "version": "2.5.2"
+    "version": "2.6.0"
   },
   "servers": [
     {
@@ -257,6 +257,57 @@
                   "properties": {
                     "project_path": { "type": "string" },
                     "analysis": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics": {
+      "get": {
+        "operationId": "getAnalytics",
+        "summary": "Get Usage Analytics",
+        "description": "View usage statistics, popular topics, tool usage counts, and trends. Useful for understanding what queries are most common and identifying knowledge gaps.",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["day", "week", "month", "all"],
+              "default": "all"
+            },
+            "description": "Time period to analyze"
+          },
+          {
+            "name": "include_trends",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Include hourly/daily trend data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage analytics report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": { "type": "string" },
+                    "report": {
+                      "type": "object",
+                      "properties": {
+                        "toolUsage": { "type": "object" },
+                        "popularTopics": { "type": "array" },
+                        "summary": { "type": "object" }
+                      }
+                    }
                   }
                 }
               }

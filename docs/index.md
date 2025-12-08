@@ -18,7 +18,7 @@ A self-learning, auto-researching AI assistant that gives your AI deep Mendix ex
 
 ---
 
-![Version](https://img.shields.io/badge/version-2.4.3-blue.svg)
+![Version](https://img.shields.io/badge/version-2.6.0-blue.svg)
 ![MCP](https://img.shields.io/badge/MCP-compatible-purple.svg)
 ![Pinecone](https://img.shields.io/badge/Pinecone-vector%20search-orange.svg)
 ![Azure OpenAI](https://img.shields.io/badge/Azure%20OpenAI-embeddings-0078D4.svg)
@@ -32,12 +32,13 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 
 | Capability           | Description                                                           |
 | :------------------- | :-------------------------------------------------------------------- |
-| **Deep Knowledge**   | 300+ curated entries on SDK patterns, best practices, troubleshooting |
+| **Deep Knowledge**   | 500+ curated entries on SDK patterns, best practices, troubleshooting |
 | **Semantic Search**  | Azure OpenAI embeddings + Pinecone for meaning-based search           |
 | **Self-Learning**    | Automatically saves discoveries to grow smarter                       |
 | **Auto-Harvesting**  | Weekly crawls of docs.mendix.com for fresh content                    |
 | **Project Analysis** | Analyzes your actual `.mpr` files                                     |
 | **Beast Mode**       | Exhaustive research protocol for hard questions                       |
+| **Usage Analytics**  | Track popular topics and usage trends (NEW!)                          |
 
 ---
 

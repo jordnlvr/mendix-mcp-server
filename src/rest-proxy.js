@@ -29,6 +29,7 @@ config({ path: join(__dirname, '..', '.env') });
 
 import cors from 'cors';
 import express from 'express';
+import Analytics from './utils/Analytics.js';
 import KnowledgeManager from './core/KnowledgeManager.js';
 import ProjectLoader from './core/ProjectLoader.js';
 import SearchEngine from './core/SearchEngine.js';
@@ -48,6 +49,7 @@ let knowledgeManager;
 let searchEngine;
 let hybridSearch;
 let projectLoader;
+let analytics;
 let initialized = false;
 let vectorSearchAvailable = false;
 
@@ -75,6 +77,10 @@ async function initialize() {
   }
 
   projectLoader = new ProjectLoader();
+
+  // Initialize analytics
+  analytics = new Analytics();
+  await analytics.initialize();
 
   initialized = true;
   logger.info('REST proxy initialized', {
@@ -149,6 +155,16 @@ app.get('/tools', (req, res) => {
         method: 'GET',
         path: '/status',
         description: 'Get server status and capabilities',
+      },
+      {
+        name: 'analytics',
+        method: 'GET',
+        path: '/analytics',
+        description: 'Get usage analytics and trends',
+        parameters: {
+          period: 'string (optional) - day, week, month, or all (default: all)',
+          include_trends: 'boolean (optional) - Include hourly/daily trends (default: true)',
+        },
       },
     ],
   });
@@ -340,7 +356,7 @@ app.get('/status', async (req, res) => {
 
     res.json({
       status: 'online',
-      version: '2.5.2',
+      version: '2.6.0',
       initialized: true,
       knowledge: {
         totalEntries: stats.totalEntries,
@@ -354,6 +370,7 @@ app.get('/status', async (req, res) => {
         'Project analysis (.mpr files)',
         'Best practice recommendations',
         'Self-learning knowledge base',
+        'Usage analytics and trends',
       ],
       exampleQueries: [
         'How do I set up SDK development?',
@@ -365,6 +382,38 @@ app.get('/status', async (req, res) => {
     });
   } catch (error) {
     logger.error('Status check failed', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Get usage analytics
+ */
+app.get('/analytics', async (req, res) => {
+  try {
+    await initialize();
+
+    const period = req.query.period || 'all';
+    const includeTrends = req.query.include_trends !== 'false';
+
+    const report = await analytics.getReport(period);
+
+    res.json({
+      period,
+      report: {
+        toolUsage: report.toolUsage,
+        popularTopics: report.popularTopics?.slice(0, 10) || [],
+        trends: includeTrends ? report.trends : undefined,
+        summary: {
+          totalQueries: report.totalQueries || 0,
+          uniqueTopics: report.uniqueTopics || 0,
+          periodStart: report.periodStart,
+          periodEnd: report.periodEnd,
+        },
+      },
+    });
+  } catch (error) {
+    logger.error('Analytics failed', { error: error.message });
     res.status(500).json({ error: error.message });
   }
 });

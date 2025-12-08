@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Usage Analytics** (`src/utils/Analytics.js`): Local telemetry tracking
+
   - Tool usage counts and patterns
   - Popular topics and query analysis
   - Daily/hourly usage trends
@@ -26,11 +27,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Data stored locally in `data/analytics.json`
 
 - **Deep Mendix 10/11 Knowledge** (~140KB new content):
+
   - `harvested-mendix-10-11.json`: Comprehensive Mendix 10/11 features
   - `workflows-complete.json`: Complete workflow documentation
   - `mobile-complete.json`: Native mobile development patterns
 
 - **Test Suite** (4 test files):
+
   - `tests/analytics.test.js`: Analytics tracking tests
   - `tests/knowledge-manager.test.js`: Knowledge base tests
   - `tests/search-engine.test.js`: Search functionality tests

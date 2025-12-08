@@ -203,23 +203,23 @@ Quick steps:
 
 ## 📚 Available Tools
 
-| Tool                     | Description                                          |
-| ------------------------ | ---------------------------------------------------- |
-| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic       |
-| `analyze_project`        | Analyze a `.mpr` file or extracted project directory |
+| Tool                     | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
+| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic         |
+| `analyze_project`        | Analyze a `.mpr` file or extracted project directory   |
 | `analyze_theme`          | 🎨 **NEW!** Deep theme analysis with grading (A+ to F) |
-| `get_best_practice`      | Get recommendations for specific scenarios           |
-| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)      |
-| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)        |
-| `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge             |
-| `harvest_status`         | Check harvest status and available sources           |
-| `hello`                  | Get a welcome screen with status and examples        |
-| `beast_mode`             | 🔥 Get the exhaustive research protocol prompt       |
-| `vector_search`          | 🔮 Semantic search - find concepts                   |
-| `hybrid_search`          | 🎯 Combined keyword + semantic search                |
-| `vector_status`          | Check Pinecone index and search stats                |
-| `reindex_vectors`        | Re-index knowledge for vector search                 |
-| `get_usage_analytics`    | 📊 View usage stats, popular topics, trends          |
+| `get_best_practice`      | Get recommendations for specific scenarios             |
+| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)        |
+| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)          |
+| `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge               |
+| `harvest_status`         | Check harvest status and available sources             |
+| `hello`                  | Get a welcome screen with status and examples          |
+| `beast_mode`             | 🔥 Get the exhaustive research protocol prompt         |
+| `vector_search`          | 🔮 Semantic search - find concepts                     |
+| `hybrid_search`          | 🎯 Combined keyword + semantic search                  |
+| `vector_status`          | Check Pinecone index and search stats                  |
+| `reindex_vectors`        | Re-index knowledge for vector search                   |
+| `get_usage_analytics`    | 📊 View usage stats, popular topics, trends            |
 
 ---
 

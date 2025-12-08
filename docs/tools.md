@@ -92,12 +92,13 @@ Analyze a Mendix `.mpr` file or extracted project.
 @mendix-expert analyze_theme project_path="D:/Projects/MyApp" mendix_version="11"
 ```
 
-| Parameter        | Type   | Default      | Description                        |
-| ---------------- | ------ | ------------ | ---------------------------------- |
-| `project_path`   | string | required     | Path to Mendix project directory   |
-| `mendix_version` | string | auto-detect  | `10` or `11` - version of Studio Pro |
+| Parameter        | Type   | Default     | Description                          |
+| ---------------- | ------ | ----------- | ------------------------------------ |
+| `project_path`   | string | required    | Path to Mendix project directory     |
+| `mendix_version` | string | auto-detect | `10` or `11` - version of Studio Pro |
 
 **Returns:**
+
 - **grade** - Letter grade (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
 - **score** - Numeric score 0-100
 - **categoryScores** - Individual scores for:
@@ -111,6 +112,7 @@ Analyze a Mendix `.mpr` file or extracted project.
 - **recommendations** - Prioritized list of improvements
 
 **Example Output:**
+
 ```json
 {
   "grade": "B+",

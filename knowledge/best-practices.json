@@ -294,6 +294,67 @@
         "impact": "Performance, bandwidth"
       }
     ],
+    "styling_and_theming": [
+      {
+        "practice": "Use the Scaffold Pattern - mirror Atlas_Core folder structure in custom theme",
+        "rationale": "Creates predictable locations for overrides, prevents CSS duplication, follows cascade correctly",
+        "approach": "Create stubbed (empty) SCSS files matching Atlas_Core structure, only add content when customizing",
+        "why": "When a developer needs to override Atlas button styles, they know exactly where to go: theme/web/_widgets/_core/_buttons.scss",
+        "impact": "Maintainability, team productivity, prevents duplication",
+        "structure": {
+          "theme/web/_base": "Typography, spacing, base styles",
+          "theme/web/_helpers": "Helper classes, animations",
+          "theme/web/_widgets/_core": "Button, input, label overrides",
+          "theme/web/_widgets/_pluggable": "Badge, progress bar overrides",
+          "theme/web/_layouts": "Layout, navigation overrides",
+          "theme/web/_building-blocks": "Card, header overrides"
+        }
+      },
+      {
+        "practice": "Never import Atlas_Core in main.scss",
+        "rationale": "Mendix automatically compiles Atlas. Importing it causes CSS duplication.",
+        "bad": "@import '../../themesource/Atlas_Core/web/main';",
+        "good": "// Only import YOUR custom override files\n@import 'custom-variables';\n@import '_widgets/_core/_buttons';",
+        "impact": "Bundle size, performance"
+      },
+      {
+        "practice": "Use design tokens from custom-variables.scss",
+        "rationale": "Centralized variables enable global changes and ensure consistency",
+        "approach": "Define $brand-primary, $brand-success, $spacing-* etc. in custom-variables.scss and reference everywhere",
+        "bad": "color: #264AE5;",
+        "good": "color: $brand-primary;",
+        "impact": "Maintainability, consistency"
+      },
+      {
+        "practice": "Keep stubbed files with header comments even when empty",
+        "rationale": "Empty files are placeholders for future customizations. Comments document the purpose.",
+        "example": "// _buttons.scss - Custom button overrides\n// Override Atlas_Core/web/_widgets/_core/_buttons.scss styles here\n// Leave empty if no customizations needed",
+        "impact": "Developer experience, documentation"
+      },
+      {
+        "practice": "Only add override rules, never copy Atlas code",
+        "rationale": "Copying Atlas styles creates duplication, breaks upgrades, increases bundle size",
+        "approach": "Your files should contain ONLY the CSS rules that differ from Atlas defaults",
+        "impact": "Bundle size, upgradeability"
+      },
+      {
+        "practice": "Use exclusion-variables.scss to disable unused Atlas styles",
+        "rationale": "Reduces CSS bundle size by excluding widgets you don't use",
+        "example": "$exclude-timeline: true;\n$exclude-rating: true;",
+        "impact": "Performance, bundle size"
+      },
+      {
+        "practice": "Create a theme module for company-wide styling",
+        "rationale": "Enables consistent branding across multiple Mendix apps",
+        "steps": [
+          "Create new module in Studio Pro",
+          "Mark as UI Resources module",
+          "Add themesource/{module}/web/custom-variables.scss",
+          "Set module order in App Settings > Theme (after Atlas_Core)"
+        ],
+        "impact": "Reusability, brand consistency"
+      }
+    ],
     "security": [
       {
         "practice": "Apply principle of least privilege",

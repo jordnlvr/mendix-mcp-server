@@ -1,12 +1,65 @@
 {
   "metadata": {
     "name": "Theme Analysis & Best Practices",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "lastUpdated": "2025-12-08",
     "source": "docs.mendix.com + expert patterns",
     "description": "Comprehensive theme analysis rules and best practices for Mendix custom themes"
   },
   "bestPractices": {
+    "scaffoldPattern": {
+      "title": "Scaffold Pattern - Mirror Atlas Structure",
+      "importance": "critical",
+      "description": "The recommended approach for custom themes is to scaffold (mirror) the Atlas_Core folder structure in your custom theme folder. Create stubbed (empty) files that mirror Atlas files, then only add content when you need to override specific styles.",
+      "why": "This pattern provides a clear, predictable location for every type of override, prevents CSS duplication, follows the cascade correctly, and makes it easy for any developer to know exactly where to make changes.",
+      "rules": [
+        {
+          "id": "SCAFFOLD-001",
+          "rule": "Mirror the Atlas_Core/web folder structure in theme/web",
+          "why": "Your custom theme should have the same folders and files as Atlas_Core, making it immediately clear where to add overrides for any Atlas component",
+          "atlasStructure": {
+            "web": {
+              "_base": ["_base.scss", "_typography.scss", "_spacing.scss"],
+              "_helpers": ["_helper-classes.scss", "_animations.scss"],
+              "_widgets": {
+                "_core": ["_buttons.scss", "_inputs.scss", "_labels.scss", "_etc.scss"],
+                "_pluggable": ["_badge.scss", "_progress-bar.scss", "_etc.scss"]
+              },
+              "_layouts": ["_layouts.scss", "_navigation.scss"],
+              "_building-blocks": ["_cards.scss", "_headers.scss"]
+            }
+          },
+          "example": "If you want to override Atlas button styles, create theme/web/_widgets/_core/_buttons.scss and add ONLY your overrides"
+        },
+        {
+          "id": "SCAFFOLD-002",
+          "rule": "Create stubbed (empty) files for the full structure, populate only what you customize",
+          "why": "Empty files serve as placeholders showing where future customizations go. When a file is empty, no CSS is generated - no duplication. When you need to customize, you know exactly where to put the code.",
+          "bad": {
+            "approach": "Create files only when needed",
+            "problem": "Team members don't know where to add overrides, inconsistent locations, harder to maintain"
+          },
+          "good": {
+            "approach": "Scaffold full structure with empty files, comment header explaining purpose",
+            "example": "// _buttons.scss - Custom button overrides\n// Override Atlas_Core/web/_widgets/_core/_buttons.scss styles here\n// Leave empty if no customizations needed\n"
+          }
+        },
+        {
+          "id": "SCAFFOLD-003",
+          "rule": "Import only the files that have actual content in main.scss",
+          "why": "Importing empty files is harmless (generates no CSS), but importing populated files that re-import all of Atlas causes duplication. Only import YOUR override files.",
+          "bad": "@import '../../themesource/Atlas_Core/web/main'; // DUPLICATES everything!",
+          "good": "// Import only your custom files with actual overrides\n@import 'custom-variables';\n@import 'widgets/buttons';  // Only if you have button overrides"
+        },
+        {
+          "id": "SCAFFOLD-004",
+          "rule": "Never copy Atlas content into custom files - only add override rules",
+          "why": "Copying Atlas code causes duplication, breaks upgrades, and increases bundle size. Your files should contain ONLY the differences.",
+          "bad": "// Copying entire Atlas button file and modifying\n.btn { /* 200 lines copied from Atlas */ }",
+          "good": "// Only override what's different\n.btn-primary { background-color: $brand-primary; }"
+        }
+      ]
+    },
     "structure": {
       "title": "Theme Folder Structure",
       "importance": "critical",

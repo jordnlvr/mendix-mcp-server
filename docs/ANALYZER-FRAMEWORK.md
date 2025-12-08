@@ -32,12 +32,12 @@ Every analyzer needs weighted scoring categories. Example from ThemeAnalyzer:
 
 ```javascript
 const CATEGORY_WEIGHTS = {
-  fileStructure: 0.15,    // 15% - Proper organization
-  naming: 0.20,           // 20% - BEM, prefixes, consistency
-  variables: 0.20,        // 20% - Design tokens, SCSS vars
-  theming: 0.15,          // 15% - Atlas UI integration
-  maintainability: 0.15,  // 15% - Documentation, modularity
-  performance: 0.15,      // 15% - Selector efficiency
+  fileStructure: 0.15, // 15% - Proper organization
+  naming: 0.2, // 20% - BEM, prefixes, consistency
+  variables: 0.2, // 20% - Design tokens, SCSS vars
+  theming: 0.15, // 15% - Atlas UI integration
+  maintainability: 0.15, // 15% - Documentation, modularity
+  performance: 0.15, // 15% - Selector efficiency
 };
 // Weights must sum to 1.0
 ```
@@ -58,12 +58,12 @@ const knowledgePath = path.join(__dirname, '../../knowledge/microflow-analysis.j
 const BEST_PRACTICES = JSON.parse(fs.readFileSync(knowledgePath, 'utf-8'));
 
 const CATEGORY_WEIGHTS = {
-  complexity: 0.20,
-  naming: 0.20,
-  errorHandling: 0.20,
+  complexity: 0.2,
+  naming: 0.2,
+  errorHandling: 0.2,
   performance: 0.15,
   security: 0.15,
-  documentation: 0.10,
+  documentation: 0.1,
 };
 
 export class MicroflowAnalyzer {
@@ -101,21 +101,27 @@ export class MicroflowAnalyzer {
   async analyzeComplexity() {
     // Example: Check microflow action counts
     const microflows = await this.findMicroflows();
-    
+
     for (const mf of microflows) {
       const actionCount = mf.actions?.length || 0;
-      
+
       if (actionCount > 50) {
-        this.addIssue('critical', 'complexity', 
+        this.addIssue(
+          'critical',
+          'complexity',
           `Microflow "${mf.name}" has ${actionCount} actions - consider splitting`,
-          mf.file, null,
+          mf.file,
+          null,
           'Break into sub-microflows for maintainability'
         );
         this.scores.complexity -= 10;
       } else if (actionCount > 25) {
-        this.addIssue('warning', 'complexity',
+        this.addIssue(
+          'warning',
+          'complexity',
           `Microflow "${mf.name}" is getting complex (${actionCount} actions)`,
-          mf.file, null,
+          mf.file,
+          null,
           'Consider extracting reusable sub-microflows'
         );
         this.scores.complexity -= 5;
@@ -137,7 +143,7 @@ export class MicroflowAnalyzer {
     }
 
     const score = Math.round(totalScore);
-    
+
     // Grade mapping
     if (score >= 97) return { grade: 'A+', score };
     if (score >= 93) return { grade: 'A', score };
@@ -156,7 +162,7 @@ export class MicroflowAnalyzer {
 
   buildReport() {
     const { grade, score } = this.calculateFinalGrade();
-    
+
     return {
       grade,
       score,
@@ -170,9 +176,9 @@ export class MicroflowAnalyzer {
 
   generateRecommendations() {
     const recs = [];
-    
+
     // Priority order: critical issues first
-    const criticalCount = this.issues.filter(i => i.severity === 'critical').length;
+    const criticalCount = this.issues.filter((i) => i.severity === 'critical').length;
     if (criticalCount > 0) {
       recs.push(`🚨 Address ${criticalCount} critical issues first`);
     }
@@ -271,9 +277,9 @@ case 'analyze_microflows': {
     mendixVersion: args.mendix_version,
     moduleName: args.module_name,
   });
-  
+
   const result = await analyzer.analyze();
-  
+
   return {
     content: [{
       type: 'text',
@@ -307,16 +313,16 @@ import { MicroflowAnalyzer } from './analyzers/MicroflowAnalyzer.js';
 app.post('/analyze-microflows', async (req, res) => {
   try {
     const { project_path, mendix_version, module_name } = req.body;
-    
+
     if (!project_path) {
       return res.status(400).json({ error: 'project_path is required' });
     }
-    
+
     const analyzer = new MicroflowAnalyzer(project_path, {
       mendixVersion: mendix_version,
       moduleName: module_name,
     });
-    
+
     const result = await analyzer.analyze();
     res.json(result);
   } catch (error) {
@@ -331,14 +337,14 @@ Add the endpoint to `openapi.json` for ChatGPT integration.
 
 ## Analyzer Ideas
 
-| Analyzer | Categories | What It Checks |
-|----------|------------|----------------|
-| **MicroflowAnalyzer** | complexity, naming, errorHandling, performance, security, documentation | Action count, naming conventions, try-catch usage, N+1 queries, XSS risks |
-| **SecurityAnalyzer** | authentication, authorization, dataAccess, inputValidation, encryption | Access rules, XPath constraints, entity access, password policies |
-| **PageAnalyzer** | structure, responsiveness, accessibility, performance, usability | Widget nesting, mobile optimization, ARIA labels, lazy loading |
-| **DomainModelAnalyzer** | normalization, associations, inheritance, indexes, naming | Redundant data, association types, calculated attributes, index coverage |
-| **IntegrationAnalyzer** | restConfig, errorHandling, security, performance, versioning | Timeout settings, retry logic, API key handling, rate limiting |
-| **PerformanceAnalyzer** | queries, microflows, pages, caching, indexes | Large retrievals, synchronous calls, widget count, cache headers |
+| Analyzer                | Categories                                                              | What It Checks                                                            |
+| ----------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **MicroflowAnalyzer**   | complexity, naming, errorHandling, performance, security, documentation | Action count, naming conventions, try-catch usage, N+1 queries, XSS risks |
+| **SecurityAnalyzer**    | authentication, authorization, dataAccess, inputValidation, encryption  | Access rules, XPath constraints, entity access, password policies         |
+| **PageAnalyzer**        | structure, responsiveness, accessibility, performance, usability        | Widget nesting, mobile optimization, ARIA labels, lazy loading            |
+| **DomainModelAnalyzer** | normalization, associations, inheritance, indexes, naming               | Redundant data, association types, calculated attributes, index coverage  |
+| **IntegrationAnalyzer** | restConfig, errorHandling, security, performance, versioning            | Timeout settings, retry logic, API key handling, rate limiting            |
+| **PerformanceAnalyzer** | queries, microflows, pages, caching, indexes                            | Large retrievals, synchronous calls, widget count, cache headers          |
 
 ## Best Practices for Analyzers
 
@@ -359,7 +365,9 @@ this.scores[category] -= severityPoints[issue.severity];
 ### 3. Always Provide Actionable Suggestions
 
 ```javascript
-this.addIssue('warning', 'naming',
+this.addIssue(
+  'warning',
+  'naming',
   'Microflow "DoStuff" lacks prefix',
   'Module/DoStuff',
   null,
@@ -391,9 +399,9 @@ describe('MicroflowAnalyzer', () => {
   it('should detect complex microflows', async () => {
     const analyzer = new MicroflowAnalyzer('./test/fixtures/complex-project');
     const result = await analyzer.analyze();
-    
+
     expect(result.grade).toBeDefined();
-    expect(result.issues.some(i => i.category === 'complexity')).toBe(true);
+    expect(result.issues.some((i) => i.category === 'complexity')).toBe(true);
   });
 });
 ```
@@ -410,4 +418,4 @@ describe('MicroflowAnalyzer', () => {
 
 ---
 
-*Reference implementation: `src/analyzers/ThemeAnalyzer.js`*
+_Reference implementation: `src/analyzers/ThemeAnalyzer.js`_

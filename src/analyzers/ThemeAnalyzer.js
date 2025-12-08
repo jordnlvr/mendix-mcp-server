@@ -296,7 +296,188 @@ class ThemeAnalyzer {
     }
 
     results.score = Math.round((passedChecks / totalRequired) * 100);
+    
+    // Check for Scaffold Pattern compliance
+    const scaffoldAnalysis = await this.analyzeScaffoldPattern(projectDir);
+    results.scaffoldPattern = scaffoldAnalysis;
+    
+    // Adjust score based on scaffold pattern
+    if (scaffoldAnalysis.mirrorsAtlasStructure) {
+      results.score = Math.min(100, results.score + 10);
+      results.findings.push({
+        check: 'Scaffold Pattern',
+        status: 'pass',
+        details: 'Theme mirrors Atlas_Core folder structure for easy overrides',
+      });
+    } else if (scaffoldAnalysis.issues.length > 0) {
+      // Add scaffold pattern issues to main issues
+      results.issues.push(...scaffoldAnalysis.issues);
+    }
+    
     return results;
+  }
+
+  /**
+   * Analyze if theme follows the Scaffold Pattern (mirrors Atlas_Core structure)
+   * Best Practice: Create stubbed files mirroring Atlas structure for predictable overrides
+   */
+  async analyzeScaffoldPattern(projectDir) {
+    const results = {
+      mirrorsAtlasStructure: false,
+      atlasStructureFound: [],
+      recommendedFolders: [],
+      stubbedFilesCount: 0,
+      populatedFilesCount: 0,
+      issues: [],
+      recommendations: [],
+    };
+
+    const atlasCorePath = path.join(projectDir, 'themesource', 'Atlas_Core', 'web');
+    const customThemePath = path.join(projectDir, 'theme', 'web');
+
+    if (!(await this.pathExists(atlasCorePath))) {
+      results.issues.push({
+        severity: 'warning',
+        message: 'Atlas_Core not found - cannot verify scaffold pattern',
+        fix: 'Ensure Atlas_Core module is present in themesource/',
+      });
+      return results;
+    }
+
+    if (!(await this.pathExists(customThemePath))) {
+      return results;
+    }
+
+    // Define expected Atlas folder structure that should be mirrored
+    const expectedAtlasFolders = [
+      '_base',
+      '_helpers', 
+      '_widgets',
+      '_widgets/_core',
+      '_widgets/_pluggable',
+      '_layouts',
+      '_building-blocks',
+    ];
+
+    // Check which Atlas folders exist
+    for (const folder of expectedAtlasFolders) {
+      const atlasPath = path.join(atlasCorePath, folder);
+      if (await this.pathExists(atlasPath)) {
+        results.atlasStructureFound.push(folder);
+      }
+    }
+
+    // Check if custom theme mirrors the structure
+    let mirroredCount = 0;
+    for (const folder of results.atlasStructureFound) {
+      const customPath = path.join(customThemePath, folder);
+      if (await this.pathExists(customPath)) {
+        mirroredCount++;
+      } else {
+        results.recommendedFolders.push(folder);
+      }
+    }
+
+    // Calculate scaffold compliance
+    const complianceRatio = results.atlasStructureFound.length > 0 
+      ? mirroredCount / results.atlasStructureFound.length 
+      : 0;
+
+    results.mirrorsAtlasStructure = complianceRatio >= 0.7; // 70% threshold
+
+    // Analyze file stubs vs populated files
+    try {
+      const scssFiles = await this.findFilesRecursive(customThemePath, '.scss');
+      for (const file of scssFiles) {
+        const content = await fs.readFile(file, 'utf-8');
+        const strippedContent = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+        
+        if (strippedContent.length < 50) {
+          results.stubbedFilesCount++;
+        } else {
+          results.populatedFilesCount++;
+        }
+      }
+    } catch (error) {
+      // Ignore file read errors
+    }
+
+    // Generate recommendations
+    if (!results.mirrorsAtlasStructure && results.recommendedFolders.length > 0) {
+      results.issues.push({
+        severity: 'suggestion',
+        message: 'Custom theme does not fully mirror Atlas_Core structure',
+        details: `Missing folders: ${results.recommendedFolders.join(', ')}`,
+        fix: 'Create matching folder structure with stubbed (empty) SCSS files for future overrides',
+      });
+
+      results.recommendations.push({
+        title: 'Implement Scaffold Pattern',
+        description: 'Mirror the Atlas_Core folder structure in your custom theme. Create empty stubbed files that serve as placeholders for future customizations.',
+        benefit: 'Makes it immediately clear where to add overrides, prevents duplication, follows cascade correctly',
+        folders: results.recommendedFolders,
+        example: `// In ${results.recommendedFolders[0] || '_widgets'}/_buttons.scss:\n// Custom button overrides - leave empty if no customizations needed\n// Override Atlas_Core styles here\n`,
+      });
+    }
+
+    // Check for potential duplication issues
+    const mainScssPath = path.join(customThemePath, 'main.scss');
+    if (await this.pathExists(mainScssPath)) {
+      try {
+        const mainContent = await fs.readFile(mainScssPath, 'utf-8');
+        
+        // Check for imports of Atlas files (potential duplication)
+        if (mainContent.includes('themesource/Atlas_Core') || mainContent.includes('../themesource/Atlas_Core')) {
+          results.issues.push({
+            severity: 'critical',
+            message: 'main.scss imports from Atlas_Core - this causes CSS duplication!',
+            fix: 'Remove Atlas_Core imports from main.scss. Only import YOUR custom override files. Atlas is automatically compiled by Mendix.',
+          });
+        }
+
+        // Check for full Atlas import
+        if (mainContent.includes('@import') && mainContent.toLowerCase().includes('atlas')) {
+          const atlasImportMatch = mainContent.match(/@import\s+['"][^'"]*atlas[^'"]*['"]/gi);
+          if (atlasImportMatch) {
+            results.issues.push({
+              severity: 'warning', 
+              message: `Potential Atlas import detected: ${atlasImportMatch[0]}`,
+              fix: 'Verify this import is necessary. Atlas styles are automatically included by Mendix.',
+            });
+          }
+        }
+      } catch (error) {
+        // Ignore read errors
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Find files recursively with a specific extension
+   */
+  async findFilesRecursive(dir, extension) {
+    const files = [];
+    
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        
+        if (entry.isDirectory()) {
+          const subFiles = await this.findFilesRecursive(fullPath, extension);
+          files.push(...subFiles);
+        } else if (entry.name.endsWith(extension)) {
+          files.push(fullPath);
+        }
+      }
+    } catch (error) {
+      // Ignore errors (permission issues, etc.)
+    }
+    
+    return files;
   }
 
   /**
@@ -653,6 +834,35 @@ class ThemeAnalyzer {
       });
     }
 
+    // Add scaffold pattern recommendations if present
+    if (analyses.structure.scaffoldPattern) {
+      const scaffold = analyses.structure.scaffoldPattern;
+      
+      if (scaffold.recommendations && scaffold.recommendations.length > 0) {
+        for (const rec of scaffold.recommendations) {
+          recommendations.push({
+            severity: 'important',
+            category: 'scaffold-pattern',
+            message: rec.title,
+            fix: rec.description,
+            impact: rec.benefit,
+            details: rec.folders ? `Create these folders: ${rec.folders.join(', ')}` : null,
+          });
+        }
+      }
+
+      // Warn if populated files without scaffold structure
+      if (scaffold.populatedFilesCount > 3 && !scaffold.mirrorsAtlasStructure) {
+        recommendations.push({
+          severity: 'important',
+          category: 'scaffold-pattern',
+          message: 'Custom theme has styles but does not mirror Atlas structure',
+          fix: 'Reorganize styles to match Atlas_Core folder structure. Create corresponding folders and move styles to matching locations.',
+          impact: 'Makes maintenance easier, prevents developer confusion about where to add overrides',
+        });
+      }
+    }
+
     // Add best practice suggestions based on stats
     if (analyses.web.stats) {
       if (analyses.web.stats.totalFiles < 3) {
@@ -701,6 +911,12 @@ class ThemeAnalyzer {
    */
   categorizeIssue(issue) {
     const message = issue.message.toLowerCase();
+    if (message.includes('scaffold') || message.includes('mirror') || message.includes('atlas structure')) {
+      return 'scaffold-pattern';
+    }
+    if (message.includes('duplication') || message.includes('imports from atlas')) {
+      return 'scaffold-pattern';
+    }
     if (message.includes('variable') || message.includes('color') || message.includes('token')) {
       return 'design-tokens';
     }

@@ -446,7 +446,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 6,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -454,7 +454,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T04:03:09.944Z"
+          "last_used_at": "2025-12-07T23:35:04.787Z"
         }
       },
       {
@@ -482,7 +482,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 4,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -490,7 +490,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T04:02:58.242Z"
+          "last_used_at": "2025-12-07T23:35:11.551Z"
         }
       },
       {
@@ -527,15 +527,14 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 4,
+          "usage_count": 0,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.67,
-          "last_used_at": "2025-12-08T04:03:09.944Z"
+          "quality_score": 0.67
         }
       },
       {
@@ -560,15 +559,14 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 2,
+          "usage_count": 0,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.67,
-          "last_used_at": "2025-12-08T01:35:18.752Z"
+          "quality_score": 0.67
         }
       },
       {
@@ -597,15 +595,14 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 3,
+          "usage_count": 0,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.67,
-          "last_used_at": "2025-12-08T01:35:24.405Z"
+          "quality_score": 0.67
         }
       }
     ],
@@ -647,77 +644,202 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 8,
+          "usage_count": 0,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.67,
-          "last_used_at": "2025-12-08T04:03:09.943Z"
+          "quality_score": 0.67
         }
       }
     ],
-    "basic_usage": [
+    "working_copy_patterns": [
       {
-        "title": "Platform SDK Project Analysis - Complete Walkthrough",
-        "description": "Step-by-step guide to analyze a Mendix project using Platform SDK - list modules, entities, attributes",
-        "steps": [
-          {
-            "step": 1,
-            "action": "Install dependencies",
-            "commands": [
-              "npm install mendixmodelsdk mendixplatformsdk --save",
-              "npm install typescript@~4.6.2 @types/node@^22 --save-dev"
-            ]
-          },
-          {
-            "step": 2,
-            "action": "Get your Personal Access Token",
-            "details": "Visit https://warden.mendix.com/v1/keys and create a PAT with 'mx:modelrepository:repo:write' scope",
-            "environment": "Set as environment variable: MENDIX_TOKEN=your-token-here"
-          },
-          {
-            "step": 3,
-            "action": "Create analysis script",
-            "filename": "analyze-project.ts",
-            "code": "import { MendixPlatformClient } from 'mendixplatformsdk';\nimport { domainmodels } from 'mendixmodelsdk';\n\nasync function analyzeProject(appId: string) {\n  const client = new MendixPlatformClient();\n  \n  // Get the app and create a temporary working copy\n  const app = await client.getApp(appId);\n  const workingCopy = await app.createTemporaryWorkingCopy('main');\n  const model = await workingCopy.openModel();\n  \n  console.log('\\nProject Analysis:');\n  console.log('=================');\n  \n  // Get all modules (excluding System module)\n  const modules = model.allModules().filter(m => m.name !== 'System');\n  console.log(`\\nFound ${modules.length} modules:\\n`);\n  \n  // Iterate through each module\n  for (const module of modules) {\n    console.log(`MODULE: ${module.name}`);\n    \n    // Get domain model for this module\n    const domainModel = module.domainModel;\n    if (!domainModel) continue;\n    \n    // Load the domain model to access entities\n    await domainModel.load();\n    \n    const entities = domainModel.entities;\n    console.log(`  Entities: ${entities.length}`);\n    \n    // List each entity and its attributes\n    for (const entity of entities) {\n      console.log(`\\n  ENTITY: ${entity.name}`);\n      \n      const attributes = entity.attributes;\n      console.log(`    Attributes: ${attributes.length}`);\n      \n      for (const attr of attributes) {\n        console.log(`      - ${attr.name} (${attr.type})`);\n      }\n    }\n    console.log('\\n' + '-'.repeat(50));\n  }\n}\n\n// Usage: node analyze-project.js YOUR-APP-ID\nconst appId = process.argv[2];\nif (!appId) {\n  console.error('Please provide an app ID');\n  process.exit(1);\n}\n\nanalyzeProject(appId).catch(err => {\n  console.error('Error:', err);\n  process.exit(1);\n});"
-          },
-          {
-            "step": 4,
-            "action": "Compile TypeScript",
-            "command": "tsc analyze-project.ts"
-          },
-          {
-            "step": 5,
-            "action": "Run the script",
-            "command": "node analyze-project.js YOUR-APP-ID",
-            "note": "Get YOUR-APP-ID from your app's General tab in Mendix Developer Portal"
-          }
+        "title": "Working Copy Lifecycle Pattern",
+        "description": "The fundamental pattern for all SDK operations - create working copy, open model, modify, flush, commit",
+        "lifecycle_steps": [
+          "1. Create client: new MendixPlatformClient()",
+          "2. Get app: client.getApp('app-id') or client.createNewApp('name', {repositoryType: 'git'})",
+          "3. Create working copy: app.createTemporaryWorkingCopy('main')",
+          "4. Open model: workingCopy.openModel()",
+          "5. Make changes to model",
+          "6. Flush changes: model.flushChanges()",
+          "7. Commit: workingCopy.commitToRepository('main', {commitMessage: 'msg'})"
         ],
-        "key_concepts": {
-          "working_copy": "Temporary working copy allows reading the model without affecting the actual app",
-          "model_navigation": "Use model.allModules() to get all modules, then module.domainModel to access entities",
-          "loading": "Call .load() on units like domainModel before accessing their contents",
-          "filtering": "Exclude 'System' module as it cannot be read via SDK"
+        "code_example": "const client = new MendixPlatformClient();\nconst app = client.getApp('app-id-here');\nconst workingCopy = await app.createTemporaryWorkingCopy('main');\nconst model = await workingCopy.openModel();\n\n// ... make changes ...\n\nawait model.flushChanges();\nawait workingCopy.commitToRepository('main', { commitMessage: 'SDK changes' });",
+        "working_copy_limits": {
+          "auto_delete_hours": 24,
+          "max_files": 20000,
+          "max_app_size_mb": 250
         },
-        "common_patterns": {
-          "list_all_modules": "model.allModules().filter(m => m.name !== 'System')",
-          "get_domain_model": "module.domainModel",
-          "access_entities": "await domainModel.load(); const entities = domainModel.entities;",
-          "get_attributes": "entity.attributes"
-        },
-        "output_example": "MODULE: MyFirstModule\n  Entities: 3\n\n  ENTITY: Customer\n    Attributes: 5\n      - Name (String)\n      - Email (String)\n      - CreatedDate (DateTime)\n      - IsActive (Boolean)\n      - TotalOrders (Integer)",
-        "mendix_version": "11.5.0",
-        "sdk_versions": {
-          "mendixmodelsdk": "4.105.0",
-          "mendixplatformsdk": "5.2.0"
-        },
+        "important_notes": [
+          "Use 'main' for Git-based apps, 'trunk' for SVN-based apps",
+          "Working copies are deleted after 24 hours",
+          "Always call flushChanges() before commitToRepository()"
+        ],
         "_metadata": {
-          "id": "ab706429-dcc0-4f28-9895-274d2136f48f",
-          "added_at": "2025-12-08T04:05:26.082Z",
-          "source": "docs.mendix.com - Use the Platform SDK & Find Things in the Model",
+          "id": "7e29a3f2-1826-4589-9d86-a49fd1316dc8",
+          "added_at": "2025-12-08T00:49:38.581Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/creating-your-first-script/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "platform_sdk_operations": [
+      {
+        "title": "Platform SDK App Operations",
+        "description": "Operations for creating, managing, and deploying Mendix apps",
+        "client_creation": "const client = new MendixPlatformClient();",
+        "app_operations": {
+          "get_existing_app": "const app = client.getApp('app-id-guid');",
+          "create_new_app": "const app = await client.createNewApp('AppName', { repositoryType: 'git' });",
+          "delete_app": "await app.delete();",
+          "get_app_info": "const info = await app.getInfo();"
+        },
+        "repository_operations": {
+          "create_branch": "await app.createBranch('feature-branch', 'main');",
+          "get_branches": "const branches = await app.getBranches();"
+        },
+        "working_copy_operations": {
+          "create_temp": "const wc = await app.createTemporaryWorkingCopy('main');",
+          "open_model": "const model = await wc.openModel();",
+          "commit": "await wc.commitToRepository('main', { commitMessage: 'msg' });"
+        },
+        "environment_operations": {
+          "get_environments": "const envs = await app.getEnvironments();",
+          "deploy": "See deployment API documentation"
+        },
+        "repository_types": {
+          "git": "Modern default, use 'main' branch",
+          "svn": "Legacy, use 'trunk' branch"
+        },
+        "app_id_format": "UUID format: cc22bea9-68d6-4f88-8123-fc358c2fe4b3",
+        "important_notes": [
+          "createNewApp() creates a real app in Mendix cloud",
+          "delete() permanently removes app - use with caution",
+          "Always specify repositoryType: 'git' for new apps"
+        ],
+        "_metadata": {
+          "id": "c8640ea0-dbcd-486a-a83b-b46c4afef08b",
+          "added_at": "2025-12-08T00:51:38.002Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-use-cases/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "sdk-patterns": [
+      {
+        "topic": "Platform SDK & Model SDK Complete Patterns for Studio Pro 11+",
+        "version_compatibility": "Studio Pro 10.x, 11.x and beyond",
+        "last_updated": "2025-12-07",
+        "overview": "Complete patterns for using Mendix Platform SDK and Model SDK with TypeScript for automation, analysis, and model manipulation.",
+        "setup": {
+          "packages": {
+            "mendixplatformsdk": "Latest - Platform client for app/branch/working copy operations",
+            "mendixmodelsdk": "Latest - Model manipulation APIs",
+            "typescript": "5.x",
+            "node": "22.x LTS recommended"
+          },
+          "authentication": "Personal Access Token (PAT) via MENDIX_TOKEN environment variable",
+          "tsconfig": {
+            "target": "ES2020",
+            "module": "commonjs",
+            "strict": true,
+            "esModuleInterop": true
+          }
+        },
+        "connection_patterns": {
+          "basic_connection": "const client = new MendixPlatformClient();\nconst app = client.getApp('app-id');\nconst workingCopy = await app.createTemporaryWorkingCopy('main');\nconst model = await workingCopy.openModel();",
+          "existing_app_connection": "const app = client.getApp('cc22bea9-68d6-4f88-8123-fc358c2fe4b3');\nconst workingCopy = await app.createTemporaryWorkingCopy('main');",
+          "reuse_working_copy": "const workingCopy = await app.getOnlineWorkingCopy(workingCopyId); // Reuse existing, avoid creating new",
+          "commit_changes": "await model.flushChanges();\nawait workingCopy.commitToRepository('main', { commitMessage: 'SDK: Description' });"
+        },
+        "domain_model_patterns": {
+          "get_domain_model": "const dm = model.allDomainModels().filter(d => d.containerAsModule.name === 'ModuleName')[0];\nconst domainModel = await dm.load();",
+          "create_entity": "const entity = domainmodels.Entity.createIn(domainModel);\nentity.name = 'MyEntity';\nentity.documentation = 'Description here';",
+          "create_attribute": "const attr = domainmodels.Attribute.createIn(entity);\nattr.name = 'MyAttribute';\nattr.type = domainmodels.StringAttributeType.create(model);",
+          "create_association": "const assoc = domainmodels.Association.createIn(domainModel);\nassoc.name = 'Entity_OtherEntity';\nassoc.parent = parentEntity;\nassoc.child = childEntity;\nassoc.type = domainmodels.AssociationType.Reference;",
+          "attribute_types": {
+            "string": "domainmodels.StringAttributeType.create(model)",
+            "integer": "domainmodels.IntegerAttributeType.create(model)",
+            "long": "domainmodels.LongAttributeType.create(model)",
+            "decimal": "domainmodels.DecimalAttributeType.create(model)",
+            "boolean": "domainmodels.BooleanAttributeType.create(model)",
+            "datetime": "domainmodels.DateTimeAttributeType.create(model)",
+            "enum": "const enumType = domainmodels.EnumerationAttributeType.create(model);\nenumType.enumeration = myEnumeration;"
+          }
+        },
+        "microflow_patterns": {
+          "get_microflow": "const mfInterface = model.allMicroflows().filter(mf => mf.qualifiedName === 'Module.MicroflowName')[0];\nconst microflow = await mfInterface.load();",
+          "create_microflow": "const mf = microflows.Microflow.createIn(module);\nmf.name = 'ACT_MyAction';\nmf.allowedModuleRoles.push(moduleRole);",
+          "create_start_event": "const start = microflows.StartEvent.createIn(mf.objectCollection);\nstart.relativeMiddlePoint = { x: 100, y: 100 };",
+          "create_end_event": "const end = microflows.EndEvent.createIn(mf.objectCollection);\nend.relativeMiddlePoint = { x: 500, y: 100 };",
+          "create_activity": "const activity = microflows.ActionActivity.createIn(mf.objectCollection);\nactivity.relativeMiddlePoint = { x: 300, y: 100 };",
+          "create_sequence_flow": "const flow = microflows.SequenceFlow.createIn(mf);\nflow.origin = startEvent;\nflow.destination = activity;\nflow.originConnectionIndex = 0;\nflow.destinationConnectionIndex = 0;",
+          "aggregate_list_action": "const aggregate = microflows.AggregateListAction.create(model);\naggregate.aggregateFunction = microflows.AggregateFunctionEnum.Count;\naggregate.inputListVariableName = 'MyList';\naggregate.outputVariableName = 'Count';\nactivity.action = aggregate;",
+          "log_action": "const logAction = microflows.LogMessageAction.create(model);\nlogAction.node = '@ModuleName.LogNode\\n';\nlogAction.level = microflows.LogLevel.Info;\nlogAction.messageTemplate = microflows.StringTemplate.create(model);\nlogAction.messageTemplate.text = 'Log message here';",
+          "loop_pattern": "const loop = microflows.LoopedActivity.createIn(mf.objectCollection);\nloop.loopSource = microflows.IterableList.create(model);\nloop.loopSource.listVariableName = 'MyList';\nloop.iteratedListVariableName = 'CurrentItem';"
+        },
+        "documentation_patterns": {
+          "set_entity_documentation": "entity.documentation = 'Your documentation text';",
+          "set_microflow_documentation": "microflow.documentation = 'What this microflow does and why';",
+          "set_attribute_documentation": "attribute.documentation = 'Purpose of this attribute';",
+          "batch_documentation_script": "const DOCS_TO_APPLY = [\n  { qualifiedName: 'Module.Entity', documentation: 'Text' },\n  { qualifiedName: 'Module.Microflow', documentation: 'Text' }\n];\n\nfor (const doc of DOCS_TO_APPLY) {\n  // Find and apply documentation\n}"
+        },
+        "critical_gotchas": {
+          "delete_flows_before_activities": "When modifying microflows, delete SequenceFlows BEFORE deleting activities to avoid orphaned references",
+          "use_aggregate_not_length": "Use AggregateListAction with Count, NOT length() function which doesn't exist",
+          "flush_before_commit": "Always call model.flushChanges() before commitToRepository()",
+          "working_copy_24h_limit": "Working copies auto-delete after 24 hours - reuse when possible",
+          "allowed_module_roles": "Every microflow needs allowedModuleRoles set for security",
+          "log_node_format": "Log node format: '@ModuleName.LogNode\\n' - note the @ prefix and \\n suffix",
+          "iterable_list_not_variable_name": "Use IterableList on loopSource, not deprecated loopVariableName"
+        },
+        "analysis_patterns": {
+          "list_all_entities": "model.allDomainModels().forEach(async dm => {\n  const loaded = await dm.load();\n  loaded.entities.forEach(e => console.log(e.name));\n});",
+          "find_unused_microflows": "// Check which microflows have no references",
+          "export_model_structure": "Use mx.exe dump-mpr for local analysis without API calls"
+        },
+        "mx_exe_commands": {
+          "dump_model": "mx.exe dump-mpr --module-names=\"ModuleName\" \"path/to/app.mpr\"",
+          "check_project": "mx.exe check -w -d -p -b \"path/to/app.mpr\"",
+          "dump_specific_unit": "mx.exe dump-mpr --unit-type=DomainModel \"path/to/app.mpr\"",
+          "exclude_protected": "mx.exe dump-mpr --exclude-protected-modules \"path/to/app.mpr\""
+        },
+        "sources": [
+          "docs.mendix.com/apidocs-mxsdk/mxsdk/",
+          "docs.mendix.com/apidocs-mxsdk/mxsdk/creating-your-first-script/",
+          "github.com/mendix/sdk-demo",
+          "apidocs.rnd.mendix.com/modelsdk/latest/index.html"
+        ],
+        "_metadata": {
+          "id": "52161311-6a7c-45ec-b675-5f3e0d5e098c",
+          "added_at": "2025-12-08T05:46:12.028Z",
+          "source": "docs.mendix.com/apidocs-mxsdk, github.com/mendix/sdk-demo, expert research December 2025",
           "added_by": "mendix-expert-mcp",
           "version": 1,
           "verified": true,

@@ -62,14 +62,15 @@ The Mendix Expert MCP Server is built as a modular, self-improving system with s
 
 Manages the JSON knowledge base files:
 
-| Function | Purpose |
-|----------|---------|
-| `load()` | Load all knowledge files from `/knowledge` |
-| `add()` | Add new knowledge with quality scoring |
-| `validate()` | Check for errors, staleness, duplicates |
-| `recordUsage()` | Track which entries are actually used |
+| Function        | Purpose                                    |
+| --------------- | ------------------------------------------ |
+| `load()`        | Load all knowledge files from `/knowledge` |
+| `add()`         | Add new knowledge with quality scoring     |
+| `validate()`    | Check for errors, staleness, duplicates    |
+| `recordUsage()` | Track which entries are actually used      |
 
 **Knowledge Files:**
+
 - `best-practices.json` - Coding patterns and guidelines
 - `studio-pro.json` - Studio Pro features and usage
 - `model-sdk.json` - SDK programming patterns
@@ -88,7 +89,7 @@ Query: "how to loop through entities"
         │   • TF-IDF with stemming
         │   • Fuzzy matching (typos OK)
         │   • Mendix term expansion
-        │   
+        │
         └─► Vector Search (60% weight)
             • Azure OpenAI embeddings
             • Semantic understanding
@@ -102,6 +103,7 @@ Query: "how to loop through entities"
 
 **Query Expansion:**
 The system automatically expands Mendix acronyms:
+
 - `SDK` → `software development kit, platform sdk, model sdk`
 - `MF` → `microflow, microflows`
 - `NP` → `non-persistent, transient`
@@ -111,15 +113,16 @@ The system automatically expands Mendix acronyms:
 
 Semantic search using Pinecone:
 
-| Feature | Value |
-|---------|-------|
+| Feature             | Value                                 |
+| ------------------- | ------------------------------------- |
 | **Embedding Model** | Azure OpenAI `text-embedding-3-small` |
-| **Dimensions** | 1536 |
-| **Index** | `mendix-knowledge` |
-| **Vectors** | ~318 |
-| **Query Cache** | LRU cache (500 entries) |
+| **Dimensions**      | 1536                                  |
+| **Index**           | `mendix-knowledge`                    |
+| **Vectors**         | ~318                                  |
+| **Query Cache**     | LRU cache (500 entries)               |
 
 **Embedding Priority:**
+
 1. Azure OpenAI (355ms, recommended)
 2. Standard OpenAI (971ms, fallback)
 3. Local TF-IDF (instant, no API needed)
@@ -129,6 +132,7 @@ Semantic search using Pinecone:
 Automated documentation crawler:
 
 **Sources Crawled:**
+
 - Studio Pro Release Notes (10.x, 11.x)
 - Reference Guide (pages, domain model, microflows)
 - How-To Guides
@@ -136,6 +140,7 @@ Automated documentation crawler:
 - API Documentation
 
 **Priority Topics:**
+
 - Maia AI Assistant
 - Page Variables (10.0+)
 - Workflows 2.0
@@ -258,14 +263,14 @@ mendix-mcp-server/
 
 ## Performance Characteristics
 
-| Operation | Latency | Notes |
-|-----------|---------|-------|
-| Keyword search | <10ms | In-memory TF-IDF |
-| Vector search (cached) | <50ms | Cache hit |
-| Vector search (miss) | ~400ms | Azure OpenAI + Pinecone |
-| Full hybrid search | ~450ms | Parallel execution |
-| Re-index vectors | ~30s | 300+ documents |
-| Harvest all sources | ~5min | Rate-limited |
+| Operation              | Latency | Notes                   |
+| ---------------------- | ------- | ----------------------- |
+| Keyword search         | <10ms   | In-memory TF-IDF        |
+| Vector search (cached) | <50ms   | Cache hit               |
+| Vector search (miss)   | ~400ms  | Azure OpenAI + Pinecone |
+| Full hybrid search     | ~450ms  | Parallel execution      |
+| Re-index vectors       | ~30s    | 300+ documents          |
+| Harvest all sources    | ~5min   | Rate-limited            |
 
 ---
 

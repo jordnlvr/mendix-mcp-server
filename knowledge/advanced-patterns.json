@@ -565,6 +565,209 @@
         ],
         "source": "Enterprise Mendix application patterns"
       }
+    ],
+    "pluggable_widgets": [
+      {
+        "pattern": "Pluggable Widget Development for Studio Pro 11+",
+        "description": "Create custom React-based widgets using the official Pluggable Widget API",
+        "version_compatibility": "Studio Pro 10.x, 11.x and beyond",
+        "prerequisites": [
+          "Node.js 22.x LTS",
+          "Yeoman generator: npm install -g yo @mendix/generator-widget",
+          "React 18.x knowledge",
+          "TypeScript 5.x"
+        ],
+        "scaffold_command": "yo @mendix/widget MyWidgetName",
+        "project_structure": {
+          "src/MyWidget.tsx": "Main React component",
+          "src/MyWidget.xml": "Widget definition (properties)",
+          "src/MyWidget.editorPreview.tsx": "Design mode preview",
+          "src/MyWidget.editorConfig.ts": "Studio Pro editor configuration",
+          "package.json": "Dependencies and scripts",
+          "tsconfig.json": "TypeScript configuration"
+        },
+        "property_types": {
+          "primitives": {
+            "string": "Text input, single line or multiline",
+            "boolean": "Checkbox/toggle",
+            "integer": "Whole number input",
+            "decimal": "Decimal number input",
+            "enumeration": "Dropdown from predefined values"
+          },
+          "visual": {
+            "icon": "Icon picker (glyphicon or image)",
+            "image": "Static image selection"
+          },
+          "data": {
+            "attribute": "Entity attribute binding (path)",
+            "association": "Entity association binding",
+            "expression": "Client-side expression",
+            "textTemplate": "Translatable text with placeholders",
+            "object": "Complex object with nested properties",
+            "file": "File reference"
+          },
+          "behavior": {
+            "action": "On-click event handler (microflow/nanoflow/action)",
+            "datasource": "Data source configuration (database/xpath/association/microflow/nanoflow)",
+            "selection": "Single or multi-selection handling",
+            "widgets": "Container for child widgets"
+          }
+        },
+        "system_properties": {
+          "Label": "Widget label in page editor",
+          "Name": "Internal widget name",
+          "TabIndex": "Tab order for accessibility",
+          "Visibility": "Conditional visibility expression",
+          "Editability": "Read-only/editable state"
+        },
+        "xml_definition_example": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<widget id=\"mycompany.mywidget\" pluginWidget=\"true\" needsEntityContext=\"true\" offlineCapable=\"true\">\n  <name>My Widget</name>\n  <description>Widget description</description>\n  <icon/>\n  <properties>\n    <propertyGroup caption=\"General\">\n      <property key=\"dataAttribute\" type=\"attribute\" required=\"true\">\n        <caption>Data Attribute</caption>\n        <attributeTypes><attributeType name=\"String\"/></attributeTypes>\n      </property>\n      <property key=\"onClickAction\" type=\"action\">\n        <caption>On Click</caption>\n      </property>\n    </propertyGroup>\n  </properties>\n</widget>",
+        "react_component_pattern": "import { createElement, ReactElement } from 'react';\nimport { MyWidgetContainerProps } from '../typings/MyWidgetProps';\nimport './ui/MyWidget.css';\n\nexport function MyWidget(props: MyWidgetContainerProps): ReactElement {\n  const { dataAttribute, onClickAction } = props;\n  \n  const handleClick = () => {\n    if (onClickAction?.canExecute) {\n      onClickAction.execute();\n    }\n  };\n  \n  return (\n    <div className=\"my-widget\" onClick={handleClick}>\n      {dataAttribute?.displayValue ?? 'No value'}\n    </div>\n  );\n}",
+        "list_value_usage": "// For datasource property with ListValue type\nprops.datasource.items?.map((item, index) => (\n  <div key={index}>\n    {props.itemName(item).displayValue}\n  </div>\n))",
+        "best_practices": [
+          "Use TypeScript for type safety",
+          "Handle null/undefined values gracefully",
+          "Check canExecute before calling execute() on actions",
+          "Use displayValue for formatted output",
+          "Implement editorPreview for design mode",
+          "Add proper CSS namespacing to avoid conflicts",
+          "Support both web and native if possible"
+        ],
+        "common_integrations": {
+          "react_big_calendar": "Calendar widgets",
+          "react_datepicker": "Date/time pickers",
+          "plotly_js": "Charts (Bar, Column, Pie, Line, Area)",
+          "victory_native": "Native mobile charts",
+          "react_leaflet": "Maps",
+          "ag_grid": "Advanced data grids"
+        },
+        "build_commands": {
+          "development": "npm run dev",
+          "production": "npm run build",
+          "test": "npm test",
+          "release": "npm run release"
+        },
+        "source": "docs.mendix.com/apidocs-mxsdk/apidocs/pluggable-widgets-property-types, github.com/mendix/widgets-resources"
+      },
+      {
+        "pattern": "Native Mobile Widget Development",
+        "description": "Create React Native widgets for Mendix Native Mobile apps",
+        "scaffold_command": "yo @mendix/widget MyWidget --native",
+        "react_native_dependencies": [
+          "react-native",
+          "@mendix/pluggable-widgets-commons",
+          "react-native-vector-icons (optional)"
+        ],
+        "platform_conditional_code": "import { Platform } from 'react-native';\n\nconst Component = Platform.select({\n  ios: IOSComponent,\n  android: AndroidComponent,\n  default: WebComponent\n});",
+        "native_chart_example": "// Using Victory Native for charts\nimport { VictoryBar, VictoryChart, VictoryTheme } from 'victory-native';\n\nexport function NativeBarChart({ data }) {\n  return (\n    <VictoryChart theme={VictoryTheme.material}>\n      <VictoryBar data={data} />\n    </VictoryChart>\n  );\n}",
+        "testing_native": "Use Mendix Make It Native app or custom dev app",
+        "source": "github.com/mendix/widgets-resources, docs.mendix.com/howto/extensibility/create-native-widget"
+      }
+    ],
+    "extensibility_api": [
+      {
+        "pattern": "Studio Pro Web Extension Development (TypeScript)",
+        "description": "Create custom panels and features for Studio Pro using Web API",
+        "version_compatibility": "Studio Pro 10.18+, 11.x",
+        "prerequisites": [
+          "Node.js 22.x LTS",
+          "Studio Pro with --enable-extension-development flag"
+        ],
+        "setup_command": "npm create @mendix/extension my-extension",
+        "project_structure": {
+          "src/index.ts": "Extension entry point with activate() function",
+          "package.json": "Extension metadata",
+          "manifest.json": "Studio Pro manifest"
+        },
+        "entry_point_pattern": "import { ExtensionContext } from '@mendix/extensions-api';\n\nexport function activate(context: ExtensionContext) {\n  context.subscriptions.push(\n    context.commands.registerCommand('myExt.action', () => {\n      context.showInformationMessage('Extension activated!');\n    })\n  );\n}",
+        "capabilities": ["Custom commands", "Dockable panels", "WebView-based UI", "Model access (limited)"],
+        "debugging": "Launch via VS Code Debug configuration",
+        "source": "docs.mendix.com/apidocs-mxsdk/extensibility-api/web-extensibility-api"
+      },
+      {
+        "pattern": "Studio Pro C# Extension Development (.NET)",
+        "description": "Create deep integrations with Studio Pro using .NET API",
+        "version_compatibility": "Studio Pro 10.18+, 11.x",
+        "prerequisites": [
+          ".NET SDK 8.0+",
+          "NuGet: Mendix.StudioPro.ExtensionsAPI"
+        ],
+        "csproj_setup": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageReference Include=\"Mendix.StudioPro.ExtensionsAPI\" Version=\"*\" />\n  </ItemGroup>\n</Project>",
+        "manifest_json": "{\n  \"name\": \"MyExtension\",\n  \"version\": \"1.0.0\",\n  \"minStudioProVersion\": \"10.18.0\",\n  \"extensionApiVersion\": \"1.0.0\",\n  \"entryPoint\": \"MyExtension.dll\"\n}",
+        "entry_point_pattern": "using Mendix.StudioPro.ExtensionsAPI;\n\npublic class MyExtension : IExtension\n{\n    public void Activate(IExtensionContext context)\n    {\n        var menuService = context.GetService<IMenuService>();\n        // Add menu items, register commands\n    }\n    public void Deactivate() { }\n}",
+        "services": {
+          "IAppService": "App lifecycle operations",
+          "IModelService": "Domain model access",
+          "IDocumentService": "Open document handling",
+          "IMenuService": "Menu item registration",
+          "IToolbarService": "Toolbar buttons",
+          "IDockingService": "Dockable panels",
+          "IDialogService": "Dialogs and prompts"
+        },
+        "source": "docs.mendix.com/apidocs-mxsdk/extensibility-api/csharp-extensibility-api"
+      }
+    ],
+    "atlas_ui_theming": [
+      {
+        "pattern": "Custom Atlas 3 Theme Development",
+        "description": "Create custom themes using SCSS variables and modules",
+        "version_compatibility": "Studio Pro 10.x, 11.x (Atlas 3)",
+        "theme_structure": {
+          "root": "theme/web/",
+          "main_file": "main.scss",
+          "custom_variables": "custom-variables.scss"
+        },
+        "variable_override_pattern": "// theme/web/custom-variables.scss\n// Override default Atlas variables\n$brand-primary: #007bff;\n$brand-success: #28a745;\n$font-base: 'Open Sans', sans-serif;\n$font-size-default: 14px;\n$border-radius-default: 4px;",
+        "themesource_structure": {
+          "module_main": "themesource/{module}/web/main.scss",
+          "native_main": "themesource/{module}/native/main.scss"
+        },
+        "scss_compilation_order": [
+          "1. Atlas Core variables",
+          "2. Your custom-variables.scss overrides",
+          "3. Atlas component styles",
+          "4. Themesource modules (alphabetical)",
+          "5. Your theme/web overrides"
+        ],
+        "exclusion_variables": {
+          "purpose": "Prevent Atlas from generating unused component CSS",
+          "examples": [
+            "$exclude-button: true; // Exclude button styles",
+            "$exclude-badge: true;",
+            "$exclude-navigation: true;"
+          ],
+          "benefit": "Smaller CSS bundle, faster loading"
+        },
+        "design_properties": {
+          "purpose": "Expose theme options in Studio Pro design panel",
+          "location": "theme/settings.json or design-properties.json",
+          "types": ["Toggle", "Dropdown", "ColorPicker"]
+        },
+        "native_theming": {
+          "main_file": "theme/native/main.js",
+          "variables": "theme/native/custom-variables.js",
+          "pattern": "export const brand = { primary: '#007bff' };"
+        },
+        "best_practices": [
+          "Use custom-variables.scss for overrides, not direct Atlas edits",
+          "Organize custom styles in themesource modules",
+          "Use exclusion variables for unused components",
+          "Test both web and native if PWA/hybrid",
+          "Use design properties for user-selectable options"
+        ],
+        "source": "docs.mendix.com/howto/front-end/atlas-ui, docs.mendix.com/refguide/customize-styling-new"
+      },
+      {
+        "pattern": "Atlas Design System Component Customization",
+        "description": "Customize individual Atlas components while maintaining consistency",
+        "component_customization_pattern": "// In themesource/mymodule/web/main.scss\n\n// Override button variants\n.btn-primary {\n  background: linear-gradient(45deg, $brand-primary, darken($brand-primary, 10%));\n  border: none;\n  box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n}",
+        "creating_new_variants": "// Add custom button variant\n.btn-gradient {\n  @extend .btn;\n  background: linear-gradient(90deg, $brand-primary, $brand-secondary);\n}",
+        "building_blocks": {
+          "purpose": "Pre-composed page sections using Atlas components",
+          "location": "Marketplace building blocks or custom module",
+          "best_practice": "Create building blocks for repeated UI patterns"
+        },
+        "source": "Atlas 3 Design System documentation"
+      }
     ]
   }
 }

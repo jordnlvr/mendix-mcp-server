@@ -93,12 +93,14 @@ github.com/mendix/sdk-demo
 ```
 
 **Why it's gold:**
+
 - Official Mendix examples
 - Schema extraction patterns
 - Real working code
 - Up-to-date with SDK changes
 
 **Search pattern:**
+
 ```
 site:github.com/mendix/sdk-demo [your topic]
 ```
@@ -110,6 +112,7 @@ npm search mendixmodelsdk
 ```
 
 **Why it's valuable:**
+
 - Real-world implementations
 - Published, tested code
 - Often includes documentation
@@ -121,6 +124,7 @@ web.archive.org/web/*/docs.mendix.com/*
 ```
 
 **Why it matters:**
+
 - Old documentation often removed
 - Migration patterns
 - Historical context
@@ -138,6 +142,7 @@ When Beast Mode is active, the AI follows these rules:
 ### 2. Version Awareness
 
 Always verify Mendix version compatibility:
+
 - 7.x - Legacy patterns
 - 8.x - Modern but dated
 - 9.x - Workflow introduction
@@ -147,6 +152,7 @@ Always verify Mendix version compatibility:
 ### 3. Auto-Learning
 
 After discovering information:
+
 ```
 Found the answer! Let me save this to the knowledge base...
 @mendix-expert add_to_knowledge_base ...
@@ -155,6 +161,7 @@ Found the answer! Let me save this to the knowledge base...
 ### 4. Source Attribution
 
 Always cite where information came from:
+
 ```
 Source: github.com/mendix/sdk-demo/blob/main/...
 Verified working with Mendix 11.x
@@ -202,7 +209,7 @@ site:github.com/mendix/widgets [topic]
 
 ## Example Beast Mode Session
 
-```
+````
 User: How do I create a custom Java action parameter type in the SDK?
 
 AI: [Beast Mode Activated]
@@ -214,7 +221,7 @@ AI: [Beast Mode Activated]
     TIER 2 - GitHub:
     Searching github.com/mendix/sdk-demo...
     Found: java-action-example.ts with parameter patterns!
-    
+
     ```typescript
     const param = javaActions.JavaActionParameter.createIn(action);
     param.type = javaActions.createJavaActionParameterType(model);
@@ -226,10 +233,10 @@ AI: [Beast Mode Activated]
     Found: mendix-cli has similar patterns.
 
     ✅ Answer found in Tier 2!
-    
+
     Saving to knowledge base...
     @mendix-expert add_to_knowledge_base knowledge_file="model-sdk" ...
-```
+````
 
 ## When to Use Beast Mode
 
@@ -249,12 +256,12 @@ AI: [Beast Mode Activated]
 
 ## Beast Mode vs Regular Search
 
-| Aspect | Regular Search | Beast Mode |
-|--------|----------------|------------|
-| Speed | Fast (~500ms) | Thorough (minutes) |
-| Depth | Knowledge base only | 6 external tiers |
-| Auto-learn | On add only | Always saves discoveries |
-| Best for | Known topics | Unknown/complex topics |
+| Aspect     | Regular Search      | Beast Mode               |
+| ---------- | ------------------- | ------------------------ |
+| Speed      | Fast (~500ms)       | Thorough (minutes)       |
+| Depth      | Knowledge base only | 6 external tiers         |
+| Auto-learn | On add only         | Always saves discoveries |
+| Best for   | Known topics        | Unknown/complex topics   |
 
 ---
 

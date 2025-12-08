@@ -17,10 +17,10 @@ Search the curated knowledge base for Mendix topics.
 @mendix-expert query_mendix_knowledge topic="microflow error handling" detail_level="detailed"
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `topic` | string | required | The topic to search for |
-| `detail_level` | enum | `basic` | `basic`, `detailed`, or `expert` |
+| Parameter      | Type   | Default  | Description                      |
+| -------------- | ------ | -------- | -------------------------------- |
+| `topic`        | string | required | The topic to search for          |
+| `detail_level` | enum   | `basic`  | `basic`, `detailed`, or `expert` |
 
 **Returns:** Ranked list of matching knowledge entries with relevance scores.
 
@@ -34,12 +34,12 @@ Combined keyword + semantic search for best results.
 @mendix-expert hybrid_search query="iterate over list" limit=5
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `query` | string | required | Search query |
-| `limit` | number | 10 | Max results to return |
-| `keywordOnly` | boolean | false | Skip vector search |
-| `vectorOnly` | boolean | false | Skip keyword search |
+| Parameter     | Type    | Default  | Description           |
+| ------------- | ------- | -------- | --------------------- |
+| `query`       | string  | required | Search query          |
+| `limit`       | number  | 10       | Max results to return |
+| `keywordOnly` | boolean | false    | Skip vector search    |
+| `vectorOnly`  | boolean | false    | Skip keyword search   |
 
 **Returns:** Fused results with match type indicators (🎯 both, 📝 keyword, 🔮 vector).
 
@@ -53,11 +53,11 @@ Pure semantic search using embeddings.
 @mendix-expert vector_search query="business logic automation"
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `query` | string | required | Semantic search query |
-| `topK` | number | 10 | Number of results |
-| `minScore` | number | 0.3 | Minimum similarity score |
+| Parameter  | Type   | Default  | Description              |
+| ---------- | ------ | -------- | ------------------------ |
+| `query`    | string | required | Semantic search query    |
+| `topK`     | number | 10       | Number of results        |
+| `minScore` | number | 0.3      | Minimum similarity score |
 
 **Returns:** Semantically similar entries from Pinecone.
 
@@ -73,11 +73,11 @@ Analyze a Mendix `.mpr` file or extracted project.
 @mendix-expert analyze_project project_path="D:/Projects/MyApp.mpr"
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `project_path` | string | required | Path to `.mpr` file |
-| `module_name` | string | optional | Specific module to analyze |
-| `entity_name` | string | optional | Specific entity (requires module_name) |
+| Parameter      | Type   | Default  | Description                            |
+| -------------- | ------ | -------- | -------------------------------------- |
+| `project_path` | string | required | Path to `.mpr` file                    |
+| `module_name`  | string | optional | Specific module to analyze             |
+| `entity_name`  | string | optional | Specific entity (requires module_name) |
 
 **Returns:** Project structure with modules, entities, microflows, and pages.
 
@@ -93,15 +93,16 @@ Add new knowledge to make the system smarter.
 @mendix-expert add_to_knowledge_base knowledge_file="best-practices" category="microflows" content="{...}" source="docs.mendix.com"
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `knowledge_file` | enum | required | Target file (see below) |
-| `category` | string | optional | Category within file |
-| `content` | string | required | JSON string of knowledge entry |
-| `source` | string | required | Where this info came from |
-| `verified` | boolean | false | Whether manually verified |
+| Parameter        | Type    | Default  | Description                    |
+| ---------------- | ------- | -------- | ------------------------------ |
+| `knowledge_file` | enum    | required | Target file (see below)        |
+| `category`       | string  | optional | Category within file           |
+| `content`        | string  | required | JSON string of knowledge entry |
+| `source`         | string  | required | Where this info came from      |
+| `verified`       | boolean | false    | Whether manually verified      |
 
 **Knowledge Files:**
+
 - `best-practices` - Patterns and guidelines
 - `studio-pro` - Studio Pro features
 - `model-sdk` - Model SDK programming
@@ -123,8 +124,8 @@ Get recommendations for specific scenarios.
 @mendix-expert get_best_practice scenario="error handling in microflows"
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
+| Parameter  | Type   | Default  | Description                    |
+| ---------- | ------ | -------- | ------------------------------ |
 | `scenario` | string | required | The scenario to get advice for |
 
 ---
@@ -139,13 +140,14 @@ Crawl Mendix documentation for fresh knowledge.
 @mendix-expert harvest sources=["releaseNotes", "mxsdk"] dryRun=false
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `sources` | array | all | Specific sources to harvest |
-| `dryRun` | boolean | false | Preview without saving |
-| `verbose` | boolean | true | Show detailed progress |
+| Parameter | Type    | Default | Description                 |
+| --------- | ------- | ------- | --------------------------- |
+| `sources` | array   | all     | Specific sources to harvest |
+| `dryRun`  | boolean | false   | Preview without saving      |
+| `verbose` | boolean | true    | Show detailed progress      |
 
 **Available Sources:**
+
 - `releaseNotes` - Studio Pro 10.x, 11.x release notes
 - `refGuide` - Reference guide sections
 - `howTo` - How-to guides
@@ -178,6 +180,7 @@ Check Pinecone index and embedding status.
 ```
 
 **Returns:**
+
 - Index status (ready/not initialized)
 - Vector count
 - Embedding mode (azure-openai/openai/local)
@@ -194,6 +197,7 @@ Re-index all knowledge for vector search.
 ```
 
 Use this after:
+
 - Major knowledge base updates
 - Changing embedding provider
 - Suspected index corruption
@@ -210,9 +214,9 @@ Sync knowledge with GitHub repository.
 @mendix-expert sync_mcp_server action="pull"
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `action` | enum | `pull` | `pull`, `push`, or `status` |
+| Parameter | Type | Default | Description                 |
+| --------- | ---- | ------- | --------------------------- |
+| `action`  | enum | `pull`  | `pull`, `push`, or `status` |
 
 ---
 
@@ -226,9 +230,9 @@ Get the exhaustive research protocol prompt.
 @mendix-expert beast_mode format="full"
 ```
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `format` | enum | `full` | `full`, `brief`, or `instructions` |
+| Parameter | Type | Default | Description                        |
+| --------- | ---- | ------- | ---------------------------------- |
+| `format`  | enum | `full`  | `full`, `brief`, or `instructions` |
 
 **Returns:** Copy-paste ready prompt that enables aggressive research mode in any AI chat.
 

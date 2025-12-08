@@ -7,7 +7,7 @@ title: Getting Started
 
 ## Prerequisites
 
-- **Node.js 18+** 
+- **Node.js 18+**
 - **An MCP-compatible AI client** (VS Code with Copilot, Claude Desktop, etc.)
 - **Optional:** Pinecone account (free tier) for semantic search
 - **Optional:** Azure OpenAI or OpenAI API key for high-quality embeddings
@@ -106,6 +106,7 @@ If you configured Pinecone and OpenAI:
 ```
 
 Should show:
+
 - Status: `ready`
 - Vectors: `300+`
 - Embedding mode: `azure-openai` or `openai`

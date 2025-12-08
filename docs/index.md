@@ -18,14 +18,14 @@ title: Home
 
 This is a **Model Context Protocol (MCP) server** that supercharges AI assistants (GitHub Copilot, Claude, etc.) with:
 
-| Capability | Description |
-|------------|-------------|
-| 🔍 **Deep Knowledge** | 300+ curated entries on SDK patterns, best practices, troubleshooting |
-| 🔮 **Semantic Search** | Azure OpenAI embeddings + Pinecone for meaning-based search |
-| 🧠 **Self-Learning** | Automatically saves discoveries to grow smarter |
-| 🌾 **Auto-Harvesting** | Weekly crawls of docs.mendix.com for fresh content |
-| 📊 **Project Analysis** | Analyzes your actual `.mpr` files |
-| 🔥 **Beast Mode** | Exhaustive research protocol for hard questions |
+| Capability              | Description                                                           |
+| ----------------------- | --------------------------------------------------------------------- |
+| 🔍 **Deep Knowledge**   | 300+ curated entries on SDK patterns, best practices, troubleshooting |
+| 🔮 **Semantic Search**  | Azure OpenAI embeddings + Pinecone for meaning-based search           |
+| 🧠 **Self-Learning**    | Automatically saves discoveries to grow smarter                       |
+| 🌾 **Auto-Harvesting**  | Weekly crawls of docs.mendix.com for fresh content                    |
+| 📊 **Project Analysis** | Analyzes your actual `.mpr` files                                     |
+| 🔥 **Beast Mode**       | Exhaustive research protocol for hard questions                       |
 
 ## Quick Example
 

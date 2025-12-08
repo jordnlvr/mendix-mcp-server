@@ -32,10 +32,7 @@ Every knowledge entry follows this structure:
   "description": "How to iterate over lists in microflows",
   "content": "Detailed explanation...",
   "when_to_use": "When you need to process items one by one",
-  "best_practices": [
-    "Use IterableList on loopSource",
-    "Avoid deprecated loopVariableName"
-  ],
+  "best_practices": ["Use IterableList on loopSource", "Avoid deprecated loopVariableName"],
   "examples": [
     {
       "description": "Basic loop",
@@ -61,7 +58,7 @@ Every knowledge entry follows this structure:
 Coding patterns and guidelines:
 
 - Microflow design patterns
-- Error handling strategies  
+- Error handling strategies
 - Naming conventions
 - Performance optimization
 - Code organization
@@ -118,15 +115,16 @@ Auto-crawled from official sources:
 
 Every entry is automatically scored on:
 
-| Factor | Weight | Description |
-|--------|--------|-------------|
-| Completeness | 30% | Has all relevant fields |
-| Source quality | 25% | Official docs score higher |
-| Verification | 20% | Manually verified entries |
-| Freshness | 15% | Recent updates preferred |
-| Usage | 10% | Frequently accessed entries |
+| Factor         | Weight | Description                 |
+| -------------- | ------ | --------------------------- |
+| Completeness   | 30%    | Has all relevant fields     |
+| Source quality | 25%    | Official docs score higher  |
+| Verification   | 20%    | Manually verified entries   |
+| Freshness      | 15%    | Recent updates preferred    |
+| Usage          | 10%    | Frequently accessed entries |
 
 **Thresholds:**
+
 - `>= 0.8` - High quality, trusted
 - `0.5 - 0.8` - Good quality
 - `< 0.5` - May need review
@@ -135,14 +133,14 @@ Every entry is automatically scored on:
 
 Current knowledge base metrics:
 
-| Category | Entries | Coverage |
-|----------|---------|----------|
-| Best Practices | ~50 | Core patterns |
-| Studio Pro | ~40 | Major features |
-| Model SDK | ~60 | Common operations |
-| Platform SDK | ~30 | Key operations |
-| Troubleshooting | ~25 | Common issues |
-| Harvested | ~100+ | Auto-updated |
+| Category        | Entries | Coverage          |
+| --------------- | ------- | ----------------- |
+| Best Practices  | ~50     | Core patterns     |
+| Studio Pro      | ~40     | Major features    |
+| Model SDK       | ~60     | Common operations |
+| Platform SDK    | ~30     | Key operations    |
+| Troubleshooting | ~25     | Common issues     |
+| Harvested       | ~100+   | Auto-updated      |
 
 **Total:** 300+ curated entries + 318 vector embeddings
 
@@ -151,6 +149,7 @@ Current knowledge base metrics:
 The system tracks "missed queries" - searches that returned no results. These indicate knowledge gaps to fill.
 
 View gaps:
+
 ```
 @mendix-expert hello
 # Shows recent missed queries in analytics
@@ -169,6 +168,7 @@ The knowledge base is automatically validated:
 - **Broken references** - Invalid cross-references
 
 Run manual validation:
+
 ```
 @mendix-expert Check the knowledge validation report
 # Returns mendix://validation/report
@@ -179,7 +179,7 @@ Run manual validation:
 ### Manual Addition
 
 ```
-@mendix-expert add_to_knowledge_base 
+@mendix-expert add_to_knowledge_base
   knowledge_file="best-practices"
   category="microflows"
   content='{
@@ -205,18 +205,19 @@ Let me save this to the knowledge base...
 ### Harvesting
 
 Weekly automatic harvests add fresh content from:
+
 - docs.mendix.com
 - Release notes
 - API documentation
 
 ## Keeping It Current
 
-| Mechanism | Frequency | What It Does |
-|-----------|-----------|--------------|
-| Auto-Harvest | Weekly | Crawls official docs |
-| Self-Learning | On-demand | Saves discoveries |
-| Validation | Daily | Flags issues |
-| Vector Re-index | After changes | Updates embeddings |
+| Mechanism       | Frequency     | What It Does         |
+| --------------- | ------------- | -------------------- |
+| Auto-Harvest    | Weekly        | Crawls official docs |
+| Self-Learning   | On-demand     | Saves discoveries    |
+| Validation      | Daily         | Flags issues         |
+| Vector Re-index | After changes | Updates embeddings   |
 
 ---
 

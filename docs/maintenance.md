@@ -11,13 +11,13 @@ How to keep the Mendix Expert server running optimally.
 
 The server handles most maintenance automatically:
 
-| Task | Frequency | What Happens |
-|------|-----------|--------------|
-| **Knowledge Harvest** | Weekly | Crawls docs.mendix.com for new content |
-| **Vector Re-index** | After changes | Updates embeddings when knowledge changes |
-| **Validation** | Daily | Checks for errors, staleness |
-| **Cache Cleanup** | On restart | Clears stale caches |
-| **Usage Tracking** | Continuous | Records which entries are used |
+| Task                  | Frequency     | What Happens                              |
+| --------------------- | ------------- | ----------------------------------------- |
+| **Knowledge Harvest** | Weekly        | Crawls docs.mendix.com for new content    |
+| **Vector Re-index**   | After changes | Updates embeddings when knowledge changes |
+| **Validation**        | Daily         | Checks for errors, staleness              |
+| **Cache Cleanup**     | On restart    | Clears stale caches                       |
+| **Usage Tracking**    | Continuous    | Records which entries are used            |
 
 ## Manual Maintenance Tasks
 
@@ -30,6 +30,7 @@ When you want fresh content immediately:
 ```
 
 For specific sources only:
+
 ```
 @mendix-expert harvest sources=["releaseNotes", "mxsdk"]
 ```
@@ -43,6 +44,7 @@ If search results seem off:
 ```
 
 This:
+
 - Clears all existing vectors
 - Re-generates embeddings for all knowledge
 - Takes ~30 seconds for 300+ entries
@@ -54,6 +56,7 @@ This:
 ```
 
 Shows:
+
 - Knowledge base size
 - Vector index status
 - Cache hit rate
@@ -66,6 +69,7 @@ Shows:
 ```
 
 Shows:
+
 - Last harvest date
 - Next scheduled harvest
 - Total harvests run
@@ -90,12 +94,12 @@ If running on multiple machines:
 
 ### Key Metrics to Watch
 
-| Metric | Healthy | Warning | Action |
-|--------|---------|---------|--------|
-| **Hit Rate** | >90% | <80% | Check knowledge gaps |
-| **Vector Count** | ~300+ | <200 | Run reindex_vectors |
-| **Cache Hit Rate** | >30% | <10% | Normal for new queries |
-| **Last Harvest** | <7 days | >14 days | Run harvest |
+| Metric             | Healthy | Warning  | Action                 |
+| ------------------ | ------- | -------- | ---------------------- |
+| **Hit Rate**       | >90%    | <80%     | Check knowledge gaps   |
+| **Vector Count**   | ~300+   | <200     | Run reindex_vectors    |
+| **Cache Hit Rate** | >30%    | <10%     | Normal for new queries |
+| **Last Harvest**   | <7 days | >14 days | Run harvest            |
 
 ### Check via API
 
@@ -104,6 +108,7 @@ If running on multiple machines:
 ```
 
 Returns:
+
 ```json
 {
   "status": "ready",
@@ -125,18 +130,21 @@ Returns:
 ### Vector Search Not Working
 
 **Symptoms:**
+
 - `vector_status` shows "not_initialized"
 - Hybrid search returns only keyword results
 
 **Solutions:**
 
 1. Check Pinecone API key:
+
    ```
    # In .env file
    PINECONE_API_KEY=your_key_here
    ```
 
 2. Verify index exists:
+
    - Log into Pinecone console
    - Check for `mendix-knowledge` index
    - Ensure 1536 dimensions
@@ -149,12 +157,14 @@ Returns:
 ### Embeddings Slow
 
 **Symptoms:**
+
 - Searches take >1 second
 - `embeddingMode` shows "openai" not "azure-openai"
 
 **Solutions:**
 
 1. Configure Azure OpenAI (3x faster):
+
    ```
    AZURE_OPENAI_API_KEY=your_key
    AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
@@ -166,6 +176,7 @@ Returns:
 ### Harvest Failing
 
 **Symptoms:**
+
 - `harvest_status` shows errors
 - New content not appearing
 
@@ -174,6 +185,7 @@ Returns:
 1. Check network connectivity to docs.mendix.com
 
 2. Run with verbose output:
+
    ```
    @mendix-expert harvest verbose=true
    ```
@@ -186,17 +198,20 @@ Returns:
 ### Knowledge Not Found
 
 **Symptoms:**
+
 - Queries return no results
 - Known topics not matching
 
 **Solutions:**
 
 1. Check if indexed:
+
    ```
    @mendix-expert query_mendix_knowledge topic="[exact term]"
    ```
 
 2. Try hybrid search (includes semantic):
+
    ```
    @mendix-expert hybrid_search query="[your query]"
    ```
@@ -257,8 +272,9 @@ git pull
 Default: 500 queries
 
 To adjust (in `VectorStore.js`):
+
 ```javascript
-this.queryCache = new EmbeddingCache(500);  // Increase for heavy usage
+this.queryCache = new EmbeddingCache(500); // Increase for heavy usage
 ```
 
 ### Harvest Interval
@@ -266,8 +282,9 @@ this.queryCache = new EmbeddingCache(500);  // Increase for heavy usage
 Default: 7 days
 
 To adjust (in `HarvestScheduler.js`):
+
 ```javascript
-this.harvestIntervalDays = 7;  // Decrease for more frequent updates
+this.harvestIntervalDays = 7; // Decrease for more frequent updates
 ```
 
 ### Search Weights
@@ -275,6 +292,7 @@ this.harvestIntervalDays = 7;  // Decrease for more frequent updates
 Default: 40% keyword, 60% vector
 
 To adjust (in `HybridSearch.js`):
+
 ```javascript
 this.keywordWeight = 0.4;
 this.vectorWeight = 0.6;
@@ -295,18 +313,19 @@ Server logs go to stdout. Key log messages:
 ### Enable Debug Logging
 
 Set environment variable:
+
 ```
 LOG_LEVEL=debug
 ```
 
 ## Scheduled Tasks
 
-| Task | Schedule | Code Location |
-|------|----------|---------------|
-| Harvest | Every 7 days | `HarvestScheduler.js` |
-| Validation | On startup | `KnowledgeManager.js` |
-| Cache cleanup | On restart | `CacheManager.js` |
-| Staleness check | On validation | `QualityScorer.js` |
+| Task            | Schedule      | Code Location         |
+| --------------- | ------------- | --------------------- |
+| Harvest         | Every 7 days  | `HarvestScheduler.js` |
+| Validation      | On startup    | `KnowledgeManager.js` |
+| Cache cleanup   | On restart    | `CacheManager.js`     |
+| Staleness check | On validation | `QualityScorer.js`    |
 
 ---
 

@@ -63,12 +63,12 @@ Every entry is automatically scored:
 
 ```javascript
 QualityScore = weighted_sum(
-  completeness,    // Has required fields?
-  source_quality,  // Official docs = higher
-  verification,    // Manually verified?
-  content_depth,   // Detailed explanation?
-  examples         // Has code examples?
-)
+  completeness, // Has required fields?
+  source_quality, // Official docs = higher
+  verification, // Manually verified?
+  content_depth, // Detailed explanation?
+  examples // Has code examples?
+);
 ```
 
 Low-quality entries are flagged for review.
@@ -109,29 +109,29 @@ The new information is now available for queries!
 
 ### Example: Beast Mode Discovery
 
-```
+````
 User: @mendix-expert How do I use AggregateListAction in the SDK?
 
 AI: [Searches knowledge base - no specific results]
     [Enables Beast Mode research]
     [Searches docs.mendix.com]
     [Finds pattern in SDK demos on GitHub]
-    
+
     Found it! Here's how to use AggregateListAction:
-    
+
     ```javascript
     const aggregateAction = microflows.AggregateListAction.createIn(activity);
     aggregateAction.aggregateFunction = microflows.AggregateFunctionEnum.Count;
     // ... more details
     ```
-    
+
     Let me save this to the knowledge base so I remember it next time...
-    
-    @mendix-expert add_to_knowledge_base 
+
+    @mendix-expert add_to_knowledge_base
       knowledge_file="model-sdk"
       content='{"title": "AggregateListAction Pattern", ...}'
       source="github.com/mendix/sdk-demo"
-```
+````
 
 ### Example: Auto-Harvest
 
@@ -161,28 +161,28 @@ AI: [Searches knowledge base - no specific results]
 
 ### Example: Problem-Solution Learning
 
-```
-User: I'm getting "Cannot read property 'id' of undefined" when 
+````
+User: I'm getting "Cannot read property 'id' of undefined" when
       creating a microflow parameter
 
 AI: [Researches the issue]
-    
-    Found the fix! You need to create the MicroflowParameterObject 
+
+    Found the fix! You need to create the MicroflowParameterObject
     AFTER the entity is committed:
-    
+
     ```javascript
     // Wrong - entity not committed yet
     const param = microflows.MicroflowParameterObject.createIn(mf);
     param.entityRef = entity;  // ❌ entity.id is undefined
-    
+
     // Right - flush first
     await model.flushChanges();
     const param = microflows.MicroflowParameterObject.createIn(mf);
     param.entityRef = entity;  // ✅ entity now has id
     ```
-    
+
     Saving this to troubleshooting...
-```
+````
 
 ## Configuring Self-Learning
 
@@ -201,9 +201,10 @@ The server always supports self-learning, but you control when to save:
 Default: Every 7 days
 
 To change (in code):
+
 ```javascript
 // In HarvestScheduler.js
-this.harvestIntervalDays = 7;  // Change this value
+this.harvestIntervalDays = 7; // Change this value
 ```
 
 ### Manual Harvest
@@ -271,6 +272,7 @@ Entries are flagged as stale based on:
 ```
 
 Shows:
+
 - Total knowledge entries
 - Recent additions
 - Hit rate (how often queries find results)

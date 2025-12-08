@@ -33,14 +33,14 @@ class QueryAnalytics {
   record(query, results, options = {}) {
     const timestamp = new Date().toISOString();
     const normalizedQuery = query.toLowerCase().trim();
-    
+
     // Record query
     this.queries.push({
       query: normalizedQuery,
       timestamp,
       resultCount: results.length,
       topScore: results[0]?.fusedScore || results[0]?.score || 0,
-      matchTypes: results.map(r => r.matchType).filter(Boolean),
+      matchTypes: results.map((r) => r.matchType).filter(Boolean),
       expanded: options.expanded || false,
     });
 
@@ -80,10 +80,9 @@ class QueryAnalytics {
    */
   getSummary() {
     const totalQueries = this.queries.length;
-    const avgResults = totalQueries > 0
-      ? this.queries.reduce((sum, q) => sum + q.resultCount, 0) / totalQueries
-      : 0;
-    
+    const avgResults =
+      totalQueries > 0 ? this.queries.reduce((sum, q) => sum + q.resultCount, 0) / totalQueries : 0;
+
     // Top searched terms
     const topTerms = [...this.termFrequency.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -91,7 +90,7 @@ class QueryAnalytics {
       .map(([term, count]) => ({ term, count }));
 
     // Hit rate (queries with at least 1 result)
-    const hits = this.queries.filter(q => q.resultCount > 0).length;
+    const hits = this.queries.filter((q) => q.resultCount > 0).length;
     const hitRate = totalQueries > 0 ? (hits / totalQueries) * 100 : 0;
 
     // Match type distribution
@@ -109,7 +108,7 @@ class QueryAnalytics {
       topTerms,
       matchTypeDistribution: matchTypes,
       knowledgeGaps: this.zeroResultQueries.slice(-10), // Last 10 gaps
-      recentQueries: this.queries.slice(-10).map(q => ({
+      recentQueries: this.queries.slice(-10).map((q) => ({
         query: q.query,
         results: q.resultCount,
         time: q.timestamp,
@@ -123,7 +122,7 @@ class QueryAnalytics {
   getSuggestedExpansions() {
     // Find terms that often appear together
     const cooccurrence = new Map();
-    
+
     for (const q of this.queries) {
       const terms = q.query.split(/\s+/);
       for (let i = 0; i < terms.length; i++) {
@@ -455,7 +454,7 @@ export default class HybridSearch {
 
     // Determine final results
     let finalResults;
-    
+
     // If only one engine available, return its results
     if (keywordOnly || vectorResults.length === 0) {
       finalResults = this.formatKeywordResults(keywordResults.slice(0, limit));
@@ -544,11 +543,11 @@ export default class HybridSearch {
       .sort((a, b) => b[1] - a[1])
       .map(([id, fusedScore]) => {
         const meta = metadata.get(id);
-        
+
         // Apply freshness boost based on Mendix version or timestamp
         const freshnessBoost = this.calculateFreshnessBoost(meta.entry);
         const boostedScore = fusedScore * (1 + freshnessBoost);
-        
+
         return {
           ...meta,
           fusedScore: boostedScore,
@@ -666,8 +665,10 @@ export default class HybridSearch {
       entry.version,
       entry.title,
       entry.description,
-      typeof entry === 'string' ? entry : JSON.stringify(entry)
-    ].filter(Boolean).join(' ');
+      typeof entry === 'string' ? entry : JSON.stringify(entry),
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     // Studio Pro 11.x - Highest priority (latest)
     if (/studio\s*pro\s*11|mendix\s*11|11\.\d+\.\d+/i.test(versionSources)) {
@@ -676,7 +677,7 @@ export default class HybridSearch {
 
     // Studio Pro 10.x - Very relevant
     if (/studio\s*pro\s*10|mendix\s*10|10\.\d+\.\d+/i.test(versionSources)) {
-      return 0.10; // 10% boost
+      return 0.1; // 10% boost
     }
 
     // Studio Pro 9.x - Still useful
@@ -689,8 +690,8 @@ export default class HybridSearch {
     if (timestamp) {
       const age = Date.now() - new Date(timestamp).getTime();
       const daysSinceAdded = age / (1000 * 60 * 60 * 24);
-      
-      if (daysSinceAdded < 30) return 0.10; // Less than 1 month old
+
+      if (daysSinceAdded < 30) return 0.1; // Less than 1 month old
       if (daysSinceAdded < 90) return 0.05; // Less than 3 months old
     }
 

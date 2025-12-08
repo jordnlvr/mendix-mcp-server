@@ -15,7 +15,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.5.2] - 2025-12-08
+## [2.5.3] - 2025-01-07
+
+### Added
+
+- **ChatGPT Setup Guide** (`docs/CHATGPT-SETUP.md`): Complete guide for creating a Custom GPT
+  - Recommended GPT name, description, and profile image
+  - Full system prompt with tool usage instructions
+  - Conversation starters
+  - Step-by-step Actions import instructions
+  - Troubleshooting guide
+- **Health Check Script** (`check-api-status.ps1`): Diagnose REST server and ngrok tunnel
+  - Checks local server status
+  - Verifies ngrok tunnel
+  - Tests public URL accessibility
+  - Provides colored output and fix recommendations
+- Updated `start-chatgpt-api.ps1` with improved UX
+
+### Fixed
+
+- REST proxy now loads environment variables correctly (dotenv fix)
+- OpenAPI endpoint dynamically uses https:// for ngrok URLs
+
+---
+
+## [2.5.2] - 2025-01-07
 
 ### Added
 

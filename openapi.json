@@ -115,7 +115,7 @@
                           "title": { "type": "string" },
                           "content": { "type": "string" },
                           "category": { "type": "string" },
-                          "matchType": { 
+                          "matchType": {
                             "type": "string",
                             "enum": ["both", "keyword", "vector"],
                             "description": "How the result was matched: 'both' = keyword AND vector, 'keyword' = keyword only, 'vector' = semantic only"

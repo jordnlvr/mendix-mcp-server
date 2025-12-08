@@ -146,15 +146,15 @@ Server runs at `http://localhost:5050`
 
 ### Available Endpoints
 
-| Endpoint           | Method | Description                       |
-| ------------------ | ------ | --------------------------------- |
-| `/health`          | GET    | Health check and status           |
-| `/status`          | GET    | Server status with example queries|
-| `/tools`           | GET    | List all available endpoints      |
-| `/query`           | POST   | Query knowledge base              |
-| `/search`          | POST   | Hybrid search (keyword + semantic)|
-| `/best-practice`   | POST   | Get best practice recommendations |
-| `/analyze`         | POST   | Analyze Mendix project            |
+| Endpoint         | Method | Description                        |
+| ---------------- | ------ | ---------------------------------- |
+| `/health`        | GET    | Health check and status            |
+| `/status`        | GET    | Server status with example queries |
+| `/tools`         | GET    | List all available endpoints       |
+| `/query`         | POST   | Query knowledge base               |
+| `/search`        | POST   | Hybrid search (keyword + semantic) |
+| `/best-practice` | POST   | Get best practice recommendations  |
+| `/analyze`       | POST   | Analyze Mendix project             |
 
 ### Example Usage
 
@@ -175,12 +175,26 @@ curl -X POST http://localhost:5050/best-practice \
 
 ### ChatGPT Integration
 
-Import the OpenAPI spec (`openapi.json`) as a ChatGPT Action to use Mendix Expert from a Custom GPT:
+Make Mendix Expert available as a ChatGPT Custom GPT with public internet access:
 
-1. Create a Custom GPT at chat.openai.com
-2. Go to Configure → Actions → Import
-3. Import the `openapi.json` file
-4. Set server URL to your running server (use ngrok for public access)
+```powershell
+# One command to start REST server + ngrok tunnel
+.\start-chatgpt-api.ps1
+
+# Check status anytime
+.\check-api-status.ps1
+```
+
+**Full setup guide:** [docs/CHATGPT-SETUP.md](docs/CHATGPT-SETUP.md)
+
+Quick steps:
+1. Run `.\start-chatgpt-api.ps1` - starts server and shows public URL
+2. Create a Custom GPT at chat.openai.com
+3. Go to Configure → Actions → Import from URL
+4. Enter: `https://YOUR-NGROK-URL.ngrok-free.app/openapi.json`
+5. Copy the system prompt from [docs/CHATGPT-SETUP.md](docs/CHATGPT-SETUP.md)
+
+**Note:** Free ngrok URLs change on restart. Keep the script running or consider ngrok's paid tier for a stable URL.
 
 ---
 

@@ -39,6 +39,8 @@ class KnowledgeManager {
       'performance-guide',
       'security-guide',
       'sdk-community-resources',
+      'pluggable-widgets',
+      'getting-started',
     ];
 
     this.knowledgeBase = {};

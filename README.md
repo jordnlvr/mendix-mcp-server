@@ -401,24 +401,24 @@ All SDK and Widget patterns have been **live-tested** against real Mendix apps i
 
 These patterns are confirmed working with `mendixplatformsdk` + `mendixmodelsdk`:
 
-| Pattern | Status | Notes |
-|---------|--------|-------|
-| Entity creation | ✅ | All 5 attribute types work |
-| Association creation | ✅ | Reference type verified |
-| Microflow creation | ✅ | Start → LogMessage → End |
-| `model.allDomainModels()` | ✅ | Returns domain model interfaces |
-| `model.allMicroflows()` | ✅ | Returns all microflow interfaces |
-| `model.flushChanges()` | ✅ | Required before commit |
-| `workingCopy.commitToRepository()` | ✅ | Commits to branch |
+| Pattern                            | Status | Notes                            |
+| ---------------------------------- | ------ | -------------------------------- |
+| Entity creation                    | ✅     | All 5 attribute types work       |
+| Association creation               | ✅     | Reference type verified          |
+| Microflow creation                 | ✅     | Start → LogMessage → End         |
+| `model.allDomainModels()`          | ✅     | Returns domain model interfaces  |
+| `model.allMicroflows()`            | ✅     | Returns all microflow interfaces |
+| `model.flushChanges()`             | ✅     | Required before commit           |
+| `workingCopy.commitToRepository()` | ✅     | Commits to branch                |
 
 ### ⚠️ Critical API Corrections
 
-| Incorrect Pattern | Correct Pattern |
-|-------------------|-----------------|
-| `model.allEntities()` | **Does NOT exist** - use `domainModel.load().entities` |
-| `StartEvent.createIn(mf)` | `StartEvent.createIn(mf.objectCollection)` |
+| Incorrect Pattern              | Correct Pattern                                                          |
+| ------------------------------ | ------------------------------------------------------------------------ |
+| `model.allEntities()`          | **Does NOT exist** - use `domainModel.load().entities`                   |
+| `StartEvent.createIn(mf)`      | `StartEvent.createIn(mf.objectCollection)`                               |
 | `StringTemplate.create(model)` | `StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction)` |
-| `workingCopy.id()` | `workingCopy.id` (it's a property, not a method) |
+| `workingCopy.id()`             | `workingCopy.id` (it's a property, not a method)                         |
 
 ### ✅ Widget API Patterns (VERIFIED)
 

@@ -161,7 +161,7 @@ server.tool(
 ║   ╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝╚═════╝ ╚═╝╚═╝  ╚═╝               ║
 ║                                                                   ║
 ║              E X P E R T   M C P   S E R V E R                   ║
-║                      v2.3.0 • Self-Learning                       ║
+║                      v2.5.0 • Self-Learning                       ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
 \`\`\`
@@ -202,18 +202,35 @@ server.tool(
 
 ## 💬 Example Prompts
 
-Try asking me:
-
+### 🚀 Getting Started (NEW in v2.5.0!)
 \`\`\`
-"How do I create a microflow loop with the SDK?"
+"How do I set up SDK development?"
+
+"Getting started with pluggable widgets"
+
+"How do I create a Studio Pro extension?"
+
+"How do I use mx.exe to analyze my app offline?"
+\`\`\`
+
+### 🔧 SDK Development
+\`\`\`
+"How do I create an entity with the SDK?"
+
+"What widget types are available in Mendix?"
+
+"How do I use the useDebounce hook?"
+
+"Show me how to create a microflow with LogMessageAction"
+\`\`\`
+
+### 📊 Project Analysis
+\`\`\`
+"Analyze my project at D:/Projects/MyApp.mpr"
 
 "What are the naming conventions for microflows?"
 
-"Analyze my project at D:/Projects/MyApp.mpr"
-
-"What's the best practice for error handling in microflows?"
-
-"Show me how to use the Platform SDK to commit changes"
+"What's the best practice for error handling?"
 \`\`\`
 
 ---

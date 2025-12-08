@@ -1,8 +1,2 @@
 # Smithery Configuration
-# Remote-hosted MCP server on Smithery infrastructure
-
 runtime: "typescript"
-
-# Server metadata (shown on Smithery marketplace)
-name: "mendix-expert"
-description: "Self-learning MCP server for Mendix development with 300+ curated knowledge entries, semantic search, and auto-research"

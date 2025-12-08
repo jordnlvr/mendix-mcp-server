@@ -1,6 +1,6 @@
 /**
  * Smithery Entry Point - Simplified for Smithery Deployment
- * 
+ *
  * This is a standalone MCP server that works with Smithery's bundler.
  * It includes embedded knowledge for reliable operation.
  */
@@ -90,26 +90,26 @@ const KNOWLEDGE_BASE = [
 // Simple TF-IDF-like search
 function searchKnowledge(query, limit = 5) {
   const queryTerms = query.toLowerCase().split(/\s+/);
-  
-  const scored = KNOWLEDGE_BASE.map(entry => {
+
+  const scored = KNOWLEDGE_BASE.map((entry) => {
     const text = `${entry.topic} ${entry.content} ${entry.tags.join(' ')}`.toLowerCase();
     let score = 0;
-    
+
     for (const term of queryTerms) {
       if (text.includes(term)) {
         score += 1;
         // Boost for exact topic match
         if (entry.topic.toLowerCase().includes(term)) score += 2;
         // Boost for tag match
-        if (entry.tags.some(t => t.includes(term))) score += 1.5;
+        if (entry.tags.some((t) => t.includes(term))) score += 1.5;
       }
     }
-    
+
     return { entry, score: score / queryTerms.length };
   });
-  
+
   return scored
-    .filter(r => r.score > 0)
+    .filter((r) => r.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 }
@@ -119,7 +119,7 @@ function searchKnowledge(query, limit = 5) {
  */
 export default function createServer({ config }) {
   const debug = config?.debug || false;
-  
+
   const server = new McpServer({
     name: 'mendix-expert',
     version: '2.4.3',
@@ -135,25 +135,35 @@ export default function createServer({ config }) {
     },
     async ({ topic, max_results }) => {
       const results = searchKnowledge(topic, max_results);
-      
+
       if (results.length === 0) {
         return {
-          content: [{
-            type: 'text',
-            text: `No results found for "${topic}". Try different keywords or check docs.mendix.com directly.\n\nAvailable topics include: microflow loops, naming conventions, SDK patterns, REST integration, performance, security, widgets, theming.`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `No results found for "${topic}". Try different keywords or check docs.mendix.com directly.\n\nAvailable topics include: microflow loops, naming conventions, SDK patterns, REST integration, performance, security, widgets, theming.`,
+            },
+          ],
         };
       }
-      
-      const formatted = results.map((r, i) => {
-        return `### ${i + 1}. ${r.entry.topic}\n**Category:** ${r.entry.category} | **Relevance:** ${(r.score * 100).toFixed(0)}%\n\n${r.entry.content}\n\n**Tags:** ${r.entry.tags.join(', ')}`;
-      }).join('\n\n---\n\n');
-      
+
+      const formatted = results
+        .map((r, i) => {
+          return `### ${i + 1}. ${r.entry.topic}\n**Category:** ${
+            r.entry.category
+          } | **Relevance:** ${(r.score * 100).toFixed(0)}%\n\n${
+            r.entry.content
+          }\n\n**Tags:** ${r.entry.tags.join(', ')}`;
+        })
+        .join('\n\n---\n\n');
+
       return {
-        content: [{
-          type: 'text',
-          text: `## Mendix Knowledge: "${topic}"\n\n${formatted}`,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: `## Mendix Knowledge: "${topic}"\n\n${formatted}`,
+          },
+        ],
       };
     }
   );
@@ -167,23 +177,27 @@ export default function createServer({ config }) {
     },
     async ({ scenario }) => {
       const results = searchKnowledge(scenario + ' best practices', 3);
-      
+
       if (results.length === 0) {
         return {
-          content: [{
-            type: 'text',
-            text: `No specific best practices found for "${scenario}". Check https://docs.mendix.com/refguide/community-best-practices-for-app-performance/ for official guidelines.`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `No specific best practices found for "${scenario}". Check https://docs.mendix.com/refguide/community-best-practices-for-app-performance/ for official guidelines.`,
+            },
+          ],
         };
       }
-      
-      const formatted = results.map(r => `### ${r.entry.topic}\n${r.entry.content}`).join('\n\n');
-      
+
+      const formatted = results.map((r) => `### ${r.entry.topic}\n${r.entry.content}`).join('\n\n');
+
       return {
-        content: [{
-          type: 'text',
-          text: `## Best Practices: ${scenario}\n\n${formatted}`,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: `## Best Practices: ${scenario}\n\n${formatted}`,
+          },
+        ],
       };
     }
   );
@@ -194,13 +208,15 @@ export default function createServer({ config }) {
     'List all available knowledge topics in the Mendix expert knowledge base',
     {},
     async () => {
-      const topics = KNOWLEDGE_BASE.map(e => `- **${e.topic}** (${e.category})`).join('\n');
-      
+      const topics = KNOWLEDGE_BASE.map((e) => `- **${e.topic}** (${e.category})`).join('\n');
+
       return {
-        content: [{
-          type: 'text',
-          text: `## Available Knowledge Topics\n\n${topics}\n\n*Use query_mendix_knowledge to search for specific topics.*`,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: `## Available Knowledge Topics\n\n${topics}\n\n*Use query_mendix_knowledge to search for specific topics.*`,
+          },
+        ],
       };
     }
   );
@@ -210,33 +226,43 @@ export default function createServer({ config }) {
     'get_sdk_pattern',
     'Get Mendix Platform SDK code patterns and examples',
     {
-      pattern: z.string().describe('SDK pattern to look up (e.g., "working copy", "microflow modification")'),
+      pattern: z
+        .string()
+        .describe('SDK pattern to look up (e.g., "working copy", "microflow modification")'),
     },
     async ({ pattern }) => {
       const results = searchKnowledge('sdk ' + pattern, 3);
-      
+
       if (results.length === 0) {
         return {
-          content: [{
-            type: 'text',
-            text: `No SDK pattern found for "${pattern}". Check https://docs.mendix.com/apidocs-mxsdk/mxsdk/ for the official SDK documentation.`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `No SDK pattern found for "${pattern}". Check https://docs.mendix.com/apidocs-mxsdk/mxsdk/ for the official SDK documentation.`,
+            },
+          ],
         };
       }
-      
-      const formatted = results.map(r => `### ${r.entry.topic}\n${r.entry.content}`).join('\n\n');
-      
+
+      const formatted = results.map((r) => `### ${r.entry.topic}\n${r.entry.content}`).join('\n\n');
+
       return {
-        content: [{
-          type: 'text',
-          text: `## SDK Pattern: ${pattern}\n\n${formatted}`,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: `## SDK Pattern: ${pattern}\n\n${formatted}`,
+          },
+        ],
       };
     }
   );
 
   if (debug) {
-    console.log('Mendix Expert MCP Server initialized with', KNOWLEDGE_BASE.length, 'knowledge entries');
+    console.log(
+      'Mendix Expert MCP Server initialized with',
+      KNOWLEDGE_BASE.length,
+      'knowledge entries'
+    );
   }
 
   return server.server;

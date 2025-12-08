@@ -4,7 +4,7 @@
  * Uses a fusion algorithm to merge results from both search methods,
  * providing both exact keyword matching and semantic understanding.
  *
- * @version 2.4.1
+ * @version 2.4.2
  */
 
 import SearchEngine from '../core/SearchEngine.js';
@@ -12,6 +12,135 @@ import Logger from '../utils/logger.js';
 import VectorStore from './VectorStore.js';
 
 const logger = new Logger('HybridSearch');
+
+/**
+ * Query Analytics - tracks search patterns to improve the system
+ * This is the "brain within the brain" - learns what users search for
+ */
+class QueryAnalytics {
+  constructor(maxHistory = 1000) {
+    this.maxHistory = maxHistory;
+    this.queries = []; // Recent queries with metadata
+    this.termFrequency = new Map(); // Which terms are searched most
+    this.resultQuality = new Map(); // Query → avg result count
+    this.expansionHits = new Map(); // Which expansions actually help
+    this.zeroResultQueries = []; // Queries with no results (knowledge gaps!)
+  }
+
+  /**
+   * Record a search query and its results
+   */
+  record(query, results, options = {}) {
+    const timestamp = new Date().toISOString();
+    const normalizedQuery = query.toLowerCase().trim();
+    
+    // Record query
+    this.queries.push({
+      query: normalizedQuery,
+      timestamp,
+      resultCount: results.length,
+      topScore: results[0]?.fusedScore || results[0]?.score || 0,
+      matchTypes: results.map(r => r.matchType).filter(Boolean),
+      expanded: options.expanded || false,
+    });
+
+    // Trim history if needed
+    if (this.queries.length > this.maxHistory) {
+      this.queries = this.queries.slice(-this.maxHistory);
+    }
+
+    // Track term frequency
+    const terms = normalizedQuery.split(/\s+/);
+    for (const term of terms) {
+      this.termFrequency.set(term, (this.termFrequency.get(term) || 0) + 1);
+    }
+
+    // Track result quality
+    const existing = this.resultQuality.get(normalizedQuery) || { count: 0, totalResults: 0 };
+    this.resultQuality.set(normalizedQuery, {
+      count: existing.count + 1,
+      totalResults: existing.totalResults + results.length,
+    });
+
+    // Track zero-result queries (knowledge gaps!)
+    if (results.length === 0) {
+      if (!this.zeroResultQueries.includes(normalizedQuery)) {
+        this.zeroResultQueries.push(normalizedQuery);
+        // Keep only recent 100 gaps
+        if (this.zeroResultQueries.length > 100) {
+          this.zeroResultQueries = this.zeroResultQueries.slice(-100);
+        }
+      }
+      logger.info('Knowledge gap detected', { query: normalizedQuery });
+    }
+  }
+
+  /**
+   * Get analytics summary
+   */
+  getSummary() {
+    const totalQueries = this.queries.length;
+    const avgResults = totalQueries > 0
+      ? this.queries.reduce((sum, q) => sum + q.resultCount, 0) / totalQueries
+      : 0;
+    
+    // Top searched terms
+    const topTerms = [...this.termFrequency.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([term, count]) => ({ term, count }));
+
+    // Hit rate (queries with at least 1 result)
+    const hits = this.queries.filter(q => q.resultCount > 0).length;
+    const hitRate = totalQueries > 0 ? (hits / totalQueries) * 100 : 0;
+
+    // Match type distribution
+    const matchTypes = { both: 0, keyword: 0, vector: 0 };
+    for (const q of this.queries) {
+      for (const type of q.matchTypes) {
+        matchTypes[type] = (matchTypes[type] || 0) + 1;
+      }
+    }
+
+    return {
+      totalQueries,
+      avgResults: avgResults.toFixed(1),
+      hitRate: hitRate.toFixed(1) + '%',
+      topTerms,
+      matchTypeDistribution: matchTypes,
+      knowledgeGaps: this.zeroResultQueries.slice(-10), // Last 10 gaps
+      recentQueries: this.queries.slice(-10).map(q => ({
+        query: q.query,
+        results: q.resultCount,
+        time: q.timestamp,
+      })),
+    };
+  }
+
+  /**
+   * Get suggested expansions based on query patterns
+   */
+  getSuggestedExpansions() {
+    // Find terms that often appear together
+    const cooccurrence = new Map();
+    
+    for (const q of this.queries) {
+      const terms = q.query.split(/\s+/);
+      for (let i = 0; i < terms.length; i++) {
+        for (let j = i + 1; j < terms.length; j++) {
+          const pair = [terms[i], terms[j]].sort().join('|');
+          cooccurrence.set(pair, (cooccurrence.get(pair) || 0) + 1);
+        }
+      }
+    }
+
+    // Return top co-occurring pairs
+    return [...cooccurrence.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([pair, count]) => ({ terms: pair.split('|'), count }));
+  }
+}
 
 /**
  * Mendix-specific term expansions for better search coverage
@@ -51,6 +180,9 @@ export default class HybridSearch {
 
     this.keywordEngine = new SearchEngine();
     this.vectorStore = new VectorStore(options.vector || {});
+
+    // Query analytics - the "brain within the brain"
+    this.analytics = new QueryAnalytics(1000);
 
     this.initialized = false;
     logger.info('HybridSearch created', {
@@ -321,18 +453,38 @@ export default class HybridSearch {
     // Wait for both to complete
     const [keywordResults, vectorResults] = await Promise.all(searchPromises);
 
+    // Determine final results
+    let finalResults;
+    
     // If only one engine available, return its results
     if (keywordOnly || vectorResults.length === 0) {
-      return this.formatKeywordResults(keywordResults.slice(0, limit));
-    }
-    if (vectorOnly || keywordResults.length === 0) {
-      return this.formatVectorResults(vectorResults.slice(0, limit));
+      finalResults = this.formatKeywordResults(keywordResults.slice(0, limit));
+    } else if (vectorOnly || keywordResults.length === 0) {
+      finalResults = this.formatVectorResults(vectorResults.slice(0, limit));
+    } else {
+      // Reciprocal Rank Fusion
+      const fusedResults = this.reciprocalRankFusion(keywordResults, vectorResults);
+      finalResults = fusedResults.slice(0, limit);
     }
 
-    // Reciprocal Rank Fusion
-    const fusedResults = this.reciprocalRankFusion(keywordResults, vectorResults);
+    // Record analytics (brain within the brain!)
+    this.analytics.record(query, finalResults, { expanded: expandTerms });
 
-    return fusedResults.slice(0, limit);
+    return finalResults;
+  }
+
+  /**
+   * Get query analytics summary
+   */
+  getAnalytics() {
+    return this.analytics.getSummary();
+  }
+
+  /**
+   * Get suggested term expansions based on search patterns
+   */
+  getSuggestedExpansions() {
+    return this.analytics.getSuggestedExpansions();
   }
 
   /**
@@ -387,14 +539,25 @@ export default class HybridSearch {
       }
     });
 
-    // Sort by fused score
+    // Sort by fused score with freshness boosting
     const sorted = [...scores.entries()]
       .sort((a, b) => b[1] - a[1])
-      .map(([id, fusedScore]) => ({
-        ...metadata.get(id),
-        fusedScore,
-        matchType: metadata.get(id).sources.length > 1 ? 'both' : metadata.get(id).sources[0],
-      }));
+      .map(([id, fusedScore]) => {
+        const meta = metadata.get(id);
+        
+        // Apply freshness boost based on Mendix version or timestamp
+        const freshnessBoost = this.calculateFreshnessBoost(meta.entry);
+        const boostedScore = fusedScore * (1 + freshnessBoost);
+        
+        return {
+          ...meta,
+          fusedScore: boostedScore,
+          originalScore: fusedScore,
+          freshnessBoost: freshnessBoost > 0 ? `+${(freshnessBoost * 100).toFixed(0)}%` : null,
+          matchType: meta.sources.length > 1 ? 'both' : meta.sources[0],
+        };
+      })
+      .sort((a, b) => b.fusedScore - a.fusedScore); // Re-sort after boosting
 
     // Deduplicate near-duplicates (same title with slight variations)
     return this.deduplicateResults(sorted);
@@ -489,6 +652,52 @@ export default class HybridSearch {
   }
 
   /**
+   * Calculate freshness boost based on Mendix version or content age
+   * Newer Mendix versions get a score boost since they're more relevant
+   * @param {Object} entry - Knowledge entry with potential version info
+   * @returns {number} Boost factor (0 to 0.15)
+   */
+  calculateFreshnessBoost(entry) {
+    if (!entry) return 0;
+
+    // Look for version info in various fields
+    const versionSources = [
+      entry.mendix_version,
+      entry.version,
+      entry.title,
+      entry.description,
+      typeof entry === 'string' ? entry : JSON.stringify(entry)
+    ].filter(Boolean).join(' ');
+
+    // Studio Pro 11.x - Highest priority (latest)
+    if (/studio\s*pro\s*11|mendix\s*11|11\.\d+\.\d+/i.test(versionSources)) {
+      return 0.15; // 15% boost
+    }
+
+    // Studio Pro 10.x - Very relevant
+    if (/studio\s*pro\s*10|mendix\s*10|10\.\d+\.\d+/i.test(versionSources)) {
+      return 0.10; // 10% boost
+    }
+
+    // Studio Pro 9.x - Still useful
+    if (/studio\s*pro\s*9|mendix\s*9|9\.\d+\.\d+/i.test(versionSources)) {
+      return 0.05; // 5% boost
+    }
+
+    // Check for timestamp-based freshness
+    const timestamp = entry.added_at || entry.timestamp || entry.date;
+    if (timestamp) {
+      const age = Date.now() - new Date(timestamp).getTime();
+      const daysSinceAdded = age / (1000 * 60 * 60 * 24);
+      
+      if (daysSinceAdded < 30) return 0.10; // Less than 1 month old
+      if (daysSinceAdded < 90) return 0.05; // Less than 3 months old
+    }
+
+    return 0; // No boost for older or version-unknown content
+  }
+
+  /**
    * Format keyword results for consistency
    */
   formatKeywordResults(results) {
@@ -530,6 +739,7 @@ export default class HybridSearch {
         keyword: this.keywordWeight,
         vector: this.vectorWeight,
       },
+      analytics: this.analytics.getSummary(),
     };
   }
 }

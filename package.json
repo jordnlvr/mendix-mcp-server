@@ -4,7 +4,7 @@
   "description": "Self-learning MCP server for Mendix development with semantic vector search, auto-harvesting, and project analysis",
   "type": "module",
   "main": "src/index.js",
-  "module": "smithery-entry.js",
+  "module": "src/smithery.js",
   "bin": {
     "mendix-mcp-server": "bin/cli.js"
   },

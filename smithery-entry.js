@@ -1,6 +1,6 @@
 /**
  * Smithery Entry Point
- * 
+ *
  * This file exports the createServer function required by Smithery
  * for marketplace deployment. The actual server logic is in src/index.js.
  */
@@ -14,12 +14,21 @@ let Logger, WebFetcher, HybridSearch, VectorStore, HarvestScheduler;
 
 // Configuration schema for Smithery session config
 export const configSchema = z.object({
-  pinecone_api_key: z.string().optional().describe("Pinecone API key for semantic vector search (optional - enhances search quality)"),
-  pinecone_index: z.string().default("mendix-knowledge").describe("Pinecone index name"),
-  azure_openai_key: z.string().optional().describe("Azure OpenAI API key for embeddings (optional)"),
-  azure_openai_endpoint: z.string().optional().describe("Azure OpenAI endpoint URL"),
-  enable_harvesting: z.boolean().default(false).describe("Enable automatic knowledge harvesting from docs.mendix.com"),
-  debug: z.boolean().default(false).describe("Enable debug logging"),
+  pinecone_api_key: z
+    .string()
+    .optional()
+    .describe('Pinecone API key for semantic vector search (optional - enhances search quality)'),
+  pinecone_index: z.string().default('mendix-knowledge').describe('Pinecone index name'),
+  azure_openai_key: z
+    .string()
+    .optional()
+    .describe('Azure OpenAI API key for embeddings (optional)'),
+  azure_openai_endpoint: z.string().optional().describe('Azure OpenAI endpoint URL'),
+  enable_harvesting: z
+    .boolean()
+    .default(false)
+    .describe('Enable automatic knowledge harvesting from docs.mendix.com'),
+  debug: z.boolean().default(false).describe('Enable debug logging'),
 });
 
 /**
@@ -54,7 +63,7 @@ export default async function createServer({ config }) {
 
   const logger = new LoggerClass('SmitheryServer');
   const debug = config?.debug || false;
-  
+
   if (debug) {
     logger.info('Creating Mendix Expert server with config', { config });
   }
@@ -76,17 +85,17 @@ export default async function createServer({ config }) {
   // Initialize vector search if Pinecone config provided
   let vectorStore = null;
   let hybridSearch = null;
-  
+
   if (config?.pinecone_api_key) {
     try {
       process.env.PINECONE_API_KEY = config.pinecone_api_key;
       process.env.PINECONE_INDEX_NAME = config.pinecone_index || 'mendix-knowledge';
-      
+
       if (config.azure_openai_key && config.azure_openai_endpoint) {
         process.env.AZURE_OPENAI_API_KEY = config.azure_openai_key;
         process.env.AZURE_OPENAI_ENDPOINT = config.azure_openai_endpoint;
       }
-      
+
       vectorStore = new VectorStoreClass();
       await vectorStore.initialize();
       hybridSearch = new HybridSearchClass(searchEngine, vectorStore);
@@ -101,13 +110,13 @@ export default async function createServer({ config }) {
   const entries = knowledgeManager.getAllEntries();
   searchEngine.buildIndex(entries);
 
-  logger.info('Knowledge loaded', { 
+  logger.info('Knowledge loaded', {
     entries: entries.length,
-    vectorEnabled: !!vectorStore 
+    vectorEnabled: !!vectorStore,
   });
 
   // Register tools
-  
+
   // 1. Query Knowledge Tool
   server.tool(
     'query_mendix_knowledge',
@@ -120,7 +129,7 @@ export default async function createServer({ config }) {
     async ({ topic, detail_level, max_results }) => {
       try {
         let results;
-        
+
         if (hybridSearch) {
           results = await hybridSearch.search(topic, { limit: max_results });
         } else {
@@ -129,43 +138,51 @@ export default async function createServer({ config }) {
 
         if (!results || results.length === 0) {
           return {
-            content: [{
-              type: 'text',
-              text: `No results found for "${topic}". Try:\n1. Use different keywords\n2. Check spelling\n3. Search docs.mendix.com directly`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `No results found for "${topic}". Try:\n1. Use different keywords\n2. Check spelling\n3. Search docs.mendix.com directly`,
+              },
+            ],
           };
         }
 
-        const formatted = results.map((r, i) => {
-          const entry = r.entry || r;
-          let text = `### ${i + 1}. ${entry.title || entry.topic}\n`;
-          text += `**Score:** ${(r.score * 100).toFixed(0)}%\n`;
-          text += `**Category:** ${entry.category || 'General'}\n\n`;
-          
-          if (detail_level === 'summary') {
-            text += entry.summary || entry.content?.substring(0, 200) + '...';
-          } else {
-            text += entry.content || entry.description || 'No content available';
-            if (entry.code_example && detail_level === 'comprehensive') {
-              text += `\n\n**Example:**\n\`\`\`\n${entry.code_example}\n\`\`\``;
+        const formatted = results
+          .map((r, i) => {
+            const entry = r.entry || r;
+            let text = `### ${i + 1}. ${entry.title || entry.topic}\n`;
+            text += `**Score:** ${(r.score * 100).toFixed(0)}%\n`;
+            text += `**Category:** ${entry.category || 'General'}\n\n`;
+
+            if (detail_level === 'summary') {
+              text += entry.summary || entry.content?.substring(0, 200) + '...';
+            } else {
+              text += entry.content || entry.description || 'No content available';
+              if (entry.code_example && detail_level === 'comprehensive') {
+                text += `\n\n**Example:**\n\`\`\`\n${entry.code_example}\n\`\`\``;
+              }
             }
-          }
-          
-          return text;
-        }).join('\n\n---\n\n');
+
+            return text;
+          })
+          .join('\n\n---\n\n');
 
         return {
-          content: [{
-            type: 'text',
-            text: `## Search Results for "${topic}"\n\n${formatted}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `## Search Results for "${topic}"\n\n${formatted}`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Search error: ${error.message}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Search error: ${error.message}`,
+            },
+          ],
           isError: true,
         };
       }
@@ -178,35 +195,43 @@ export default async function createServer({ config }) {
     'Get Mendix best practice recommendations for a specific scenario',
     {
       scenario: z.string().describe('The scenario to get best practices for'),
-      category: z.enum(['microflows', 'domain-model', 'security', 'performance', 'integration', 'general']).optional(),
+      category: z
+        .enum(['microflows', 'domain-model', 'security', 'performance', 'integration', 'general'])
+        .optional(),
     },
     async ({ scenario, category }) => {
       const searchQuery = category ? `${category} ${scenario}` : scenario;
-      const results = searchEngine.search(searchQuery, { 
+      const results = searchEngine.search(searchQuery, {
         limit: 3,
-        filter: (entry) => entry.category?.toLowerCase().includes('best') || 
-                          entry.tags?.includes('best-practice')
+        filter: (entry) =>
+          entry.category?.toLowerCase().includes('best') || entry.tags?.includes('best-practice'),
       });
 
       if (!results.length) {
         return {
-          content: [{
-            type: 'text',
-            text: `No specific best practices found for "${scenario}". General recommendation: Check docs.mendix.com/refguide/ for official guidelines.`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `No specific best practices found for "${scenario}". General recommendation: Check docs.mendix.com/refguide/ for official guidelines.`,
+            },
+          ],
         };
       }
 
-      const formatted = results.map(r => {
-        const entry = r.entry || r;
-        return `### ${entry.title || entry.topic}\n${entry.content || entry.description}`;
-      }).join('\n\n');
+      const formatted = results
+        .map((r) => {
+          const entry = r.entry || r;
+          return `### ${entry.title || entry.topic}\n${entry.content || entry.description}`;
+        })
+        .join('\n\n');
 
       return {
-        content: [{
-          type: 'text',
-          text: `## Best Practices: ${scenario}\n\n${formatted}`,
-        }],
+        content: [
+          {
+            type: 'text',
+            text: `## Best Practices: ${scenario}\n\n${formatted}`,
+          },
+        ],
       };
     }
   );
@@ -225,13 +250,17 @@ export default async function createServer({ config }) {
     async ({ topic, content, category, source, tags }) => {
       try {
         const quality = qualityScorer.score({ topic, content, category, source, tags });
-        
+
         if (quality.score < 0.3) {
           return {
-            content: [{
-              type: 'text',
-              text: `Knowledge rejected (quality score: ${(quality.score * 100).toFixed(0)}%). Issues: ${quality.issues.join(', ')}`,
-            }],
+            content: [
+              {
+                type: 'text',
+                text: `Knowledge rejected (quality score: ${(quality.score * 100).toFixed(
+                  0
+                )}%). Issues: ${quality.issues.join(', ')}`,
+              },
+            ],
           };
         }
 
@@ -252,17 +281,23 @@ export default async function createServer({ config }) {
         searchEngine.buildIndex(knowledgeManager.getAllEntries());
 
         return {
-          content: [{
-            type: 'text',
-            text: `✅ Knowledge added!\n- Topic: ${topic}\n- Category: ${category}\n- Quality Score: ${(quality.score * 100).toFixed(0)}%`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `✅ Knowledge added!\n- Topic: ${topic}\n- Category: ${category}\n- Quality Score: ${(
+                quality.score * 100
+              ).toFixed(0)}%`,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Failed to add knowledge: ${error.message}`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Failed to add knowledge: ${error.message}`,
+            },
+          ],
           isError: true,
         };
       }
@@ -280,19 +315,27 @@ export default async function createServer({ config }) {
     async ({ project_path, module_name }) => {
       try {
         const analysis = await projectLoader.analyzeProject(project_path, { module: module_name });
-        
+
         return {
-          content: [{
-            type: 'text',
-            text: `## Project Analysis\n\n\`\`\`json\n${JSON.stringify(analysis, null, 2)}\n\`\`\``,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `## Project Analysis\n\n\`\`\`json\n${JSON.stringify(
+                analysis,
+                null,
+                2
+              )}\n\`\`\``,
+            },
+          ],
         };
       } catch (error) {
         return {
-          content: [{
-            type: 'text',
-            text: `Analysis failed: ${error.message}. Ensure the path points to a valid .mpr file or extracted Mendix project.`,
-          }],
+          content: [
+            {
+              type: 'text',
+              text: `Analysis failed: ${error.message}. Ensure the path points to a valid .mpr file or extracted Mendix project.`,
+            },
+          ],
           isError: true,
         };
       }
@@ -300,24 +343,27 @@ export default async function createServer({ config }) {
   );
 
   // 5. Get Stats Tool
-  server.tool(
-    'get_knowledge_stats',
-    'Get statistics about the knowledge base',
-    {},
-    async () => {
-      const stats = knowledgeManager.getStats();
-      const searchStats = searchEngine.getStats();
-      
-      return {
-        content: [{
+  server.tool('get_knowledge_stats', 'Get statistics about the knowledge base', {}, async () => {
+    const stats = knowledgeManager.getStats();
+    const searchStats = searchEngine.getStats();
+
+    return {
+      content: [
+        {
           type: 'text',
-          text: `## Knowledge Base Statistics\n\n- **Total Entries:** ${stats.totalEntries}\n- **Categories:** ${Object.keys(stats.byCategory || {}).length}\n- **Search Index Terms:** ${searchStats.indexedTerms}\n- **Vector Search:** ${vectorStore ? 'Enabled' : 'Disabled'}`,
-        }],
-      };
-    }
-  );
+          text: `## Knowledge Base Statistics\n\n- **Total Entries:** ${
+            stats.totalEntries
+          }\n- **Categories:** ${
+            Object.keys(stats.byCategory || {}).length
+          }\n- **Search Index Terms:** ${searchStats.indexedTerms}\n- **Vector Search:** ${
+            vectorStore ? 'Enabled' : 'Disabled'
+          }`,
+        },
+      ],
+    };
+  });
 
   logger.info('Server configured with 5 tools');
-  
+
   return server.server;
 }

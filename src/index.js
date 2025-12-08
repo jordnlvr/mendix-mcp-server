@@ -369,7 +369,9 @@ server.tool(
   {
     action: z
       .enum(['status', 'pull', 'push', 'both', 'dismiss'])
-      .describe('Action to perform: status (check), pull (get updates), push (backup changes), both (full sync), dismiss (snooze reminder)'),
+      .describe(
+        'Action to perform: status (check), pull (get updates), push (backup changes), both (full sync), dismiss (snooze reminder)'
+      ),
     dismiss_days: z
       .number()
       .optional()
@@ -381,18 +383,22 @@ server.tool(
 
       if (action === 'status') {
         const data = syncReminder.getReminderData();
-        
+
         let statusText = `# 🔄 Sync Status\n\n`;
         statusText += `**Repository:** ${data.repoUrl}\n`;
         statusText += `**Local Path:** ${data.repoPath}\n\n`;
-        
+
         statusText += `## Current State\n\n`;
         statusText += `| Metric | Value |\n|--------|-------|\n`;
         statusText += `| Days since last pull | ${data.status.daysSincePull} |\n`;
         statusText += `| Days since last push | ${data.status.daysSincePush} |\n`;
-        statusText += `| Has local changes | ${data.status.hasLocalChanges ? '✅ Yes' : '❌ No'} |\n`;
-        statusText += `| Has remote updates | ${data.status.hasRemoteChanges ? '✅ Yes' : '❌ No'} |\n`;
-        
+        statusText += `| Has local changes | ${
+          data.status.hasLocalChanges ? '✅ Yes' : '❌ No'
+        } |\n`;
+        statusText += `| Has remote updates | ${
+          data.status.hasRemoteChanges ? '✅ Yes' : '❌ No'
+        } |\n`;
+
         if (data.shouldRemind) {
           statusText += `\n⚠️ **Sync recommended!**\n\n`;
           if (data.status.hasLocalChanges) {
@@ -404,7 +410,7 @@ server.tool(
         } else {
           statusText += `\n✅ **All synced!**\n`;
         }
-        
+
         statusText += `\n## Quick Commands\n\n`;
         statusText += `\`\`\`powershell\n# Pull updates\n${data.commands.pull}\n\n# Push changes\n${data.commands.push}\n\`\`\``;
 
@@ -414,10 +420,14 @@ server.tool(
       if (action === 'dismiss') {
         const result = syncReminder.dismissReminder(dismiss_days);
         return {
-          content: [{
-            type: 'text',
-            text: `✅ Sync reminder dismissed until ${new Date(result.until).toLocaleDateString()}.\n\nI'll remind you again after ${dismiss_days} days.`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `✅ Sync reminder dismissed until ${new Date(
+                result.until
+              ).toLocaleDateString()}.\n\nI'll remind you again after ${dismiss_days} days.`,
+            },
+          ],
         };
       }
 
@@ -425,7 +435,7 @@ server.tool(
       const result = await syncReminder.executeSync(action);
 
       let resultText = `# 🔄 Sync Results\n\n`;
-      
+
       for (const op of result.operations) {
         if (op.success) {
           resultText += `✅ **${op.operation.toUpperCase()}** succeeded\n`;
@@ -449,7 +459,6 @@ server.tool(
       }
 
       return { content: [{ type: 'text', text: resultText }] };
-
     } catch (error) {
       logger.error('Sync failed', { error: error.message });
       return {

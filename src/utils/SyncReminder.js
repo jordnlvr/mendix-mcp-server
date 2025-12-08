@@ -1,6 +1,6 @@
 /**
  * SyncReminder - Tracks last sync and reminds users to push/pull
- * 
+ *
  * Features:
  * - Tracks last pull and push times
  * - Shows reminder after configurable days
@@ -8,10 +8,10 @@
  * - Can execute sync via MCP tool
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -31,7 +31,7 @@ class SyncReminder {
       lastReminder: null,
       installDate: new Date().toISOString(),
       dismissedUntil: null,
-      syncHistory: []
+      syncHistory: [],
     };
 
     try {
@@ -66,7 +66,7 @@ class SyncReminder {
    */
   shouldRemind() {
     const now = new Date();
-    
+
     // Check if dismissed
     if (this.state.dismissedUntil) {
       const dismissedUntil = new Date(this.state.dismissedUntil);
@@ -80,17 +80,17 @@ class SyncReminder {
     const lastPush = this.state.lastPush ? new Date(this.state.lastPush) : null;
     const installDate = new Date(this.state.installDate);
 
-    const daysSincePull = lastPull 
+    const daysSincePull = lastPull
       ? Math.floor((now - lastPull) / (1000 * 60 * 60 * 24))
       : Math.floor((now - installDate) / (1000 * 60 * 60 * 24));
-    
+
     const daysSincePush = lastPush
       ? Math.floor((now - lastPush) / (1000 * 60 * 60 * 24))
       : Math.floor((now - installDate) / (1000 * 60 * 60 * 24));
 
     // Check for local changes
     const hasLocalChanges = this._hasLocalChanges();
-    
+
     // Check for remote changes
     const hasRemoteChanges = this._hasRemoteChanges();
 
@@ -102,7 +102,7 @@ class SyncReminder {
         hasLocalChanges,
         hasRemoteChanges,
         neverPulled: !lastPull,
-        neverPushed: !lastPush
+        neverPushed: !lastPush,
       };
     }
 
@@ -114,10 +114,10 @@ class SyncReminder {
    */
   _hasLocalChanges() {
     try {
-      const result = execSync('git status --porcelain', { 
-        cwd: this.repoPath, 
+      const result = execSync('git status --porcelain', {
+        cwd: this.repoPath,
         encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
       return result.trim().length > 0;
     } catch (e) {
@@ -131,17 +131,17 @@ class SyncReminder {
   _hasRemoteChanges() {
     try {
       // Fetch without merging
-      execSync('git fetch origin main', { 
-        cwd: this.repoPath, 
+      execSync('git fetch origin main', {
+        cwd: this.repoPath,
         encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
-      
+
       // Check if we're behind
-      const result = execSync('git rev-list HEAD..origin/main --count', { 
-        cwd: this.repoPath, 
+      const result = execSync('git rev-list HEAD..origin/main --count', {
+        cwd: this.repoPath,
         encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
       return parseInt(result.trim()) > 0;
     } catch (e) {
@@ -154,7 +154,7 @@ class SyncReminder {
    */
   getReminderMessage() {
     const status = this.shouldRemind();
-    
+
     if (!status.remind) {
       return null;
     }
@@ -210,7 +210,7 @@ class SyncReminder {
    */
   getReminderData() {
     const status = this.shouldRemind();
-    
+
     return {
       shouldRemind: status.remind,
       status: {
@@ -219,19 +219,19 @@ class SyncReminder {
         hasLocalChanges: status.hasLocalChanges || false,
         hasRemoteChanges: status.hasRemoteChanges || false,
         neverPulled: status.neverPulled || false,
-        neverPushed: status.neverPushed || false
+        neverPushed: status.neverPushed || false,
       },
       lastSync: {
         pull: this.state.lastPull,
-        push: this.state.lastPush
+        push: this.state.lastPush,
       },
       commands: {
         pull: `cd "${this.repoPath}" && git pull`,
         push: `cd "${this.repoPath}" && git add -A && git commit -m "Sync update" && git push`,
-        status: `cd "${this.repoPath}" && git status`
+        status: `cd "${this.repoPath}" && git status`,
       },
       repoPath: this.repoPath,
-      repoUrl: 'https://github.com/jordnlvr/mendix-mcp-server'
+      repoUrl: 'https://github.com/jordnlvr/mendix-mcp-server',
     };
   }
 
@@ -242,29 +242,29 @@ class SyncReminder {
     const results = {
       success: true,
       operations: [],
-      errors: []
+      errors: [],
     };
 
     try {
       if (operation === 'pull' || operation === 'both') {
         // Pull from remote
         try {
-          const pullResult = execSync('git pull', { 
-            cwd: this.repoPath, 
+          const pullResult = execSync('git pull', {
+            cwd: this.repoPath,
             encoding: 'utf8',
-            stdio: ['pipe', 'pipe', 'pipe']
+            stdio: ['pipe', 'pipe', 'pipe'],
           });
           results.operations.push({
             operation: 'pull',
             success: true,
-            output: pullResult.trim()
+            output: pullResult.trim(),
           });
           this.state.lastPull = new Date().toISOString();
         } catch (e) {
           results.operations.push({
             operation: 'pull',
             success: false,
-            error: e.message
+            error: e.message,
           });
           results.errors.push(`Pull failed: ${e.message}`);
         }
@@ -275,39 +275,38 @@ class SyncReminder {
         if (this._hasLocalChanges()) {
           try {
             // Stage all changes
-            execSync('git add -A', { 
-              cwd: this.repoPath, 
+            execSync('git add -A', {
+              cwd: this.repoPath,
               encoding: 'utf8',
-              stdio: ['pipe', 'pipe', 'pipe']
+              stdio: ['pipe', 'pipe', 'pipe'],
             });
 
             // Commit
             const date = new Date().toISOString().split('T')[0];
-            execSync(`git commit -m "Sync: Auto-update ${date}"`, { 
-              cwd: this.repoPath, 
+            execSync(`git commit -m "Sync: Auto-update ${date}"`, {
+              cwd: this.repoPath,
               encoding: 'utf8',
-              stdio: ['pipe', 'pipe', 'pipe']
+              stdio: ['pipe', 'pipe', 'pipe'],
             });
 
             // Push
-            const pushResult = execSync('git push', { 
-              cwd: this.repoPath, 
+            const pushResult = execSync('git push', {
+              cwd: this.repoPath,
               encoding: 'utf8',
-              stdio: ['pipe', 'pipe', 'pipe']
+              stdio: ['pipe', 'pipe', 'pipe'],
             });
 
             results.operations.push({
               operation: 'push',
               success: true,
-              output: pushResult.trim()
+              output: pushResult.trim(),
             });
             this.state.lastPush = new Date().toISOString();
-
           } catch (e) {
             results.operations.push({
               operation: 'push',
               success: false,
-              error: e.message
+              error: e.message,
             });
             results.errors.push(`Push failed: ${e.message}`);
           }
@@ -315,7 +314,7 @@ class SyncReminder {
           results.operations.push({
             operation: 'push',
             success: true,
-            output: 'No local changes to push'
+            output: 'No local changes to push',
           });
         }
       }
@@ -324,7 +323,7 @@ class SyncReminder {
       this.state.syncHistory.push({
         date: new Date().toISOString(),
         operation,
-        success: results.errors.length === 0
+        success: results.errors.length === 0,
       });
 
       // Keep only last 50 syncs
@@ -333,7 +332,6 @@ class SyncReminder {
       }
 
       this._saveState();
-
     } catch (e) {
       results.success = false;
       results.errors.push(e.message);

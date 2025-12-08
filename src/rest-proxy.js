@@ -29,10 +29,10 @@ config({ path: join(__dirname, '..', '.env') });
 
 import cors from 'cors';
 import express from 'express';
-import Analytics from './utils/Analytics.js';
 import KnowledgeManager from './core/KnowledgeManager.js';
 import ProjectLoader from './core/ProjectLoader.js';
 import SearchEngine from './core/SearchEngine.js';
+import Analytics from './utils/Analytics.js';
 import Logger from './utils/logger.js';
 import HybridSearch from './vector/HybridSearch.js';
 
@@ -164,6 +164,16 @@ app.get('/tools', (req, res) => {
         parameters: {
           period: 'string (optional) - day, week, month, or all (default: all)',
           include_trends: 'boolean (optional) - Include hourly/daily trends (default: true)',
+        },
+      },
+      {
+        name: 'analyze-theme',
+        method: 'POST',
+        path: '/analyze-theme',
+        description: 'Deep analysis of a Mendix custom theme with grades and recommendations',
+        parameters: {
+          project_path: 'string (required) - Path to .mpr file or project directory',
+          detailed: 'boolean (optional) - Include detailed breakdown (default: true)',
         },
       },
     ],
@@ -414,6 +424,42 @@ app.get('/analytics', async (req, res) => {
     });
   } catch (error) {
     logger.error('Analytics failed', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Analyze theme - deep analysis of Mendix custom theme
+ */
+app.post('/analyze-theme', async (req, res) => {
+  try {
+    await initialize();
+
+    const { project_path, detailed = true } = req.body;
+
+    if (!project_path) {
+      return res.status(400).json({ error: 'project_path is required' });
+    }
+
+    // Dynamic import of ThemeAnalyzer
+    const { default: ThemeAnalyzer } = await import('./analyzers/ThemeAnalyzer.js');
+    const analyzer = new ThemeAnalyzer();
+
+    const results = await analyzer.analyze(project_path, { detailed });
+
+    res.json({
+      project_path,
+      scores: results.scores,
+      recommendations: {
+        critical: results.recommendations.critical,
+        important: results.recommendations.important,
+        suggestions: results.recommendations.suggestions,
+      },
+      summary: results.summary,
+      analysis: detailed ? results.analysis : undefined,
+    });
+  } catch (error) {
+    logger.error('Theme analysis failed', { error: error.message });
     res.status(500).json({ error: error.message });
   }
 });

@@ -3,7 +3,7 @@
   "info": {
     "title": "Mendix Expert API",
     "description": "A self-learning knowledge base for Mendix development. Provides expert-level answers about SDK patterns, best practices, troubleshooting, and project analysis.",
-    "version": "2.6.0"
+    "version": "2.7.0"
   },
   "servers": [
     {
@@ -312,6 +312,98 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/analyze-theme": {
+      "post": {
+        "operationId": "analyzeTheme",
+        "summary": "Analyze Mendix custom theme",
+        "description": "Performs deep analysis of a Mendix project's custom theme for best practices, issues, and recommendations. Returns letter grade (A+ to F) with detailed category scores.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["project_path"],
+                "properties": {
+                  "project_path": {
+                    "type": "string",
+                    "description": "Absolute path to the Mendix project root directory"
+                  },
+                  "mendix_version": {
+                    "type": "string",
+                    "enum": ["10", "11"],
+                    "description": "Mendix Studio Pro version (auto-detected if not specified)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Theme analysis results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "grade": {
+                      "type": "string",
+                      "description": "Overall letter grade (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)"
+                    },
+                    "score": {
+                      "type": "number",
+                      "description": "Numeric score 0-100"
+                    },
+                    "categoryScores": {
+                      "type": "object",
+                      "properties": {
+                        "fileStructure": { "type": "number" },
+                        "naming": { "type": "number" },
+                        "variables": { "type": "number" },
+                        "theming": { "type": "number" },
+                        "maintainability": { "type": "number" },
+                        "performance": { "type": "number" }
+                      }
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "severity": { "type": "string", "enum": ["critical", "warning", "info"] },
+                          "category": { "type": "string" },
+                          "message": { "type": "string" },
+                          "file": { "type": "string" },
+                          "line": { "type": "integer" },
+                          "suggestion": { "type": "string" }
+                        }
+                      }
+                    },
+                    "recommendations": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "mendixVersion": { "type": "string" },
+                    "themeType": { "type": "string", "enum": ["web", "native", "both"] },
+                    "filesAnalyzed": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required project_path parameter"
+          },
+          "404": {
+            "description": "Project directory not found"
+          },
+          "500": {
+            "description": "Analysis error"
           }
         }
       }

@@ -155,6 +155,8 @@ Server runs at `http://localhost:5050`
 | `/search`        | POST   | Hybrid search (keyword + semantic) |
 | `/best-practice` | POST   | Get best practice recommendations  |
 | `/analyze`       | POST   | Analyze Mendix project             |
+| `/analytics`     | GET    | Usage analytics and statistics     |
+| `/analyze-theme` | POST   | Deep theme analysis with grading   |
 
 ### Example Usage
 
@@ -205,6 +207,7 @@ Quick steps:
 | ------------------------ | ---------------------------------------------------- |
 | `query_mendix_knowledge` | Search the knowledge base for any Mendix topic       |
 | `analyze_project`        | Analyze a `.mpr` file or extracted project directory |
+| `analyze_theme`          | 🎨 **NEW!** Deep theme analysis with grading (A+ to F) |
 | `get_best_practice`      | Get recommendations for specific scenarios           |
 | `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)      |
 | `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)        |
@@ -216,7 +219,7 @@ Quick steps:
 | `hybrid_search`          | 🎯 Combined keyword + semantic search                |
 | `vector_status`          | Check Pinecone index and search stats                |
 | `reindex_vectors`        | Re-index knowledge for vector search                 |
-| `get_usage_analytics`    | 📊 **NEW!** View usage stats, popular topics, trends |
+| `get_usage_analytics`    | 📊 View usage stats, popular topics, trends          |
 
 ---
 

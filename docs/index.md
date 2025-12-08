@@ -18,7 +18,7 @@ A self-learning, auto-researching AI assistant that gives your AI deep Mendix ex
 
 ---
 
-![Version](https://img.shields.io/badge/version-2.6.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.7.0-blue.svg)
 ![MCP](https://img.shields.io/badge/MCP-compatible-purple.svg)
 ![Pinecone](https://img.shields.io/badge/Pinecone-vector%20search-orange.svg)
 ![Azure OpenAI](https://img.shields.io/badge/Azure%20OpenAI-embeddings-0078D4.svg)

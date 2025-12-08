@@ -84,6 +84,64 @@ Analyze a Mendix `.mpr` file or extracted project.
 
 ---
 
+### `analyze_theme`
+
+🎨 **NEW!** Deep analysis of Mendix custom themes with letter grading.
+
+```
+@mendix-expert analyze_theme project_path="D:/Projects/MyApp" mendix_version="11"
+```
+
+| Parameter        | Type   | Default      | Description                        |
+| ---------------- | ------ | ------------ | ---------------------------------- |
+| `project_path`   | string | required     | Path to Mendix project directory   |
+| `mendix_version` | string | auto-detect  | `10` or `11` - version of Studio Pro |
+
+**Returns:**
+- **grade** - Letter grade (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)
+- **score** - Numeric score 0-100
+- **categoryScores** - Individual scores for:
+  - `fileStructure` - Proper theme folder organization
+  - `naming` - BEM conventions, widget prefixes
+  - `variables` - Use of design tokens and SCSS variables
+  - `theming` - Atlas UI integration, design system compliance
+  - `maintainability` - Code organization, documentation
+  - `performance` - Efficient selectors, minimal specificity
+- **issues** - Array of problems found with severity, file, line, and suggestions
+- **recommendations** - Prioritized list of improvements
+
+**Example Output:**
+```json
+{
+  "grade": "B+",
+  "score": 86,
+  "categoryScores": {
+    "fileStructure": 90,
+    "naming": 85,
+    "variables": 88,
+    "theming": 82,
+    "maintainability": 85,
+    "performance": 86
+  },
+  "issues": [
+    {
+      "severity": "warning",
+      "category": "naming",
+      "message": "Button class should use 'btn-' prefix",
+      "file": "theme/web/custom/_buttons.scss",
+      "line": 42,
+      "suggestion": "Rename .primary-button to .btn-primary"
+    }
+  ],
+  "recommendations": [
+    "Consider using Atlas design tokens for colors",
+    "Add a _variables-custom.scss file for overrides"
+  ]
+}
+```
+
+---
+
 ## Knowledge Management
 
 ### `add_to_knowledge_base`

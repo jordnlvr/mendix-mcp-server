@@ -1439,6 +1439,156 @@ server.tool(
   }
 );
 
+// Tool 13: Theme Analyzer
+server.tool(
+  'analyze_theme',
+  `Deep analysis of a Mendix project's custom theme against best practices. 
+Analyzes folder structure, SCSS/JS files, design tokens, organization, performance patterns, and version compatibility.
+Returns a letter grade (A+ to F), detailed scores, and actionable recommendations.
+Use this to evaluate and improve custom themes for web and native mobile apps.`,
+  {
+    project_path: z
+      .string()
+      .describe('Path to the Mendix project (.mpr file or project directory)'),
+    detailed: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe('Include detailed analysis with file-by-file breakdown'),
+    fix_suggestions: z
+      .boolean()
+      .optional()
+      .default(true)
+      .describe('Include specific code fix suggestions'),
+  },
+  async ({ project_path, detailed, fix_suggestions }) => {
+    try {
+      analytics.trackToolUsage('analyze_theme', { project_path });
+
+      // Dynamic import of ThemeAnalyzer
+      const { default: ThemeAnalyzer } = await import('./analyzers/ThemeAnalyzer.js');
+      const analyzer = new ThemeAnalyzer();
+
+      const results = await analyzer.analyze(project_path, { detailed });
+
+      let text = `# 🎨 Theme Analysis Report\n\n`;
+      text += `**Project:** ${results.projectPath}\n`;
+      text += `**Analyzed:** ${results.analyzedAt}\n`;
+      text += `**Analysis Time:** ${results.analysisTimeMs}ms\n\n`;
+
+      // Overall Score and Grade
+      text += `## 📊 Overall Score\n\n`;
+      text += `# Grade: ${results.scores.grade}\n`;
+      text += `**Score: ${results.scores.overall}/100**\n\n`;
+
+      // Score Breakdown
+      text += `### Score Breakdown\n\n`;
+      text += `| Category | Score |\n|----------|-------|\n`;
+      text += `| Structure | ${results.scores.breakdown.structure}/100 |\n`;
+      text += `| Web Theme | ${results.scores.breakdown.webTheme}/100 |\n`;
+      text += `| Native Theme | ${results.scores.breakdown.nativeTheme}/100 |\n`;
+      text += `| Theme Modules | ${results.scores.breakdown.modules}/100 |\n\n`;
+
+      // Critical Issues
+      if (results.recommendations.critical.length > 0) {
+        text += `## ⚠️ Critical Issues (${results.recommendations.critical.length})\n\n`;
+        text += `These must be fixed for proper theme functionality:\n\n`;
+        for (const rec of results.recommendations.critical) {
+          text += `### ❌ ${rec.message}\n`;
+          if (rec.file) text += `**File:** \`${rec.file}\`\n`;
+          if (fix_suggestions && rec.fix) text += `**Fix:** ${rec.fix}\n`;
+          text += `\n`;
+        }
+      }
+
+      // Important Recommendations
+      if (results.recommendations.important.length > 0) {
+        text += `## 📋 Important Recommendations (${results.recommendations.important.length})\n\n`;
+        for (const rec of results.recommendations.important) {
+          text += `### ⚡ ${rec.message}\n`;
+          if (rec.file) text += `**File:** \`${rec.file}\`\n`;
+          if (fix_suggestions && rec.fix) text += `**Fix:** ${rec.fix}\n`;
+          text += `\n`;
+        }
+      }
+
+      // Suggestions
+      if (results.recommendations.suggestions.length > 0) {
+        text += `## 💡 Suggestions (${results.recommendations.suggestions.length})\n\n`;
+        for (const rec of results.recommendations.suggestions) {
+          text += `- **${rec.message}**`;
+          if (fix_suggestions && rec.fix) text += ` - ${rec.fix}`;
+          text += `\n`;
+        }
+        text += `\n`;
+      }
+
+      // Detailed Analysis
+      if (detailed) {
+        text += `## 📁 Detailed Analysis\n\n`;
+
+        // Structure findings
+        if (results.analysis.structure.findings.length > 0) {
+          text += `### Structure\n`;
+          for (const finding of results.analysis.structure.findings) {
+            const icon = finding.status === 'pass' ? '✅' : '📂';
+            text += `${icon} ${finding.check}: \`${finding.path}\`\n`;
+          }
+          text += `\n`;
+        }
+
+        // Web theme stats
+        if (results.analysis.webTheme.stats) {
+          const stats = results.analysis.webTheme.stats;
+          text += `### Web Theme Statistics\n`;
+          text += `| Metric | Value |\n|--------|-------|\n`;
+          text += `| SCSS Files | ${stats.totalFiles} |\n`;
+          text += `| Total Lines | ${stats.totalLines} |\n`;
+          text += `| Variables Used | ${stats.variablesCount} |\n`;
+          text += `| Imports | ${stats.importsCount} |\n`;
+          text += `| Magic Numbers Found | ${stats.magicNumbersCount} |\n`;
+          text += `| Deep Nesting Issues | ${stats.deepNestingCount} |\n`;
+          text += `\n`;
+        }
+
+        // Theme modules
+        if (results.analysis.modules.modules && results.analysis.modules.modules.length > 0) {
+          text += `### Theme Modules\n`;
+          text += `| Module | Web | Native | Design Props |\n|--------|-----|--------|-------------|\n`;
+          for (const mod of results.analysis.modules.modules) {
+            text += `| ${mod.name} | ${mod.hasWebStyling ? '✅' : '❌'} | ${
+              mod.hasNativeStyling ? '✅' : '❌'
+            } | ${mod.hasDesignProperties ? '✅' : '❌'} |\n`;
+          }
+          text += `\n`;
+        }
+      }
+
+      // Summary
+      text += `---\n\n`;
+      text += results.summary;
+
+      // Best Practices Reference
+      text += `\n\n## 📚 Best Practices Reference\n\n`;
+      text += `For detailed theme best practices, use: \`query_mendix_knowledge topic="theme best practices"\`\n`;
+      text += `For design tokens info: \`get_best_practice scenario="design tokens"\`\n`;
+
+      return { content: [{ type: 'text', text }] };
+    } catch (error) {
+      logger.error('Theme analysis failed', { error: error.message, stack: error.stack });
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `❌ Theme analysis failed: ${error.message}\n\nMake sure the project path is correct and points to a valid Mendix project directory.`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
 // ============================================================================
 // RESOURCE REGISTRATIONS
 // ============================================================================

@@ -1,0 +1,278 @@
+{
+  "metadata": {
+    "name": "Theme Analysis & Best Practices",
+    "version": "1.0.0",
+    "lastUpdated": "2025-12-08",
+    "source": "docs.mendix.com + expert patterns",
+    "description": "Comprehensive theme analysis rules and best practices for Mendix custom themes"
+  },
+  "bestPractices": {
+    "structure": {
+      "title": "Theme Folder Structure",
+      "importance": "critical",
+      "rules": [
+        {
+          "id": "STRUCT-001",
+          "rule": "Use theme/ for app-specific styling, themesource/ for reusable modules",
+          "why": "Mendix compiles styles in a specific order - theme folder overrides themesource",
+          "example": "theme/web/custom-variables.scss overrides themesource/MyModule/web/custom-variables.scss"
+        },
+        {
+          "id": "STRUCT-002",
+          "rule": "Always have custom-variables.scss as the single source of truth for design tokens",
+          "why": "Makes global changes easy - change once, update everywhere",
+          "example": "$brand-primary: #264AE5; // Change this to update all primary colors"
+        },
+        {
+          "id": "STRUCT-003",
+          "rule": "Keep main.scss as an import hub, not a dumping ground",
+          "why": "Improves maintainability and makes it easy to find specific styles",
+          "example": "@import 'buttons';\n@import 'forms';\n@import 'layout';"
+        },
+        {
+          "id": "STRUCT-004",
+          "rule": "Use settings.json to manage CSS file loading order",
+          "why": "Controls which CSS files are loaded and in what order",
+          "example": "{ \"cssFiles\": [\"theme.compiled.css\", \"custom-overrides.css\"] }"
+        }
+      ]
+    },
+    "variables": {
+      "title": "Design Tokens & Variables",
+      "importance": "high",
+      "rules": [
+        {
+          "id": "VAR-001",
+          "rule": "Never use hardcoded hex colors - always use variables",
+          "why": "Hardcoded colors make theming impossible and violate DRY principle",
+          "bad": "color: #264AE5;",
+          "good": "color: $brand-primary;"
+        },
+        {
+          "id": "VAR-002",
+          "rule": "Use Atlas brand variables for consistency",
+          "why": "Atlas provides semantic color names that work across themes",
+          "variables": [
+            "$brand-primary",
+            "$brand-success",
+            "$brand-warning",
+            "$brand-danger",
+            "$brand-info",
+            "$brand-default"
+          ]
+        },
+        {
+          "id": "VAR-003",
+          "rule": "Use spacing variables instead of pixel values",
+          "why": "Consistent spacing improves visual harmony",
+          "bad": "margin: 16px;",
+          "good": "margin: $spacing-medium;"
+        },
+        {
+          "id": "VAR-004",
+          "rule": "Define font variables in custom-variables.scss",
+          "why": "Typography consistency across the app",
+          "example": "$font-family-base: 'Open Sans', sans-serif;\n$font-size-base: 14px;\n$font-weight-normal: 400;"
+        },
+        {
+          "id": "VAR-005",
+          "rule": "Organize variables into logical sections with comments",
+          "why": "Makes it easy to find and modify related variables",
+          "example": "// ==================\n// COLORS\n// ==================\n$brand-primary: #264AE5;"
+        }
+      ]
+    },
+    "organization": {
+      "title": "Code Organization",
+      "importance": "high",
+      "rules": [
+        {
+          "id": "ORG-001",
+          "rule": "Split styles into separate files by component type",
+          "why": "Improves findability and enables parallel development",
+          "files": [
+            "_variables.scss",
+            "_buttons.scss",
+            "_forms.scss",
+            "_navigation.scss",
+            "_layout.scss",
+            "_utilities.scss"
+          ]
+        },
+        {
+          "id": "ORG-002",
+          "rule": "Use BEM or similar naming convention for custom classes",
+          "why": "Prevents specificity wars and makes HTML self-documenting",
+          "example": ".card__header--highlighted { }"
+        },
+        {
+          "id": "ORG-003",
+          "rule": "Add comments explaining the 'why' not just the 'what'",
+          "why": "Future developers (including you) will thank you",
+          "example": "// Increase contrast for accessibility WCAG AA compliance\ncolor: darken($brand-primary, 10%);"
+        },
+        {
+          "id": "ORG-004",
+          "rule": "Keep related styles together in the file",
+          "why": "Reduces cognitive load when maintaining styles"
+        }
+      ]
+    },
+    "performance": {
+      "title": "Performance Best Practices",
+      "importance": "medium",
+      "rules": [
+        {
+          "id": "PERF-001",
+          "rule": "Avoid nesting more than 3 levels deep",
+          "why": "Deep nesting creates overly specific selectors that hurt performance",
+          "bad": ".page .content .container .row .col .card .header { }",
+          "good": ".card__header { }"
+        },
+        {
+          "id": "PERF-002",
+          "rule": "Use Atlas exclusion variables to remove unused widget styles",
+          "why": "Reduces CSS bundle size",
+          "example": "$exclude-timeline: true;\n$exclude-rating: true;"
+        },
+        {
+          "id": "PERF-003",
+          "rule": "Avoid universal selectors (*) and overly broad selectors",
+          "why": "Browser has to check every element against these rules"
+        },
+        {
+          "id": "PERF-004",
+          "rule": "Prefer class selectors over element selectors",
+          "why": "Class selectors are faster and more specific",
+          "bad": "div.container { }",
+          "good": ".container { }"
+        }
+      ]
+    },
+    "modularity": {
+      "title": "Creating Reusable Theme Modules",
+      "importance": "medium",
+      "rules": [
+        {
+          "id": "MOD-001",
+          "rule": "Create a theme module for company-wide styling",
+          "why": "Enables consistent branding across multiple Mendix apps",
+          "steps": [
+            "Create new module in Studio Pro",
+            "Mark as UI Resources module",
+            "Add themesource/{module}/web/custom-variables.scss",
+            "Import from theme/web/custom-variables.scss"
+          ]
+        },
+        {
+          "id": "MOD-002",
+          "rule": "Set explicit module order in App Settings > Theme",
+          "why": "Controls cascade order - later modules override earlier ones",
+          "order": ["Atlas_Core", "Atlas_Web_Content", "YourThemeModule", "App-specific overrides"]
+        },
+        {
+          "id": "MOD-003",
+          "rule": "Use design-properties.json to expose style options",
+          "why": "Makes styles discoverable in Studio Pro Properties panel",
+          "example": "Add design properties for custom button variants, card styles, etc."
+        },
+        {
+          "id": "MOD-004",
+          "rule": "Include public/ folder for images and fonts",
+          "why": "Resources are automatically copied to deployment folder"
+        }
+      ]
+    },
+    "compatibility": {
+      "title": "Version Compatibility",
+      "importance": "high",
+      "versions": {
+        "mendix10": {
+          "atlasVersion": "3.x",
+          "notes": [
+            "Uses Atlas UI 3.x with Bootstrap 4 base",
+            "Supports exclusion-variables.scss",
+            "design-properties.json for custom properties"
+          ]
+        },
+        "mendix11": {
+          "atlasVersion": "4.x",
+          "notes": [
+            "Uses Atlas UI 4.x",
+            "React Client support",
+            "Enhanced design properties",
+            "Improved native mobile styling"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "id": "COMPAT-001",
+          "rule": "Check Atlas_Core version matches your Studio Pro version",
+          "why": "Mismatched versions can cause styling inconsistencies"
+        },
+        {
+          "id": "COMPAT-002",
+          "rule": "Avoid deprecated widget selectors",
+          "why": "May break in future versions"
+        },
+        {
+          "id": "COMPAT-003",
+          "rule": "Test theme in multiple browsers",
+          "why": "Mendix supports modern browsers - check browser compatibility matrix"
+        }
+      ]
+    }
+  },
+  "scoringCriteria": {
+    "description": "How themes are scored in analysis",
+    "weights": {
+      "structure": 25,
+      "variables": 20,
+      "organization": 20,
+      "modularity": 15,
+      "performance": 10,
+      "compatibility": 10
+    },
+    "deductions": {
+      "missingRequiredFile": -15,
+      "hardcodedColor": -2,
+      "deepNesting": -5,
+      "noComments": -5,
+      "noVariables": -10,
+      "noThemeModule": -5
+    },
+    "grades": {
+      "A+": "97-100: Exceptional - professional design system quality",
+      "A": "93-96: Excellent - well organized and maintainable",
+      "A-": "90-92: Very good - minor improvements possible",
+      "B+": "87-89: Good - some best practices missing",
+      "B": "83-86: Solid - room for improvement",
+      "B-": "80-82: Acceptable - needs attention",
+      "C+": "77-79: Fair - multiple issues",
+      "C": "73-76: Below average - significant issues",
+      "C-": "70-72: Poor - many problems",
+      "D": "60-69: Very poor - major rework needed",
+      "F": "Below 60: Failing - critical issues"
+    }
+  },
+  "quickFixes": {
+    "hardcodedColors": {
+      "problem": "Hardcoded hex colors throughout SCSS",
+      "solution": "1. Identify all unique colors\n2. Create variables in custom-variables.scss\n3. Find/replace hex codes with variable names",
+      "example": "// Before: color: #264AE5;\n// After: color: $brand-primary;"
+    },
+    "deepNesting": {
+      "problem": "Selectors nested 4+ levels deep",
+      "solution": "1. Use BEM naming (.block__element--modifier)\n2. Keep nesting to 2-3 levels max\n3. Use @at-root to break out when needed"
+    },
+    "missingVariables": {
+      "problem": "Missing or empty custom-variables.scss",
+      "solution": "1. Create theme/web/custom-variables.scss\n2. Define brand colors, fonts, spacing\n3. Import Atlas default variables first"
+    },
+    "unorganizedFiles": {
+      "problem": "All styles in one large file",
+      "solution": "1. Split by component: _buttons.scss, _forms.scss\n2. Create main.scss as import hub\n3. Use @import to include partials"
+    }
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Mendix Expert API",
+    "description": "A self-learning knowledge base for Mendix development. Provides expert-level answers about SDK patterns, best practices, troubleshooting, and project analysis.",
+    "version": "2.5.2"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5050",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/query": {
+      "post": {
+        "operationId": "queryKnowledge",
+        "summary": "Query Mendix Knowledge Base",
+        "description": "Search the curated Mendix knowledge base for information about SDK patterns, best practices, Studio Pro features, troubleshooting, and more. Uses hybrid keyword + semantic search.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "The topic or question to search for. Can be natural language like 'How do I create a microflow with the SDK?' or keywords like 'entity creation SDK'."
+                  },
+                  "detail_level": {
+                    "type": "string",
+                    "enum": ["brief", "standard", "detailed"],
+                    "default": "standard",
+                    "description": "Level of detail in response. 'brief' returns summaries, 'standard' returns moderate content, 'detailed' returns full entries."
+                  }
+                },
+                "required": ["topic"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "resultCount": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": { "type": "string" },
+                          "content": { "type": "string" },
+                          "category": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "post": {
+        "operationId": "hybridSearch",
+        "summary": "Hybrid Search (Keyword + Vector)",
+        "description": "Performs advanced hybrid search combining TF-IDF keyword matching with semantic vector search (Pinecone + Azure OpenAI embeddings). Best for finding conceptually related content even when exact keywords don't match.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search query - can be natural language or keywords"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Maximum number of results to return"
+                  }
+                },
+                "required": ["query"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results with match type indicators",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "resultCount": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "title": { "type": "string" },
+                          "content": { "type": "string" },
+                          "category": { "type": "string" },
+                          "matchType": { 
+                            "type": "string",
+                            "enum": ["both", "keyword", "vector"],
+                            "description": "How the result was matched: 'both' = keyword AND vector, 'keyword' = keyword only, 'vector' = semantic only"
+                          },
+                          "score": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/best-practice": {
+      "post": {
+        "operationId": "getBestPractice",
+        "summary": "Get Best Practice Recommendations",
+        "description": "Get expert recommendations and best practices for specific Mendix development scenarios like error handling, naming conventions, performance optimization, security, etc.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scenario": {
+                    "type": "string",
+                    "description": "The scenario to get recommendations for, e.g., 'microflow error handling', 'entity naming', 'performance optimization', 'security hardening'"
+                  }
+                },
+                "required": ["scenario"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Best practice recommendations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "scenario": { "type": "string" },
+                    "recommendations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": { "type": "string" },
+                          "content": { "type": "string" },
+                          "category": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "operationId": "getStatus",
+        "summary": "Get Server Status",
+        "description": "Get current server status, capabilities, and example queries. Use this to understand what the API can do.",
+        "responses": {
+          "200": {
+            "description": "Server status and capabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "version": { "type": "string" },
+                    "knowledge": {
+                      "type": "object",
+                      "properties": {
+                        "totalEntries": { "type": "integer" },
+                        "filesLoaded": { "type": "integer" },
+                        "indexedTerms": { "type": "integer" }
+                      }
+                    },
+                    "capabilities": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "exampleQueries": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyze": {
+      "post": {
+        "operationId": "analyzeProject",
+        "summary": "Analyze Mendix Project",
+        "description": "Analyze a Mendix project file (.mpr) to discover modules, entities, microflows, and other model elements. Requires the .mpr file to be accessible from the server.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_path": {
+                    "type": "string",
+                    "description": "Absolute path to the .mpr file, e.g., 'D:/Projects/MyApp/MyApp.mpr'"
+                  },
+                  "module_name": {
+                    "type": "string",
+                    "description": "Optional: Filter to analyze only a specific module"
+                  }
+                },
+                "required": ["project_path"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project analysis results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "project_path": { "type": "string" },
+                    "analysis": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -128,6 +128,62 @@ In your AI chat:
 
 ---
 
+## 🌐 REST API (NEW in v2.5.2!)
+
+Want to use Mendix Expert from **ChatGPT Custom GPTs**, **web apps**, or **other tools**? The REST API exposes all functionality over HTTP.
+
+### Start the REST Server
+
+```bash
+# Using npm script
+npm run rest
+
+# Or directly
+node src/rest-proxy.js
+```
+
+Server runs at `http://localhost:5050`
+
+### Available Endpoints
+
+| Endpoint           | Method | Description                       |
+| ------------------ | ------ | --------------------------------- |
+| `/health`          | GET    | Health check and status           |
+| `/status`          | GET    | Server status with example queries|
+| `/tools`           | GET    | List all available endpoints      |
+| `/query`           | POST   | Query knowledge base              |
+| `/search`          | POST   | Hybrid search (keyword + semantic)|
+| `/best-practice`   | POST   | Get best practice recommendations |
+| `/analyze`         | POST   | Analyze Mendix project            |
+
+### Example Usage
+
+```bash
+# Health check
+curl http://localhost:5050/health
+
+# Search for entity creation
+curl -X POST http://localhost:5050/search \
+  -H "Content-Type: application/json" \
+  -d '{"query":"how to create entity SDK","limit":5}'
+
+# Get best practices
+curl -X POST http://localhost:5050/best-practice \
+  -H "Content-Type: application/json" \
+  -d '{"scenario":"microflow error handling"}'
+```
+
+### ChatGPT Integration
+
+Import the OpenAPI spec (`openapi.json`) as a ChatGPT Action to use Mendix Expert from a Custom GPT:
+
+1. Create a Custom GPT at chat.openai.com
+2. Go to Configure → Actions → Import
+3. Import the `openapi.json` file
+4. Set server URL to your running server (use ngrok for public access)
+
+---
+
 ## 📚 Available Tools
 
 | Tool                     | Description                                          |

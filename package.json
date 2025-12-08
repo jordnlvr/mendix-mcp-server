@@ -1,6 +1,6 @@
 {
   "name": "@jordnlvr/mendix-mcp-server",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Self-learning MCP server for Mendix development with semantic vector search, auto-harvesting, and project analysis",
   "type": "module",
   "main": "src/index.js",
@@ -10,6 +10,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
+    "rest": "node src/rest-proxy.js",
     "dev": "npx smithery dev",
     "build": "npx smithery build",
     "test": "node --test tests/**/*.test.js",
@@ -60,7 +61,9 @@
     "@modelcontextprotocol/sdk": "^1.23.0",
     "@pinecone-database/pinecone": "^6.1.3",
     "cheerio": "^1.1.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "express": "^5.2.1",
     "fs-extra": "^11.2.0",
     "glob": "^10.3.10",
     "node-fetch": "^3.3.2",

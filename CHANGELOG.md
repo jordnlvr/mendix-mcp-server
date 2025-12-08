@@ -15,6 +15,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.5.2] - 2025-12-08
+
+### Added
+
+- **REST API Proxy** (`src/rest-proxy.js`): Expose all MCP tools over HTTP for ChatGPT and web integration
+  - `GET /health` - Health check with status
+  - `GET /status` - Server info with example queries
+  - `GET /tools` - List available endpoints
+  - `POST /query` - Query knowledge base
+  - `POST /search` - Hybrid search (keyword + semantic)
+  - `POST /best-practice` - Get recommendations
+  - `POST /analyze` - Analyze Mendix projects
+- **OpenAPI Specification** (`openapi.json`): Import into ChatGPT Actions for Custom GPT integration
+- **npm script**: `npm run rest` to start REST server on port 5050
+- REST API documentation in README
+
+### Changed
+
+- REST server gracefully handles missing vector store (keyword-only fallback)
+- Added process-level error handlers to prevent crashes
+
+---
+
 ## [2.5.0] - 2025-12-08
 
 ### Added

@@ -4,7 +4,7 @@
  * Uses a fusion algorithm to merge results from both search methods,
  * providing both exact keyword matching and semantic understanding.
  *
- * @version 2.3.0
+ * @version 2.4.0
  */
 
 import SearchEngine from '../core/SearchEngine.js';
@@ -15,8 +15,10 @@ const logger = new Logger('HybridSearch');
 
 export default class HybridSearch {
   constructor(options = {}) {
-    this.keywordWeight = options.keywordWeight || 0.6;
-    this.vectorWeight = options.vectorWeight || 0.4;
+    // With OpenAI embeddings, favor vector search (better semantic understanding)
+    // With local embeddings, favor keyword search (more reliable)
+    this.keywordWeight = options.keywordWeight || 0.4;
+    this.vectorWeight = options.vectorWeight || 0.6;
 
     this.keywordEngine = new SearchEngine();
     this.vectorStore = new VectorStore(options.vector || {});
@@ -49,7 +51,7 @@ export default class HybridSearch {
 
     // Flatten knowledge base for vector indexing - handle nested structures
     const documents = [];
-    
+
     for (const [fileName, fileContent] of Object.entries(knowledgeBase)) {
       this.flattenKnowledge(fileContent, fileName, documents);
     }
@@ -75,7 +77,7 @@ export default class HybridSearch {
    */
   flattenKnowledge(obj, category, documents, depth = 0) {
     if (!obj || typeof obj !== 'object' || depth > 5) return;
-    
+
     // Skip arrays at top level, but process array contents
     if (Array.isArray(obj)) {
       for (const item of obj) {
@@ -85,14 +87,15 @@ export default class HybridSearch {
       }
       return;
     }
-    
+
     // Check if this object looks like a knowledge entry (has title or meaningful content)
     const hasTitle = obj.title || obj.name;
     const hasContent = obj.description || obj.content || obj.definition || obj.summary;
-    
+
     if (hasTitle || hasContent) {
       const content = this.extractContent(obj);
-      if (content && content.length > 20) { // Only add if there's meaningful content
+      if (content && content.length > 20) {
+        // Only add if there's meaningful content
         documents.push({
           title: obj.title || obj.name || category,
           category,
@@ -102,13 +105,13 @@ export default class HybridSearch {
         });
       }
     }
-    
+
     // Recurse into nested objects (like 'categories', 'patterns', etc.)
     for (const [key, value] of Object.entries(obj)) {
       // Skip primitive values and certain metadata fields
       if (value === null || typeof value !== 'object') continue;
       if (['version_info', 'last_updated', 'official_docs'].includes(key)) continue;
-      
+
       // Recurse with the key as potential category context
       const newCategory = depth === 0 ? key : `${category}/${key}`;
       this.flattenKnowledge(value, newCategory, documents, depth + 1);
@@ -128,40 +131,56 @@ export default class HybridSearch {
     if (entry.definition) parts.push(entry.definition);
     if (entry.summary) parts.push(entry.summary);
     if (entry.overview) parts.push(entry.overview);
-    
+
     // Usage and context
     if (entry.when_to_use) parts.push(entry.when_to_use);
-    if (entry.use_cases) parts.push(Array.isArray(entry.use_cases) ? entry.use_cases.join(' ') : entry.use_cases);
+    if (entry.use_cases)
+      parts.push(Array.isArray(entry.use_cases) ? entry.use_cases.join(' ') : entry.use_cases);
     if (entry.purpose) parts.push(entry.purpose);
     if (entry.context) parts.push(entry.context);
-    
+
     // Best practices and tips
     if (entry.tips) parts.push(Array.isArray(entry.tips) ? entry.tips.join(' ') : entry.tips);
     if (entry.best_practices) {
-      parts.push(Array.isArray(entry.best_practices) ? entry.best_practices.join(' ') : entry.best_practices);
+      parts.push(
+        Array.isArray(entry.best_practices) ? entry.best_practices.join(' ') : entry.best_practices
+      );
     }
     if (entry.recommendations) {
-      parts.push(Array.isArray(entry.recommendations) ? entry.recommendations.join(' ') : entry.recommendations);
+      parts.push(
+        Array.isArray(entry.recommendations)
+          ? entry.recommendations.join(' ')
+          : entry.recommendations
+      );
     }
     if (entry.guidelines) parts.push(entry.guidelines);
-    
+
     // Technical details
     if (entry.syntax) parts.push(entry.syntax);
     if (entry.parameters) {
       if (Array.isArray(entry.parameters)) {
-        parts.push(entry.parameters.map(p => `${p.name || ''} ${p.description || ''}`).join(' '));
+        parts.push(entry.parameters.map((p) => `${p.name || ''} ${p.description || ''}`).join(' '));
       } else if (typeof entry.parameters === 'object') {
-        parts.push(Object.entries(entry.parameters).map(([k, v]) => `${k} ${v}`).join(' '));
+        parts.push(
+          Object.entries(entry.parameters)
+            .map(([k, v]) => `${k} ${v}`)
+            .join(' ')
+        );
       }
     }
     if (entry.return_type) parts.push(entry.return_type);
     if (entry.returns) parts.push(entry.returns);
-    
+
     // Code examples - very valuable for semantic search!
-    if (entry.example) parts.push(typeof entry.example === 'string' ? entry.example : JSON.stringify(entry.example));
+    if (entry.example)
+      parts.push(typeof entry.example === 'string' ? entry.example : JSON.stringify(entry.example));
     if (entry.examples) {
       if (Array.isArray(entry.examples)) {
-        parts.push(entry.examples.map(e => typeof e === 'string' ? e : (e.code || e.description || '')).join(' '));
+        parts.push(
+          entry.examples
+            .map((e) => (typeof e === 'string' ? e : e.code || e.description || ''))
+            .join(' ')
+        );
       } else {
         parts.push(entry.examples);
       }
@@ -169,41 +188,58 @@ export default class HybridSearch {
     if (entry.code) parts.push(entry.code);
     if (entry.code_snippet) parts.push(entry.code_snippet);
     if (entry.sample) parts.push(entry.sample);
-    
+
     // Related concepts - helps with semantic connections
-    if (entry.related) parts.push(Array.isArray(entry.related) ? entry.related.join(' ') : entry.related);
-    if (entry.related_topics) parts.push(Array.isArray(entry.related_topics) ? entry.related_topics.join(' ') : entry.related_topics);
-    if (entry.see_also) parts.push(Array.isArray(entry.see_also) ? entry.see_also.join(' ') : entry.see_also);
+    if (entry.related)
+      parts.push(Array.isArray(entry.related) ? entry.related.join(' ') : entry.related);
+    if (entry.related_topics)
+      parts.push(
+        Array.isArray(entry.related_topics) ? entry.related_topics.join(' ') : entry.related_topics
+      );
+    if (entry.see_also)
+      parts.push(Array.isArray(entry.see_also) ? entry.see_also.join(' ') : entry.see_also);
     if (entry.tags) parts.push(Array.isArray(entry.tags) ? entry.tags.join(' ') : entry.tags);
-    if (entry.keywords) parts.push(Array.isArray(entry.keywords) ? entry.keywords.join(' ') : entry.keywords);
-    
+    if (entry.keywords)
+      parts.push(Array.isArray(entry.keywords) ? entry.keywords.join(' ') : entry.keywords);
+
     // Troubleshooting and errors
-    if (entry.common_issues) parts.push(Array.isArray(entry.common_issues) ? entry.common_issues.join(' ') : entry.common_issues);
-    if (entry.errors) parts.push(Array.isArray(entry.errors) ? entry.errors.join(' ') : entry.errors);
+    if (entry.common_issues)
+      parts.push(
+        Array.isArray(entry.common_issues) ? entry.common_issues.join(' ') : entry.common_issues
+      );
+    if (entry.errors)
+      parts.push(Array.isArray(entry.errors) ? entry.errors.join(' ') : entry.errors);
     if (entry.troubleshooting) parts.push(entry.troubleshooting);
-    if (entry.gotchas) parts.push(Array.isArray(entry.gotchas) ? entry.gotchas.join(' ') : entry.gotchas);
-    if (entry.pitfalls) parts.push(Array.isArray(entry.pitfalls) ? entry.pitfalls.join(' ') : entry.pitfalls);
-    
+    if (entry.gotchas)
+      parts.push(Array.isArray(entry.gotchas) ? entry.gotchas.join(' ') : entry.gotchas);
+    if (entry.pitfalls)
+      parts.push(Array.isArray(entry.pitfalls) ? entry.pitfalls.join(' ') : entry.pitfalls);
+
     // Version info
     if (entry.mendix_version) parts.push(`Mendix version ${entry.mendix_version}`);
     if (entry.since_version) parts.push(`Available since ${entry.since_version}`);
     if (entry.deprecated_in) parts.push(`Deprecated in ${entry.deprecated_in}`);
-    
+
     // Steps and procedures
     if (entry.steps) {
       if (Array.isArray(entry.steps)) {
-        parts.push(entry.steps.map(s => typeof s === 'string' ? s : (s.description || s.action || '')).join(' '));
+        parts.push(
+          entry.steps
+            .map((s) => (typeof s === 'string' ? s : s.description || s.action || ''))
+            .join(' ')
+        );
       }
     }
     if (entry.procedure) parts.push(entry.procedure);
     if (entry.how_to) parts.push(entry.how_to);
-    
+
     // Notes and warnings
     if (entry.notes) parts.push(Array.isArray(entry.notes) ? entry.notes.join(' ') : entry.notes);
-    if (entry.warnings) parts.push(Array.isArray(entry.warnings) ? entry.warnings.join(' ') : entry.warnings);
+    if (entry.warnings)
+      parts.push(Array.isArray(entry.warnings) ? entry.warnings.join(' ') : entry.warnings);
     if (entry.important) parts.push(entry.important);
 
-    return parts.filter(p => p && p.length > 0).join(' ');
+    return parts.filter((p) => p && p.length > 0).join(' ');
   }
 
   /**
@@ -248,7 +284,8 @@ export default class HybridSearch {
 
     // Score keyword results
     keywordResults.forEach((result, rank) => {
-      const title = this.extractTitle(result.entry) || result.title || `${result.category || 'item'}-${rank}`;
+      const title =
+        this.extractTitle(result.entry) || result.title || `${result.category || 'item'}-${rank}`;
       const id = title;
       const rrfScore = this.keywordWeight / (k + rank + 1);
       scores.set(id, (scores.get(id) || 0) + rrfScore);
@@ -306,30 +343,40 @@ export default class HybridSearch {
    */
   extractTitle(entry) {
     if (!entry) return null;
-    
+
     // Try common title fields in order of preference
     const titleFields = [
-      'title', 'topic', 'name', 'practice', 'pattern_name', 'problem', 
-      'feature', 'scenario', 'issue', 'question', 'rule', 'technique'
+      'title',
+      'topic',
+      'name',
+      'practice',
+      'pattern_name',
+      'problem',
+      'feature',
+      'scenario',
+      'issue',
+      'question',
+      'rule',
+      'technique',
     ];
-    
+
     for (const field of titleFields) {
       if (entry[field] && typeof entry[field] === 'string') {
         return entry[field];
       }
     }
-    
+
     // Try nested structures
     if (entry.pattern?.name) return entry.pattern.name;
     if (entry._metadata?.title) return entry._metadata.title;
-    
+
     // Fall back to first string value
     for (const value of Object.values(entry)) {
       if (typeof value === 'string' && value.length > 3 && value.length < 100) {
         return value;
       }
     }
-    
+
     return null;
   }
 

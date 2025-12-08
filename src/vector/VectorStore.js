@@ -1,9 +1,10 @@
 /**
  * VectorStore - Pinecone-based semantic search for Mendix knowledge
  *
- * Supports two embedding modes:
- * 1. OpenAI text-embedding-3-small (1536 dims) - Best quality, requires API key
- * 2. Local TF-IDF (384 dims) - Free fallback, decent quality
+ * Supports three embedding modes:
+ * 1. Azure OpenAI text-embedding-ada-002 (1536 dims) - Best quality, requires Azure key
+ * 2. OpenAI text-embedding-3-small (1536 dims) - Best quality, requires API key
+ * 3. Local TF-IDF (384 dims) - Free fallback, decent quality
  *
  * @version 2.4.0
  */
@@ -13,6 +14,64 @@ import { createHash } from 'crypto';
 import Logger from '../utils/logger.js';
 
 const logger = new Logger('VectorStore');
+
+/**
+ * Azure OpenAI Embeddings - High quality semantic embeddings via Azure
+ */
+class AzureOpenAIEmbedder {
+  constructor() {
+    this.dimension = 1536; // text-embedding-ada-002 dimension
+    this.apiKey = process.env.AZURE_OPENAI_API_KEY;
+    this.endpoint = process.env.AZURE_OPENAI_ENDPOINT || 'https://api.openai.azure.com';
+    this.deploymentName = process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002';
+    this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-01';
+    this.batchSize = 16; // Azure has lower batch limits
+  }
+
+  isAvailable() {
+    return !!this.apiKey && !!this.endpoint;
+  }
+
+  /**
+   * Generate embeddings for a batch of texts
+   */
+  async embedBatch(texts) {
+    if (!this.isAvailable()) {
+      throw new Error('Azure OpenAI not configured');
+    }
+
+    const url = `${this.endpoint}/openai/deployments/${this.deploymentName}/embeddings?api-version=${this.apiVersion}`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'api-key': this.apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        input: texts,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Azure OpenAI API error: ${response.status} - ${error}`);
+    }
+
+    const data = await response.json();
+    return data.data.map((item) => item.embedding);
+  }
+
+  /**
+   * Generate embedding for single text
+   */
+  async embed(text) {
+    const embeddings = await this.embedBatch([text]);
+    return embeddings[0];
+  }
+
+  buildVocabulary() {}
+}
 
 /**
  * OpenAI Embeddings - High quality semantic embeddings
@@ -40,7 +99,7 @@ class OpenAIEmbedder {
     const response = await fetch('https://api.openai.com/v1/embeddings', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
+        Authorization: `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -55,7 +114,7 @@ class OpenAIEmbedder {
     }
 
     const data = await response.json();
-    return data.data.map(item => item.embedding);
+    return data.data.map((item) => item.embedding);
   }
 
   /**
@@ -175,12 +234,21 @@ export default class VectorStore {
   constructor(options = {}) {
     this.indexName = options.indexName || 'mendix-knowledge';
     this.namespace = options.namespace || 'default';
-    
-    // Try OpenAI first (better quality), fall back to local
+
+    // Try Azure OpenAI first, then standard OpenAI, fall back to local
+    this.azureEmbedder = new AzureOpenAIEmbedder();
     this.openaiEmbedder = new OpenAIEmbedder();
     this.localEmbedder = new LocalEmbedder();
-    
-    if (this.openaiEmbedder.isAvailable()) {
+
+    if (this.azureEmbedder.isAvailable()) {
+      this.embedder = this.azureEmbedder;
+      this.dimension = 1536;
+      this.embeddingMode = 'azure-openai';
+      logger.info('Using Azure OpenAI embeddings (high quality)', {
+        endpoint: this.azureEmbedder.endpoint,
+        deployment: this.azureEmbedder.deploymentName,
+      });
+    } else if (this.openaiEmbedder.isAvailable()) {
       this.embedder = this.openaiEmbedder;
       this.dimension = 1536;
       this.embeddingMode = 'openai';
@@ -191,12 +259,15 @@ export default class VectorStore {
       this.embeddingMode = 'local';
       logger.info('Using local TF-IDF embeddings (no OpenAI key found)');
     }
-    
+
     this.pinecone = null;
     this.index = null;
     this.initialized = false;
 
-    logger.info('VectorStore created', { indexName: this.indexName, embeddingMode: this.embeddingMode });
+    logger.info('VectorStore created', {
+      indexName: this.indexName,
+      embeddingMode: this.embeddingMode,
+    });
   }
 
   /**
@@ -286,48 +357,52 @@ export default class VectorStore {
     this.embedder.buildVocabulary(documents);
 
     // Filter documents with content
-    const validDocs = documents.filter(doc => {
+    const validDocs = documents.filter((doc) => {
       const content = doc.content || doc.text || doc.title || '';
       return content.trim().length > 10; // Need at least 10 chars
     });
 
-    logger.info('Processing documents', { 
-      total: documents.length, 
+    logger.info('Processing documents', {
+      total: documents.length,
       withContent: validDocs.length,
-      mode: this.embeddingMode 
+      mode: this.embeddingMode,
     });
 
-    // Prepare vectors - handle async for OpenAI
+    // Prepare vectors - handle async for OpenAI/Azure
     const vectors = [];
-    const batchSize = this.embeddingMode === 'openai' ? 50 : 100;
-    
+    const isCloudEmbedding =
+      this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
+    const batchSize =
+      this.embeddingMode === 'azure-openai' ? 16 : this.embeddingMode === 'openai' ? 50 : 100;
+
     for (let i = 0; i < validDocs.length; i += batchSize) {
       const batch = validDocs.slice(i, i + batchSize);
-      const texts = batch.map(doc => doc.content || doc.text || doc.title);
-      
+      const texts = batch.map((doc) => doc.content || doc.text || doc.title);
+
       let embeddings;
-      if (this.embeddingMode === 'openai') {
-        // Batch embedding for OpenAI (faster)
+      if (isCloudEmbedding) {
+        // Batch embedding for OpenAI/Azure (faster)
         try {
-          embeddings = await this.openaiEmbedder.embedBatch(texts);
+          embeddings = await this.embedder.embedBatch(texts);
         } catch (error) {
-          logger.error('OpenAI embedding failed, falling back to local', { error: error.message });
+          logger.error('Cloud embedding failed, falling back to local', { error: error.message });
           // Fall back to local for this batch
-          embeddings = texts.map(t => this.localEmbedder.embed(t));
+          this.localEmbedder.buildVocabulary(batch);
+          embeddings = texts.map((t) => this.localEmbedder.embed(t));
         }
       } else {
         // Local embeddings (synchronous)
-        embeddings = texts.map(t => this.localEmbedder.embed(t));
+        embeddings = texts.map((t) => this.localEmbedder.embed(t));
       }
-      
+
       for (let j = 0; j < batch.length; j++) {
         const doc = batch[j];
         const embedding = embeddings[j];
-        
+
         // Check if vector has any non-zero values
         const hasContent = embedding.some((v) => v !== 0);
         if (!hasContent) continue;
-        
+
         vectors.push({
           id: this.generateId(doc),
           values: embedding,
@@ -340,11 +415,11 @@ export default class VectorStore {
           },
         });
       }
-      
-      logger.info('Embedded batch', { 
-        batch: Math.floor(i / batchSize) + 1, 
+
+      logger.info('Embedded batch', {
+        batch: Math.floor(i / batchSize) + 1,
         total: Math.ceil(validDocs.length / batchSize),
-        vectors: vectors.length
+        vectors: vectors.length,
       });
     }
 
@@ -386,13 +461,16 @@ export default class VectorStore {
       }
     }
 
-    // Get query embedding (async for OpenAI, sync for local)
+    // Get query embedding (async for OpenAI/Azure, sync for local)
     let queryVector;
-    if (this.embeddingMode === 'openai') {
+    const isCloudEmbedding =
+      this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
+
+    if (isCloudEmbedding) {
       try {
-        queryVector = await this.openaiEmbedder.embed(query);
+        queryVector = await this.embedder.embed(query);
       } catch (error) {
-        logger.warn('OpenAI query embedding failed, using local', { error: error.message });
+        logger.warn('Cloud query embedding failed, using local', { error: error.message });
         queryVector = this.localEmbedder.embed(query);
       }
     } else {

@@ -1,9 +1,10 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.3.0-blue.svg" alt="Version 2.3.0">
+  <img src="https://img.shields.io/badge/version-2.4.1-blue.svg" alt="Version 2.4.1">
   <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node >= 18">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License">
   <img src="https://img.shields.io/badge/MCP-compatible-purple.svg" alt="MCP Compatible">
   <img src="https://img.shields.io/badge/Pinecone-vector%20search-orange.svg" alt="Pinecone Vector Search">
+  <img src="https://img.shields.io/badge/Azure%20OpenAI-embeddings-0078D4.svg" alt="Azure OpenAI Embeddings">
 </p>
 
 # 🧠 Mendix Expert MCP Server
@@ -228,9 +229,9 @@ Scheduled Crawler → docs.mendix.com → Parse → Add to Knowledge Base
 
 ---
 
-## 🔮 Vector Search (NEW in v2.3.0!)
+## 🔮 Vector Search (Enhanced in v2.4.0!)
 
-The server now includes **semantic vector search** using Pinecone! This means you can search by **meaning**, not just keywords.
+The server includes **semantic vector search** using Pinecone with **Azure OpenAI embeddings**! This means you can search by **meaning**, not just keywords.
 
 ### Why Vector Search?
 
@@ -240,18 +241,41 @@ The server now includes **semantic vector search** using Pinecone! This means yo
 | Exact match required        | Semantic understanding                                        |
 | "loop" won't find "iterate" | "loop" finds "iterate", "forEach", "while"                    |
 
-### Setup (Optional)
+### Setup
 
-Vector search requires a **free Pinecone account**:
+Vector search requires **Pinecone** (vector database) and **OpenAI** (embeddings):
+
+#### 1. Pinecone (Required for Vector Search)
 
 1. Sign up at [pinecone.io](https://www.pinecone.io) (free tier: 100K vectors)
-2. Create an API key
+2. Create an index named `mendix-knowledge` with **1536 dimensions** (for OpenAI embeddings)
 3. Add to your `.env` file:
    ```
-   PINECONE_API_KEY=your_key_here
+   PINECONE_API_KEY=your_pinecone_key
+   PINECONE_INDEX=mendix-knowledge
    ```
 
-**Without Pinecone:** Server works fine with keyword search only!
+#### 2. Azure OpenAI (Recommended - Faster!)
+
+1. Create an Azure OpenAI resource in Azure Portal
+2. Deploy `text-embedding-3-small` model (name it `embed3s` or similar)
+3. Add to your `.env` file:
+   ```
+   AZURE_OPENAI_API_KEY=your_azure_key
+   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+   AZURE_OPENAI_EMBEDDING_DEPLOYMENT=embed3s
+   ```
+
+#### 3. Standard OpenAI (Fallback)
+
+If you don't have Azure, you can use standard OpenAI:
+```
+OPENAI_API_KEY=sk-proj-your_key_here
+```
+
+**Priority Order:** Azure OpenAI → Standard OpenAI → Local TF-IDF (fallback)
+
+**Without any API keys:** Server works fine with keyword search only!
 
 ### Usage
 
@@ -274,10 +298,10 @@ Vector search requires a **free Pinecone account**:
 ```
 User Query: "loop through entities"
     │
-    ├─→ Keyword Search (60% weight)
+    ├─→ Keyword Search (40% weight)
     │      Finds: "loop", "entity", "iterate"
     │
-    └─→ Vector Search (40% weight)
+    └─→ Vector Search (60% weight)
            Finds: "forEach", "list iteration", "aggregate"
     │
     └─→ Reciprocal Rank Fusion
@@ -460,19 +484,88 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
-### Recent Updates (v2.2.0)
+### Recent Updates (v2.4.1)
+
+- 🔧 **Self-Learning Pipeline Fix** - `add_to_knowledge_base` now updates vector store
+- 🔧 **Harvester Integration** - Auto-harvest now re-indexes vectors after adding new knowledge
+- 📚 **Documentation** - Updated README with Azure OpenAI setup and maintenance guide
+
+### v2.4.0
+
+- 🧠 **Azure OpenAI Embeddings** - 3x faster than standard OpenAI (355ms vs 971ms)
+- 🔮 **Enhanced Semantic Search** - 1536-dimension vectors for better understanding
+- ⚖️ **Rebalanced Weights** - 40% keyword / 60% vector for optimal results
+- 🔄 **Embedding Fallback Chain** - Azure → OpenAI → Local TF-IDF
+
+### v2.3.0
+
+- 🔮 **Vector Search** - Semantic search using Pinecone
+- 🎯 **Hybrid Search** - Combined keyword + vector with RRF fusion
+- 📊 **316 Knowledge Vectors** - Full knowledge base indexed
+
+### v2.2.0
 
 - 🌾 **Knowledge Harvester** - Auto-crawl Mendix docs for fresh knowledge
 - ✅ Weekly auto-harvest from official documentation
 - ✅ Priority topic targeting (Maia, page variables, workflows 2.0)
 - ✅ Release notes parser for Studio Pro 10.x, 11.x
-- ✅ Phase 2 roadmap with Pinecone vector search planned
 
 ### v2.1.0
 
 - ✅ Fuzzy search with Levenshtein distance
 - ✅ Analytics tracking with knowledge gap detection
 - ✅ Auto-maintenance scheduler
+
+---
+
+## 🔧 Maintenance Guide
+
+### Keeping the Knowledge Base Current
+
+The MCP server is designed to be **self-maintaining**:
+
+| Feature | How It Works | Frequency |
+|---------|--------------|-----------|
+| **Auto-Harvest** | Crawls docs.mendix.com for new content | Weekly (every 7 days) |
+| **Self-Learning** | Saves solutions discovered during research | On every discovery |
+| **Vector Re-Index** | Updates semantic embeddings when knowledge changes | Automatic |
+
+### Manual Maintenance Tasks
+
+1. **Trigger Manual Harvest**
+   ```bash
+   @mendix-expert harvest
+   ```
+
+2. **Re-index Vectors** (if search seems off)
+   ```bash
+   @mendix-expert reindex_vectors
+   ```
+
+3. **Check Index Health**
+   ```bash
+   @mendix-expert vector_status
+   ```
+
+4. **Sync with GitHub** (if running on multiple machines)
+   ```bash
+   @mendix-expert sync_mcp_server
+   ```
+
+### Monitoring
+
+- **Hit Rate**: Should be >90% (check via `@mendix-expert hello`)
+- **Vector Count**: Should match knowledge entry count (~300+)
+- **Last Harvest**: Check `harvest_status` - should be <7 days old
+
+### Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Search results seem wrong | Run `reindex_vectors` |
+| Missing new Mendix features | Run `harvest` to fetch latest docs |
+| Slow embeddings | Check if Azure OpenAI key is configured (faster than standard OpenAI) |
+| No vector results | Verify `PINECONE_API_KEY` is set in `.env` |
 - ✅ Web suggestions for missed queries
 - ✅ Staleness detection for old entries
 - ✅ GitHub sync reminder system

@@ -59,7 +59,7 @@ logger.info('Starting Mendix Expert MCP Server v2.3.0 (SDK v1.x)');
 // Create server with new McpServer API
 const server = new McpServer({
   name: config.get('server.name', 'mendix-expert'),
-  version: config.get('server.version', '2.3.0'),
+  version: config.get('server.version', '2.4.1'),
 });
 
 // Initialize core components
@@ -80,6 +80,10 @@ harvestScheduler.initialize().catch((err) => {
 // Initialize vector search (Phase 2 - semantic search)
 const vectorStore = new VectorStore();
 const hybridSearch = new HybridSearch();
+
+// Link harvester to hybrid search for automatic vector re-indexing
+harvestScheduler.hybridSearch = hybridSearch;
+harvestScheduler.knowledgeManager = knowledgeManager;
 
 // Initialize vector store in background (don't block startup)
 vectorStore
@@ -810,10 +814,23 @@ server.tool(
         verified,
       });
 
-      // Reload knowledge base and re-index
+      // Reload knowledge base and re-index (keyword + vector)
       await knowledgeManager.reload();
       searchEngine.clear();
       searchEngine.indexKnowledgeBase(knowledgeManager.knowledgeBase);
+      
+      // Re-index vectors for semantic search (critical for self-learning)
+      let vectorStatus = 'Vector indexing skipped (not available)';
+      if (hybridSearch) {
+        try {
+          await hybridSearch.indexKnowledgeBase(knowledgeManager.knowledgeBase);
+          vectorStatus = 'Vector embeddings updated ✓';
+          logger.info('Vector store re-indexed after knowledge addition');
+        } catch (vectorError) {
+          vectorStatus = `Vector indexing failed: ${vectorError.message}`;
+          logger.warn('Vector re-indexing failed', { error: vectorError.message });
+        }
+      }
 
       return {
         content: [
@@ -825,7 +842,8 @@ server.tool(
               }.\n\n` +
               `📋 **Entry ID:** ${result.id}\n` +
               `⭐ **Quality Score:** ${(result.qualityScore * 100).toFixed(0)}%\n` +
-              `🔄 **Status:** Knowledge base reloaded and re-indexed\n\n` +
+              `🔄 **Status:** Knowledge base reloaded and re-indexed\n` +
+              `🧠 **Semantic:** ${vectorStatus}\n\n` +
               `The new information is now available for queries. The system just got smarter! 🧠`,
           },
         ],

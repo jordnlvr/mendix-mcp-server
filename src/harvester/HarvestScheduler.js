@@ -17,10 +17,14 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 class HarvestScheduler {
-  constructor(knowledgeBasePath) {
+  constructor(knowledgeBasePath, options = {}) {
     this.knowledgeBasePath = knowledgeBasePath || path.join(__dirname, '../../knowledge');
     this.stateFile = path.join(this.knowledgeBasePath, 'harvest-state.json');
     this.harvester = new KnowledgeHarvester(this.knowledgeBasePath);
+
+    // Optional: reference to hybrid search for vector re-indexing after harvest
+    this.hybridSearch = options.hybridSearch || null;
+    this.knowledgeManager = options.knowledgeManager || null;
 
     // Harvest every 7 days by default
     this.harvestIntervalDays = 7;
@@ -141,6 +145,18 @@ class HarvestScheduler {
       };
       this.state.totalHarvests++;
       this.state.nextScheduledHarvest = this.getNextHarvestDate();
+
+      // Re-index vectors for semantic search if available
+      if (this.hybridSearch && this.knowledgeManager && results.newEntries.length > 0) {
+        console.log('\n🧠 Updating semantic search vectors...');
+        try {
+          await this.knowledgeManager.reload();
+          await this.hybridSearch.indexKnowledgeBase(this.knowledgeManager.knowledgeBase);
+          console.log('✅ Vector embeddings updated with new knowledge');
+        } catch (vectorError) {
+          console.warn('⚠️ Vector re-indexing failed:', vectorError.message);
+        }
+      }
 
       console.log('\n✅ Harvest completed successfully!\n');
 

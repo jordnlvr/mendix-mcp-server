@@ -116,6 +116,67 @@ In your AI chat:
 | `analyze_project`        | Analyze a `.mpr` file or extracted project directory |
 | `get_best_practice`      | Get recommendations for specific scenarios           |
 | `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)      |
+| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)        |
+| `harvest`                | 🌾 **NEW!** Crawl Mendix docs for fresh knowledge    |
+| `harvest_status`         | Check harvest status and available sources           |
+| `hello`                  | Get a welcome screen with status and examples        |
+
+---
+
+## 🌾 Knowledge Harvester (NEW!)
+
+The server can automatically crawl official Mendix documentation to stay up-to-date!
+
+### How It Works
+
+```
+Scheduled Crawler → docs.mendix.com → Parse → Add to Knowledge Base
+                                                      ↓
+                              User Query → TF-IDF Search → Results
+```
+
+### Sources Indexed
+
+| Source | Content | Priority |
+|--------|---------|----------|
+| Studio Pro Release Notes | 10.x, 11.x changelogs | High |
+| Reference Guide | Pages, domain model, microflows | High |
+| How-To Guides | Front-end, integration, extensibility | Medium |
+| Studio Pro Guide | Page variables, Maia, workflows | High |
+| SDK Documentation | Platform SDK, Model SDK | High |
+| API Documentation | REST, OData, web services | Medium |
+
+### Priority Topics Auto-Harvested
+
+- ✅ Page Variables (new in 10.0+)
+- ✅ Workflows 2.0
+- ✅ Maia AI Assistant
+- ✅ Atlas UI 3.x / Design Tokens
+- ✅ Pluggable Widgets API
+- ✅ Studio Pro Extensions
+- ✅ Platform & Model SDK patterns
+
+### Usage
+
+```bash
+# Harvest all sources
+@mendix-expert harvest
+
+# Harvest specific sources
+@mendix-expert harvest sources=["releaseNotes", "mxsdk"]
+
+# Check harvest status
+@mendix-expert harvest_status
+
+# Dry run (preview without saving)
+@mendix-expert harvest dryRun=true
+```
+
+### Auto-Harvest Schedule
+
+- Runs automatically every **7 days**
+- Can be triggered manually anytime
+- Rebuilds search index after adding new knowledge
 
 ---
 
@@ -186,14 +247,36 @@ Finds variations:
 
 The server maintains itself with scheduled tasks:
 
-| Task            | Frequency     | Purpose                 |
-| --------------- | ------------- | ----------------------- |
-| Validation      | Every 7 days  | Check knowledge quality |
-| Staleness Check | Every 7 days  | Find outdated entries   |
-| Cache Cleanup   | Daily         | Clear expired cache     |
-| Analytics Reset | Every 14 days | Archive and reset stats |
+| Task              | Frequency     | Purpose                         |
+| ----------------- | ------------- | ------------------------------- |
+| Validation        | Every 7 days  | Check knowledge quality         |
+| Staleness Check   | Every 7 days  | Find outdated entries           |
+| Cache Cleanup     | Daily         | Clear expired cache             |
+| Analytics Reset   | Every 14 days | Archive and reset stats         |
+| **Knowledge Harvest** | **Every 7 days** | **Crawl Mendix docs for updates** |
 
 View status via `mendix://maintenance` resource.
+
+---
+
+## 🗺️ Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the enhancement roadmap.
+
+### Phase 1: Knowledge Harvester ✅ COMPLETE
+- Auto-crawl Mendix documentation
+- Weekly auto-updates
+- Priority topic targeting (Maia, page variables, etc.)
+
+### Phase 2: Vector Search 🔮 PLANNED
+- Pinecone integration for semantic search
+- Hybrid keyword + vector search
+- "How do I loop" finds "iteration patterns"
+
+### Phase 3: RAG Integration 🚀 FUTURE
+- Generated answers with context
+- Source citations
+- Conversation memory
 
 ---
 
@@ -267,13 +350,22 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
-### Recent Updates (v2.1.0)
+### Recent Updates (v2.2.0)
+
+- 🌾 **Knowledge Harvester** - Auto-crawl Mendix docs for fresh knowledge
+- ✅ Weekly auto-harvest from official documentation
+- ✅ Priority topic targeting (Maia, page variables, workflows 2.0)
+- ✅ Release notes parser for Studio Pro 10.x, 11.x
+- ✅ Phase 2 roadmap with Pinecone vector search planned
+
+### v2.1.0
 
 - ✅ Fuzzy search with Levenshtein distance
 - ✅ Analytics tracking with knowledge gap detection
 - ✅ Auto-maintenance scheduler
 - ✅ Web suggestions for missed queries
 - ✅ Staleness detection for old entries
+- ✅ GitHub sync reminder system
 
 ---
 

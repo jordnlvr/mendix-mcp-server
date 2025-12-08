@@ -446,7 +446,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 4,
+          "usage_count": 6,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -454,7 +454,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T01:35:24.405Z"
+          "last_used_at": "2025-12-08T04:03:09.944Z"
         }
       },
       {
@@ -482,7 +482,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 3,
+          "usage_count": 4,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -490,7 +490,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T01:35:18.752Z"
+          "last_used_at": "2025-12-08T04:02:58.242Z"
         }
       },
       {
@@ -527,7 +527,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 2,
+          "usage_count": 4,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -535,7 +535,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T01:35:18.752Z"
+          "last_used_at": "2025-12-08T04:03:09.944Z"
         }
       },
       {
@@ -647,7 +647,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 5,
+          "usage_count": 8,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -655,7 +655,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T01:35:24.405Z"
+          "last_used_at": "2025-12-08T04:03:09.943Z"
         }
       }
     ]

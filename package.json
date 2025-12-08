@@ -1,13 +1,14 @@
 {
   "name": "mendix-expert-mcp-server",
-  "version": "2.1.0",
-  "description": "Modular, scalable, self-learning MCP server for Mendix development knowledge with dynamic project analysis",
+  "version": "2.2.0",
+  "description": "Modular, scalable, self-learning MCP server for Mendix development knowledge with dynamic project analysis and auto-harvesting",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "test": "node --test tests/**/*.test.js",
+    "harvest": "node -e \"import('./src/harvester/index.js').then(m => new m.HarvestScheduler().harvestNow())\"",
     "legacy": "node server.js"
   },
   "keywords": [
@@ -24,8 +25,11 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.23.0",
+    "cheerio": "^1.1.2",
+    "dotenv": "^17.2.3",
     "fs-extra": "^11.2.0",
     "glob": "^10.3.10",
+    "node-fetch": "^3.3.2",
     "uuid": "^11.0.3",
     "zod": "^4.1.13"
   },

@@ -30,7 +30,12 @@
     {
       "concept": "Model Units",
       "description": "Files in Mendix project (.mpr is special, modules are folders)",
-      "types": ["Projects", "Modules", "Documents (pages, microflows, domain models)", "Folders"],
+      "types": [
+        "Projects",
+        "Modules",
+        "Documents (pages, microflows, domain models)",
+        "Folders"
+      ],
       "access_pattern": "Load unit → Navigate structure → Read/modify elements",
       "example": "const domainModel = await model.allDomainModels()[0].load();"
     },
@@ -131,8 +136,14 @@
         {
           "operation": "Create Association",
           "code": "const assoc = domainmodels.Association.createIn(domainModel); assoc.name = 'Customer_Order'; assoc.parent = customer; assoc.child = order; assoc.type = domainmodels.AssociationType.Reference; assoc.owner = domainmodels.AssociationOwner.Default;",
-          "types": ["Reference (1-*)", "ReferenceSet (*-*)"],
-          "ownership": ["Default", "Both"]
+          "types": [
+            "Reference (1-*)",
+            "ReferenceSet (*-*)"
+          ],
+          "ownership": [
+            "Default",
+            "Both"
+          ]
         },
         {
           "operation": "Read Entity Properties",
@@ -213,12 +224,23 @@
         {
           "operation": "Get Page Widgets",
           "code": "const widgets = page.widgets;",
-          "widget_types": ["DataGrid", "DataView", "Button", "TextBox", "ListView", "etc."]
+          "widget_types": [
+            "DataGrid",
+            "DataView",
+            "Button",
+            "TextBox",
+            "ListView",
+            "etc."
+          ]
         },
         {
           "operation": "Analyze Data Sources",
           "code": "if (dataGrid.dataSource instanceof pages.DatabaseSource) { const entity = dataGrid.dataSource.entity; }",
-          "source_types": ["DatabaseSource", "MicroflowSource", "AssociationSource"]
+          "source_types": [
+            "DatabaseSource",
+            "MicroflowSource",
+            "AssociationSource"
+          ]
         }
       ],
       "limitations": [
@@ -473,14 +495,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.95
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-08T04:03:04.429Z"
         }
       }
     ],
@@ -596,7 +619,10 @@
         "description": "Patterns for creating entities, attributes, associations, and other domain model elements",
         "entity_creation": {
           "basic_pattern": "const entity = domainmodels.Entity.createIn(domainModel);\nentity.name = 'MyEntity';\nentity.location = { x: 100, y: 100 };",
-          "required_properties": ["name", "location"],
+          "required_properties": [
+            "name",
+            "location"
+          ],
           "generalization_pattern": {
             "no_generalization": "const noGen = domainmodels.NoGeneralization.create(model);\nentity.generalization = noGen;",
             "with_generalization": "const gen = domainmodels.Generalization.create(model);\ngen.generalization = model.findEntityByQualifiedName('Module.ParentEntity');\nentity.generalization = gen;"
@@ -865,14 +891,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.7
+          "quality_score": 0.7,
+          "last_used_at": "2025-12-08T04:03:09.943Z"
         }
       }
     ],
@@ -975,14 +1002,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.7
+          "quality_score": 0.7,
+          "last_used_at": "2025-12-08T04:02:58.242Z"
         }
       }
     ],
@@ -1144,12 +1172,18 @@
       }
     ]
   },
-
   "community_resources_reference": {
     "note": "See sdk-community-resources.json for comprehensive community research",
-    "key_packages": ["@sefranke/sf-mendix-sdk-helper", "mxdocgen", "mfautolayout"],
+    "key_packages": [
+      "@sefranke/sf-mendix-sdk-helper",
+      "mxdocgen",
+      "mfautolayout"
+    ],
     "archive_source": "https://archive.ph/https://medium.com/mendix* (186 articles)",
-    "github_repos": ["engalar/MendixModelSDKDemo", "KevinVlaanderen/MxDocGen"],
+    "github_repos": [
+      "engalar/MendixModelSDKDemo",
+      "KevinVlaanderen/MxDocGen"
+    ],
     "research_date": "2025-01-10"
   }
 }

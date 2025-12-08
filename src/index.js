@@ -33,6 +33,12 @@ import MaintenanceScheduler from './utils/MaintenanceScheduler.js';
 import SyncReminder from './utils/SyncReminder.js';
 import WebFetcher from './utils/WebFetcher.js';
 
+// Harvester components (Phase 1)
+import { HarvestScheduler } from './harvester/index.js';
+
+// PHASE_2_TODO: Add vector search imports when ready
+// import { VectorStore } from './vector/VectorStore.js';
+
 // Initialize
 const logger = new Logger('Server');
 const config = getConfig();
@@ -60,6 +66,12 @@ const webFetcher = new WebFetcher({ enabled: true });
 const searchEngine = new SearchEngine();
 const qualityScorer = new QualityScorer();
 const syncReminder = new SyncReminder();
+
+// Initialize harvest scheduler (Phase 1 - auto-updates knowledge)
+const harvestScheduler = new HarvestScheduler();
+harvestScheduler.initialize().catch(err => {
+  logger.warn('HarvestScheduler initialization failed (non-critical)', { error: err.message });
+});
 
 // Initialize maintenance scheduler with all components
 const maintenanceScheduler = new MaintenanceScheduler({
@@ -135,6 +147,7 @@ server.tool(
 | 🎯 **Search Hit Rate** | ${hitRate}% |
 | ⚡ **Avg Response** | ${avgResponse}ms |
 | 🔄 **Last Sync** | ${typeof lastSync === 'string' ? lastSync.split('T')[0] : 'Never'} |
+| 🌾 **Next Harvest** | ${harvestScheduler.getStatus().nextScheduledHarvest} |
 
 ---
 
@@ -147,6 +160,8 @@ server.tool(
 | \`get_best_practice\` | Get recommendations for specific scenarios |
 | \`add_to_knowledge_base\` | Contribute new knowledge (I learn from every interaction!) |
 | \`sync_mcp_server\` | Sync with GitHub (pull updates, push your contributions) |
+| \`harvest\` | 🌾 **NEW!** Crawl Mendix docs for fresh knowledge |
+| \`harvest_status\` | Check harvest status and available sources |
 
 ---
 
@@ -595,6 +610,145 @@ server.tool(
         isError: true,
       };
     }
+  }
+);
+
+// Tool 6: Harvest Knowledge from Mendix Docs
+server.tool(
+  'harvest',
+  'Harvest fresh knowledge from official Mendix documentation. Crawls docs.mendix.com for release notes, guides, and tutorials to keep the knowledge base up-to-date.',
+  {
+    sources: z
+      .array(z.string())
+      .optional()
+      .describe(
+        'Specific sources to harvest (releaseNotes, refGuide, howTo, studioProGuide, apidocs, mxsdk). If not specified, harvests all sources.'
+      ),
+    dryRun: z
+      .boolean()
+      .optional()
+      .describe('If true, shows what would be harvested without saving'),
+  },
+  async ({ sources, dryRun = false }) => {
+    try {
+      logger.info('Starting knowledge harvest', { sources, dryRun });
+
+      const status = harvestScheduler.getStatus();
+      
+      if (status.isRunning) {
+        return {
+          content: [{
+            type: 'text',
+            text: '⏳ A harvest is already in progress. Please wait for it to complete.',
+          }],
+        };
+      }
+
+      let resultText = `# 🌾 Knowledge Harvest\n\n`;
+      resultText += dryRun ? '**DRY RUN** - No changes will be saved\n\n' : '';
+      resultText += `Starting harvest from Mendix documentation...\n\n`;
+
+      const result = await harvestScheduler.harvestNow({
+        sources,
+        dryRun,
+        verbose: false,
+      });
+
+      if (result.success) {
+        const r = result.results;
+        resultText += `## ✅ Harvest Complete!\n\n`;
+        resultText += `| Metric | Count |\n|--------|-------|\n`;
+        resultText += `| Sources processed | ${r.success.length} |\n`;
+        resultText += `| New entries added | ${r.newEntries.length} |\n`;
+        resultText += `| Entries updated | ${r.updatedEntries.length} |\n`;
+        resultText += `| Failed sources | ${r.failed.length} |\n`;
+
+        if (r.newEntries.length > 0) {
+          resultText += `\n### New Knowledge Added\n\n`;
+          r.newEntries.slice(0, 10).forEach(id => {
+            resultText += `- ${id}\n`;
+          });
+          if (r.newEntries.length > 10) {
+            resultText += `- _...and ${r.newEntries.length - 10} more_\n`;
+          }
+        }
+
+        if (r.failed.length > 0) {
+          resultText += `\n### ⚠️ Failed Sources\n\n`;
+          r.failed.forEach(f => {
+            resultText += `- ${f.source}: ${f.error}\n`;
+          });
+        }
+
+        resultText += `\n---\n`;
+        resultText += `💡 **Tip:** The server auto-harvests every ${status.harvestIntervalDays} days. `;
+        resultText += `Next scheduled: ${status.nextScheduledHarvest}\n`;
+
+        // Rebuild search index if we added new knowledge
+        if (!dryRun && r.newEntries.length > 0) {
+          resultText += `\n🔄 Rebuilding search index with new knowledge...\n`;
+          await knowledgeManager.loadKnowledgeBase();
+          searchEngine.indexKnowledgeBase(knowledgeManager.knowledgeBase);
+          resultText += `✅ Search index updated!\n`;
+        }
+      } else {
+        resultText += `## ❌ Harvest Failed\n\n`;
+        resultText += `Error: ${result.error || 'Unknown error'}\n`;
+      }
+
+      return { content: [{ type: 'text', text: resultText }] };
+    } catch (error) {
+      logger.error('Harvest failed', { error: error.message });
+      return {
+        content: [{ type: 'text', text: `❌ Harvest failed: ${error.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool 7: Harvest Status
+server.tool(
+  'harvest_status',
+  'Get the current status of the knowledge harvester, including last harvest date, next scheduled harvest, and available sources.',
+  {},
+  async () => {
+    const status = harvestScheduler.getStatus();
+
+    let statusText = `# 🌾 Harvest Status\n\n`;
+    statusText += `## Current State\n\n`;
+    statusText += `| Metric | Value |\n|--------|-------|\n`;
+    statusText += `| Status | ${status.isRunning ? '🔄 Running' : '✅ Idle'} |\n`;
+    statusText += `| Last Harvest | ${status.lastHarvest || 'Never'} |\n`;
+    statusText += `| Total Harvests | ${status.totalHarvests} |\n`;
+    statusText += `| Next Scheduled | ${status.nextScheduledHarvest} |\n`;
+    statusText += `| Auto-Harvest Interval | Every ${status.harvestIntervalDays} days |\n`;
+
+    if (status.lastResults) {
+      statusText += `\n## Last Harvest Results\n\n`;
+      statusText += `| Metric | Count |\n|--------|-------|\n`;
+      statusText += `| Sources succeeded | ${status.lastResults.success} |\n`;
+      statusText += `| Sources failed | ${status.lastResults.failed} |\n`;
+      statusText += `| New entries | ${status.lastResults.newEntries} |\n`;
+      statusText += `| Updated entries | ${status.lastResults.updatedEntries} |\n`;
+    }
+
+    statusText += `\n## Available Sources\n\n`;
+    statusText += `| Source | Name | Category | Priority |\n|--------|------|----------|----------|\n`;
+    status.availableSources.forEach(s => {
+      statusText += `| \`${s.key}\` | ${s.name} | ${s.category} | ${s.priority} |\n`;
+    });
+
+    statusText += `\n## Quick Commands\n\n`;
+    statusText += `- **Harvest all:** \`@mendix-expert harvest\`\n`;
+    statusText += `- **Harvest specific:** \`@mendix-expert harvest sources=["releaseNotes"]\`\n`;
+    statusText += `- **Dry run:** \`@mendix-expert harvest dryRun=true\`\n`;
+
+    // PHASE_2_TODO: Add vector search status when implemented
+    statusText += `\n---\n`;
+    statusText += `📋 **Roadmap:** See \`ROADMAP.md\` for Phase 2 (vector search) plans.\n`;
+
+    return { content: [{ type: 'text', text: statusText }] };
   }
 );
 

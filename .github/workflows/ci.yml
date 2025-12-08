@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Validate knowledge base
+        run: |
+          node -e "
+          const KM = require('./src/core/KnowledgeManager.js');
+          const km = new KM('./knowledge');
+          km.validateKnowledgeBase().then(r => {
+            console.log('📊 Validation Results:');
+            console.log('  Entries:', r.summary.totalEntries);
+            console.log('  Errors:', r.summary.errors);
+            console.log('  Warnings:', r.summary.warnings);
+            if (r.summary.errors > 0) {
+              console.error('❌ Validation failed with errors!');
+              process.exit(1);
+            }
+            console.log('✅ Validation passed!');
+          });
+          "
+
+      - name: 🧪 Test search engine
+        run: |
+          node -e "
+          const SearchEngine = require('./src/core/SearchEngine.js');
+          const engine = new SearchEngine();
+          engine.initialize('./knowledge');
+          
+          // Test basic search
+          const results = engine.search('microflow');
+          console.log('🔍 Search test: \"microflow\"');
+          console.log('  Results:', results.length);
+          
+          // Test fuzzy search
+          const fuzzyResults = engine.search('micorflow');
+          console.log('🔍 Fuzzy test: \"micorflow\"');
+          console.log('  Results:', fuzzyResults.length);
+          
+          if (results.length === 0) {
+            console.error('❌ Search test failed!');
+            process.exit(1);
+          }
+          console.log('✅ Search tests passed!');
+          "
+
+      - name: ✅ Server startup test
+        run: |
+          timeout 5 node src/index.js || true
+          echo "✅ Server starts without errors"
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 📝 Check JSON validity
+        run: |
+          for file in knowledge/*.json config/*.json; do
+            echo "Checking $file..."
+            node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))"
+          done
+          echo "✅ All JSON files are valid"

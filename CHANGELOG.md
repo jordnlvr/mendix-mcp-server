@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned
+
 - Web documentation auto-fetching
 - Knowledge base expansion
 - Additional Mendix SDK patterns
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.1.0] - 2025-12-07
 
 ### Added
+
 - **Fuzzy Search**: Levenshtein distance matching for typo tolerance (e.g., "micorflow" → "microflow")
 - **Analytics Tracking**: Hit rate, response times, top search terms, missed queries
 - **Auto-Maintenance Scheduler**: Periodic validation, staleness checks, cache cleanup
@@ -26,11 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **8 MCP Resources**: knowledge, stats, search, projects, validation, analytics, staleness, maintenance
 
 ### Changed
+
 - Increased fuzzy match distance to 2 for words 6+ characters
 - Improved synonym mappings (26 total Mendix-specific)
 - Enhanced stemming rules (7 suffix patterns)
 
 ### Performance
+
 - 92% hit rate
 - 2ms average response time
 - 177 knowledge entries indexed
@@ -41,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.0.0] - 2025-11-15
 
 ### Added
+
 - TF-IDF search engine with inverted index
 - Stemming support for better recall
 - Synonym expansion (MF→microflow, DM→domain model, etc.)
@@ -51,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Quality scoring for search results
 
 ### Changed
+
 - Complete rewrite from v1.x architecture
 - Migrated to ESM modules
 - New knowledge base JSON format
@@ -60,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-10-01
 
 ### Added
+
 - Initial MCP server implementation
 - Basic keyword search
 - Knowledge base structure

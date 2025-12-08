@@ -19,7 +19,7 @@ Be kind, be respectful, be helpful. We're all here to make Mendix development be
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - Git
 - VS Code (recommended)
 
@@ -153,6 +153,7 @@ type = feat|fix|docs|knowledge|refactor|test|chore
 ```
 
 Examples:
+
 - `feat: Add support for nanoflow search`
 - `knowledge: Add deployment troubleshooting entries`
 - `fix: Handle empty search queries gracefully`

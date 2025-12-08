@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Mendix Documentation
+    url: https://docs.mendix.com/
+    about: Official Mendix documentation for platform questions
+  - name: 🔧 Mendix Model SDK Docs
+    url: https://apidocs.rnd.mendix.com/modelsdk/latest/index.html
+    about: Official Mendix Model SDK API documentation
+  - name: 💬 Mendix Community
+    url: https://community.mendix.com/
+    about: Ask questions in the Mendix Community forum
+  - name: 🐙 MCP Protocol Spec
+    url: https://modelcontextprotocol.io/
+    about: Model Context Protocol specification and documentation

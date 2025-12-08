@@ -2,9 +2,9 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 2.1.x   | ✅ Current         |
+| Version | Supported              |
+| ------- | ---------------------- |
+| 2.1.x   | ✅ Current             |
 | 2.0.x   | ⚠️ Security fixes only |
 | < 2.0   | ❌ No longer supported |
 

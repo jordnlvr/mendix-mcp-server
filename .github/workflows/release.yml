@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run validation
+        run: |
+          node -e "
+          const KM = require('./src/core/KnowledgeManager.js');
+          const km = new KM('./knowledge');
+          km.validateKnowledgeBase().then(r => {
+            console.log('Entries:', r.summary.totalEntries);
+            console.log('Errors:', r.summary.errors);
+            if (r.summary.errors > 0) process.exit(1);
+          });
+          "
+
+      - name: 📊 Generate stats
+        id: stats
+        run: |
+          STATS=$(node -e "
+          const SE = require('./src/core/SearchEngine.js');
+          const e = new SE();
+          e.initialize('./knowledge');
+          const s = e.getStats();
+          console.log(JSON.stringify({
+            entries: s.totalEntries,
+            terms: s.uniqueTerms,
+            files: s.knowledgeFiles
+          }));
+          ")
+          echo "stats=$STATS" >> $GITHUB_OUTPUT
+
+      - name: 📝 Extract changelog
+        id: changelog
+        run: |
+          # Extract the latest version's changelog
+          VERSION=${GITHUB_REF#refs/tags/v}
+          CHANGELOG=$(awk "/## \[$VERSION\]/,/## \[/" CHANGELOG.md | head -n -1)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 🎉 Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "🧠 mendix-expert ${{ github.ref_name }}"
+          body: |
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ---
+            
+            ## 📊 Release Stats
+            
+            - **Knowledge Entries**: ${{ fromJson(steps.stats.outputs.stats).entries }}
+            - **Indexed Terms**: ${{ fromJson(steps.stats.outputs.stats).terms }}
+            - **Knowledge Files**: ${{ fromJson(steps.stats.outputs.stats).files }}
+            
+            ## 🚀 Quick Install
+            
+            ```bash
+            git clone https://github.com/jordnlvr/mendix-mcp-server.git
+            cd mendix-mcp-server
+            npm install
+            ```
+            
+            See [README.md](https://github.com/jordnlvr/mendix-mcp-server#readme) for full setup instructions.
+          draft: false
+          prerelease: false
+          generate_release_notes: true

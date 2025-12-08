@@ -1,15 +1,30 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.4.3-blue.svg" alt="Version 2.4.3">
-  <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg" alt="Node >= 18">
-  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License">
-  <img src="https://img.shields.io/badge/MCP-compatible-purple.svg" alt="MCP Compatible">
-  <img src="https://img.shields.io/badge/Pinecone-vector%20search-orange.svg" alt="Pinecone Vector Search">
-  <img src="https://img.shields.io/badge/Azure%20OpenAI-embeddings-0078D4.svg" alt="Azure OpenAI Embeddings">
+  <a href="https://www.npmjs.com/package/@jordnlvr/mendix-mcp-server"><img src="https://img.shields.io/npm/v/@jordnlvr/mendix-mcp-server.svg?style=flat-square" alt="npm version"></a>
+  <a href="https://www.npmjs.com/package/@jordnlvr/mendix-mcp-server"><img src="https://img.shields.io/npm/dm/@jordnlvr/mendix-mcp-server.svg?style=flat-square" alt="npm downloads"></a>
+  <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg?style=flat-square" alt="Node >= 18">
+  <img src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square" alt="MIT License">
+  <img src="https://img.shields.io/badge/MCP-compatible-purple.svg?style=flat-square" alt="MCP Compatible">
 </p>
 
 # 🧠 Mendix Expert MCP Server
 
 > **A self-learning, auto-researching MCP server that gives AI assistants deep Mendix expertise and grows smarter with every interaction.**
+
+[![npm install](https://nodei.co/npm/@jordnlvr/mendix-mcp-server.png?mini=true)](https://www.npmjs.com/package/@jordnlvr/mendix-mcp-server)
+
+---
+
+## 🚀 Quick Install
+
+```bash
+# Install globally
+npm install -g @jordnlvr/mendix-mcp-server
+
+# Or use with npx (no install needed)
+npx @jordnlvr/mendix-mcp-server
+```
+
+**📖 Full Documentation:** [jordnlvr.github.io/mendix-mcp-server](https://jordnlvr.github.io/mendix-mcp-server/)
 
 ---
 

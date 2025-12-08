@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.js",
   "bin": {
-    "mendix-mcp-server": "./bin/cli.js"
+    "mendix-mcp-server": "bin/cli.js"
   },
   "scripts": {
     "start": "node src/index.js",
@@ -36,7 +36,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jordnlvr/mendix-mcp-server.git"
+    "url": "git+https://github.com/jordnlvr/mendix-mcp-server.git"
   },
   "bugs": {
     "url": "https://github.com/jordnlvr/mendix-mcp-server/issues"

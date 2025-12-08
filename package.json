@@ -1,6 +1,6 @@
 {
   "name": "mendix-expert-mcp-server",
-  "version": "2.3.1",
+  "version": "2.4.0",
   "description": "Modular, scalable, self-learning MCP server for Mendix development knowledge with dynamic project analysis, auto-harvesting, and semantic vector search",
   "type": "module",
   "main": "src/index.js",

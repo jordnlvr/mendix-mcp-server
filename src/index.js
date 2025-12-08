@@ -69,7 +69,7 @@ const syncReminder = new SyncReminder();
 
 // Initialize harvest scheduler (Phase 1 - auto-updates knowledge)
 const harvestScheduler = new HarvestScheduler();
-harvestScheduler.initialize().catch(err => {
+harvestScheduler.initialize().catch((err) => {
   logger.warn('HarvestScheduler initialization failed (non-critical)', { error: err.message });
 });
 
@@ -226,6 +226,152 @@ Access via MCP resources protocol:
 
     return {
       content: [{ type: 'text', text: welcomeScreen }],
+    };
+  }
+);
+
+// Tool: Beast Mode - Returns the full research protocol as a prompt
+server.tool(
+  'beast_mode',
+  'Get the full "Beast Mode" research protocol - a detailed prompt you can give to any AI to make it research Mendix questions thoroughly and exhaustively.',
+  {
+    format: z
+      .enum(['prompt', 'instructions', 'brief'])
+      .optional()
+      .describe('Output format: "prompt" for copy-paste ready, "instructions" for explanation, "brief" for quick summary'),
+  },
+  async ({ format = 'prompt' }) => {
+    const beastModePrompt = `# 🔬 BEAST MODE: Mendix Research Protocol
+
+You are now in BEAST MODE. When researching Mendix questions, you must be **exhaustive, thorough, and relentless**. Do NOT give up easily. Do NOT say "I don't know" until you've tried EVERYTHING.
+
+## 🎯 Your Mission
+Find the answer by any means necessary. Search deep, search wide, and ALWAYS save what you learn.
+
+## 📚 TIER 1: Official Sources (Search First)
+1. **docs.mendix.com** - Official documentation, reference guides
+2. **docs.mendix.com/apidocs-mxsdk** - SDK API documentation  
+3. **docs.mendix.com/releasenotes** - Release notes, what's new
+4. **docs.mendix.com/refguide** - Studio Pro reference guide
+5. **academy.mendix.com** - Learning paths, tutorials
+
+## 💻 TIER 2: Code & Examples (Search Second)
+1. **github.com/mendix** - Official Mendix repos
+2. **github.com/mendix/sdk-demo** - SDK examples and patterns
+3. **npmjs.com** - Search for \`mendixmodelsdk\`, \`mendixplatformsdk\`
+4. **GitHub Code Search** - Search for actual implementations
+
+## 💬 TIER 3: Community (Search Third)
+1. **community.mendix.com** - Official forum
+2. **stackoverflow.com** - Tag: [mendix]
+3. **GitHub Issues** - mendix/* repo issues and discussions
+
+## 🗄️ TIER 4: Archives & Deep Cuts (When Desperate)
+1. **web.archive.org** - Wayback Machine for old/removed docs
+2. **Google cache** - Cached versions of pages
+3. **Reddit r/mendix** - Community discussions
+4. **YouTube** - Mendix official channel, tutorials
+
+## ⚠️ CRITICAL RULES
+
+### Version Awareness
+- ALWAYS check what Mendix version the info applies to
+- Studio Pro 10.x vs 11.x have MAJOR differences
+- SDK versions matter: check package.json compatibility
+- If unsure, ask user for their Mendix version
+
+### Research Depth
+- Don't stop at the first result
+- Cross-reference multiple sources
+- Look for actual code examples, not just descriptions
+- If docs are vague, search for real implementations
+
+### When You Find Something
+1. **Verify it** - Is it current? Does it match the user's version?
+2. **Test it mentally** - Does it make logical sense?
+3. **Save it** - Use \`add_to_knowledge_base\` to remember it forever
+4. **Cite it** - Tell the user where you found it
+
+## 🧠 MUST SAVE TO KNOWLEDGE BASE
+
+After finding ANY useful information, you MUST call:
+\`\`\`
+add_to_knowledge_base({
+  knowledge_file: "appropriate-file",
+  category: "appropriate-category",
+  content: "{ ... structured JSON ... }",
+  source: "URL or reference",
+  verified: true/false
+})
+\`\`\`
+
+This way, you'll know it next time without researching again!
+
+## 🚫 NEVER DO THIS
+- ❌ Say "I don't have information about that" without searching
+- ❌ Give outdated info without checking the version
+- ❌ Guess without researching
+- ❌ Stop after one failed search
+- ❌ Forget to save what you learn
+
+## ✅ ALWAYS DO THIS
+- ✅ Search AT LEAST 3 sources before giving up
+- ✅ Verify version compatibility
+- ✅ Provide code examples when possible
+- ✅ Cite your sources
+- ✅ Save findings to knowledge base
+- ✅ Admit uncertainty if sources conflict
+
+---
+
+**Remember: The knowledge base grows with every interaction. The more thorough you are, the smarter the system becomes for everyone.**
+
+*Now go find that answer!* 🚀`;
+
+    const briefVersion = `**Beast Mode** = Exhaustive Mendix research protocol:
+1. Search official docs (docs.mendix.com, API refs, release notes)
+2. Search code (GitHub mendix/*, npm packages, sdk-demo)
+3. Search community (forums, Stack Overflow, issues)
+4. Search archives (Wayback Machine, caches)
+5. ALWAYS verify version compatibility
+6. ALWAYS save findings to knowledge base
+
+**Never give up until you've tried all tiers!**`;
+
+    const instructionsVersion = `## What is Beast Mode?
+
+Beast Mode is a comprehensive research protocol that tells AI assistants exactly how to research Mendix questions. Instead of giving up when the AI doesn't immediately know something, Beast Mode instructs it to:
+
+1. **Search exhaustively** through multiple tiers of sources
+2. **Verify version compatibility** (Mendix 10.x vs 11.x matters!)
+3. **Find real code examples**, not just documentation
+4. **Save everything learned** to the knowledge base
+
+### Why It Exists
+
+Kelly got tired of typing the same research instructions every day. Now you just say "use beast mode" or paste the prompt, and the AI knows exactly how deep to dig.
+
+### How to Use It
+
+Copy the prompt output and paste it into any AI chat when you need deep Mendix research. Or just reference it: "Search using the beast mode protocol."`;
+
+    let response;
+    switch (format) {
+      case 'brief':
+        response = briefVersion;
+        break;
+      case 'instructions':
+        response = instructionsVersion;
+        break;
+      default:
+        response = beastModePrompt;
+    }
+
+    return {
+      content: [{
+        type: 'text',
+        text: `# 🔬 Beast Mode Research Protocol\n\n${response}\n\n---\n💡 **Tip:** Copy this prompt and paste it into any AI chat when you need thorough Mendix research!`
+      }],
     };
   }
 );
@@ -634,13 +780,15 @@ server.tool(
       logger.info('Starting knowledge harvest', { sources, dryRun });
 
       const status = harvestScheduler.getStatus();
-      
+
       if (status.isRunning) {
         return {
-          content: [{
-            type: 'text',
-            text: '⏳ A harvest is already in progress. Please wait for it to complete.',
-          }],
+          content: [
+            {
+              type: 'text',
+              text: '⏳ A harvest is already in progress. Please wait for it to complete.',
+            },
+          ],
         };
       }
 
@@ -665,7 +813,7 @@ server.tool(
 
         if (r.newEntries.length > 0) {
           resultText += `\n### New Knowledge Added\n\n`;
-          r.newEntries.slice(0, 10).forEach(id => {
+          r.newEntries.slice(0, 10).forEach((id) => {
             resultText += `- ${id}\n`;
           });
           if (r.newEntries.length > 10) {
@@ -675,7 +823,7 @@ server.tool(
 
         if (r.failed.length > 0) {
           resultText += `\n### ⚠️ Failed Sources\n\n`;
-          r.failed.forEach(f => {
+          r.failed.forEach((f) => {
             resultText += `- ${f.source}: ${f.error}\n`;
           });
         }
@@ -735,7 +883,7 @@ server.tool(
 
     statusText += `\n## Available Sources\n\n`;
     statusText += `| Source | Name | Category | Priority |\n|--------|------|----------|----------|\n`;
-    status.availableSources.forEach(s => {
+    status.availableSources.forEach((s) => {
       statusText += `| \`${s.key}\` | ${s.name} | ${s.category} | ${s.priority} |\n`;
     });
 

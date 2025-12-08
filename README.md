@@ -137,14 +137,14 @@ Scheduled Crawler → docs.mendix.com → Parse → Add to Knowledge Base
 
 ### Sources Indexed
 
-| Source | Content | Priority |
-|--------|---------|----------|
-| Studio Pro Release Notes | 10.x, 11.x changelogs | High |
-| Reference Guide | Pages, domain model, microflows | High |
-| How-To Guides | Front-end, integration, extensibility | Medium |
-| Studio Pro Guide | Page variables, Maia, workflows | High |
-| SDK Documentation | Platform SDK, Model SDK | High |
-| API Documentation | REST, OData, web services | Medium |
+| Source                   | Content                               | Priority |
+| ------------------------ | ------------------------------------- | -------- |
+| Studio Pro Release Notes | 10.x, 11.x changelogs                 | High     |
+| Reference Guide          | Pages, domain model, microflows       | High     |
+| How-To Guides            | Front-end, integration, extensibility | Medium   |
+| Studio Pro Guide         | Page variables, Maia, workflows       | High     |
+| SDK Documentation        | Platform SDK, Model SDK               | High     |
+| API Documentation        | REST, OData, web services             | Medium   |
 
 ### Priority Topics Auto-Harvested
 
@@ -247,12 +247,12 @@ Finds variations:
 
 The server maintains itself with scheduled tasks:
 
-| Task              | Frequency     | Purpose                         |
-| ----------------- | ------------- | ------------------------------- |
-| Validation        | Every 7 days  | Check knowledge quality         |
-| Staleness Check   | Every 7 days  | Find outdated entries           |
-| Cache Cleanup     | Daily         | Clear expired cache             |
-| Analytics Reset   | Every 14 days | Archive and reset stats         |
+| Task                  | Frequency        | Purpose                           |
+| --------------------- | ---------------- | --------------------------------- |
+| Validation            | Every 7 days     | Check knowledge quality           |
+| Staleness Check       | Every 7 days     | Find outdated entries             |
+| Cache Cleanup         | Daily            | Clear expired cache               |
+| Analytics Reset       | Every 14 days    | Archive and reset stats           |
 | **Knowledge Harvest** | **Every 7 days** | **Crawl Mendix docs for updates** |
 
 View status via `mendix://maintenance` resource.
@@ -264,16 +264,19 @@ View status via `mendix://maintenance` resource.
 See [ROADMAP.md](ROADMAP.md) for the enhancement roadmap.
 
 ### Phase 1: Knowledge Harvester ✅ COMPLETE
+
 - Auto-crawl Mendix documentation
 - Weekly auto-updates
 - Priority topic targeting (Maia, page variables, etc.)
 
 ### Phase 2: Vector Search 🔮 PLANNED
+
 - Pinecone integration for semantic search
 - Hybrid keyword + vector search
 - "How do I loop" finds "iteration patterns"
 
 ### Phase 3: RAG Integration 🚀 FUTURE
+
 - Generated answers with context
 - Source citations
 - Conversation memory

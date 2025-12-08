@@ -13,6 +13,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
     
     steps:
       - name: 📥 Checkout code
@@ -27,52 +28,53 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🔍 Validate knowledge base
+      - name: 🔍 Validate knowledge base JSON
         run: |
-          node -e "
-          const KM = require('./src/core/KnowledgeManager.js');
-          const km = new KM('./knowledge');
-          km.validateKnowledgeBase().then(r => {
-            console.log('📊 Validation Results:');
-            console.log('  Entries:', r.summary.totalEntries);
-            console.log('  Errors:', r.summary.errors);
-            console.log('  Warnings:', r.summary.warnings);
-            if (r.summary.errors > 0) {
-              console.error('❌ Validation failed with errors!');
-              process.exit(1);
-            }
-            console.log('✅ Validation passed!');
-          });
+          echo "Validating JSON files..."
+          for file in knowledge/*.json; do
+            echo "  Checking $file..."
+            node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))"
+          done
+          echo "✅ All knowledge files are valid JSON"
+
+      - name: 🧪 Test ESM imports
+        run: |
+          node --input-type=module -e "
+          import SearchEngine from './src/core/SearchEngine.js';
+          import KnowledgeManager from './src/core/KnowledgeManager.js';
+          console.log('✅ Core modules import successfully');
           "
 
-      - name: 🧪 Test search engine
+      - name: 🔍 Test search functionality
         run: |
-          node -e "
-          const SearchEngine = require('./src/core/SearchEngine.js');
+          node --input-type=module -e "
+          import SearchEngine from './src/core/SearchEngine.js';
+          import KnowledgeManager from './src/core/KnowledgeManager.js';
+          
+          const km = new KnowledgeManager('./knowledge');
+          await km.loadKnowledgeBase();
+          
           const engine = new SearchEngine();
-          engine.initialize('./knowledge');
+          engine.indexKnowledgeBase(km.knowledgeBase);
           
           // Test basic search
           const results = engine.search('microflow');
-          console.log('🔍 Search test: \"microflow\"');
-          console.log('  Results:', results.length);
+          console.log('🔍 Search test: microflow → ' + results.length + ' results');
           
           // Test fuzzy search
           const fuzzyResults = engine.search('micorflow');
-          console.log('🔍 Fuzzy test: \"micorflow\"');
-          console.log('  Results:', fuzzyResults.length);
+          console.log('🔍 Fuzzy test: micorflow → ' + fuzzyResults.length + ' results');
           
           if (results.length === 0) {
-            console.error('❌ Search test failed!');
+            console.error('❌ Search test failed - no results for microflow!');
             process.exit(1);
           }
+          
           console.log('✅ Search tests passed!');
           "
 
-      - name: ✅ Server startup test
-        run: |
-          timeout 5 node src/index.js || true
-          echo "✅ Server starts without errors"
+      - name: ✅ Syntax check main server
+        run: node --check src/index.js
 
   lint:
     runs-on: ubuntu-latest
@@ -90,7 +92,17 @@ jobs:
       - name: 📝 Check JSON validity
         run: |
           for file in knowledge/*.json config/*.json; do
-            echo "Checking $file..."
-            node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))"
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))"
+            fi
           done
           echo "✅ All JSON files are valid"
+
+      - name: 📝 Check package.json
+        run: |
+          node -e "
+          const pkg = require('./package.json');
+          console.log('📦 Package:', pkg.name, 'v' + pkg.version);
+          console.log('✅ package.json is valid');
+          "

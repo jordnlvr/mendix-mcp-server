@@ -658,6 +658,80 @@
           "last_used_at": "2025-12-08T04:03:09.943Z"
         }
       }
+    ],
+    "basic_usage": [
+      {
+        "title": "Platform SDK Project Analysis - Complete Walkthrough",
+        "description": "Step-by-step guide to analyze a Mendix project using Platform SDK - list modules, entities, attributes",
+        "steps": [
+          {
+            "step": 1,
+            "action": "Install dependencies",
+            "commands": [
+              "npm install mendixmodelsdk mendixplatformsdk --save",
+              "npm install typescript@~4.6.2 @types/node@^22 --save-dev"
+            ]
+          },
+          {
+            "step": 2,
+            "action": "Get your Personal Access Token",
+            "details": "Visit https://warden.mendix.com/v1/keys and create a PAT with 'mx:modelrepository:repo:write' scope",
+            "environment": "Set as environment variable: MENDIX_TOKEN=your-token-here"
+          },
+          {
+            "step": 3,
+            "action": "Create analysis script",
+            "filename": "analyze-project.ts",
+            "code": "import { MendixPlatformClient } from 'mendixplatformsdk';\nimport { domainmodels } from 'mendixmodelsdk';\n\nasync function analyzeProject(appId: string) {\n  const client = new MendixPlatformClient();\n  \n  // Get the app and create a temporary working copy\n  const app = await client.getApp(appId);\n  const workingCopy = await app.createTemporaryWorkingCopy('main');\n  const model = await workingCopy.openModel();\n  \n  console.log('\\nProject Analysis:');\n  console.log('=================');\n  \n  // Get all modules (excluding System module)\n  const modules = model.allModules().filter(m => m.name !== 'System');\n  console.log(`\\nFound ${modules.length} modules:\\n`);\n  \n  // Iterate through each module\n  for (const module of modules) {\n    console.log(`MODULE: ${module.name}`);\n    \n    // Get domain model for this module\n    const domainModel = module.domainModel;\n    if (!domainModel) continue;\n    \n    // Load the domain model to access entities\n    await domainModel.load();\n    \n    const entities = domainModel.entities;\n    console.log(`  Entities: ${entities.length}`);\n    \n    // List each entity and its attributes\n    for (const entity of entities) {\n      console.log(`\\n  ENTITY: ${entity.name}`);\n      \n      const attributes = entity.attributes;\n      console.log(`    Attributes: ${attributes.length}`);\n      \n      for (const attr of attributes) {\n        console.log(`      - ${attr.name} (${attr.type})`);\n      }\n    }\n    console.log('\\n' + '-'.repeat(50));\n  }\n}\n\n// Usage: node analyze-project.js YOUR-APP-ID\nconst appId = process.argv[2];\nif (!appId) {\n  console.error('Please provide an app ID');\n  process.exit(1);\n}\n\nanalyzeProject(appId).catch(err => {\n  console.error('Error:', err);\n  process.exit(1);\n});"
+          },
+          {
+            "step": 4,
+            "action": "Compile TypeScript",
+            "command": "tsc analyze-project.ts"
+          },
+          {
+            "step": 5,
+            "action": "Run the script",
+            "command": "node analyze-project.js YOUR-APP-ID",
+            "note": "Get YOUR-APP-ID from your app's General tab in Mendix Developer Portal"
+          }
+        ],
+        "key_concepts": {
+          "working_copy": "Temporary working copy allows reading the model without affecting the actual app",
+          "model_navigation": "Use model.allModules() to get all modules, then module.domainModel to access entities",
+          "loading": "Call .load() on units like domainModel before accessing their contents",
+          "filtering": "Exclude 'System' module as it cannot be read via SDK"
+        },
+        "common_patterns": {
+          "list_all_modules": "model.allModules().filter(m => m.name !== 'System')",
+          "get_domain_model": "module.domainModel",
+          "access_entities": "await domainModel.load(); const entities = domainModel.entities;",
+          "get_attributes": "entity.attributes"
+        },
+        "output_example": "MODULE: MyFirstModule\n  Entities: 3\n\n  ENTITY: Customer\n    Attributes: 5\n      - Name (String)\n      - Email (String)\n      - CreatedDate (DateTime)\n      - IsActive (Boolean)\n      - TotalOrders (Integer)",
+        "mendix_version": "11.5.0",
+        "sdk_versions": {
+          "mendixmodelsdk": "4.105.0",
+          "mendixplatformsdk": "5.2.0"
+        },
+        "_metadata": {
+          "id": "ab706429-dcc0-4f28-9895-274d2136f48f",
+          "added_at": "2025-12-08T04:05:26.082Z",
+          "source": "docs.mendix.com - Use the Platform SDK & Find Things in the Model",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
     ]
   }
 }

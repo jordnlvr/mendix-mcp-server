@@ -1,16 +1,16 @@
 /**
  * KnowledgeHarvester - Automatically fetches and indexes Mendix documentation
- * 
+ *
  * Phase 1: Crawl official Mendix sources and add to JSON knowledge base
  * Phase 2 (TODO): Add Pinecone vector embeddings for semantic search
- * 
+ *
  * @version 1.0.0
  * @author Kai SDK
  */
 
-import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 import fs from 'fs/promises';
+import fetch from 'node-fetch';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -46,31 +46,19 @@ const MENDIX_SOURCES = {
   howTo: {
     name: 'How-To Guides',
     baseUrl: 'https://docs.mendix.com/howto/',
-    sections: [
-      'front-end/',
-      'logic-business-rules/',
-      'integration/',
-      'mobile/',
-      'extensibility/',
-    ],
+    sections: ['front-end/', 'logic-business-rules/', 'integration/', 'mobile/', 'extensibility/'],
     category: 'tutorials',
     priority: 'medium',
   },
   studioProGuide: {
     name: 'Studio Pro Guide',
     baseUrl: 'https://docs.mendix.com/refguide/',
-    pages: [
-      'page-variables',
-      'workflows',
-      'maia',
-      'data-widgets',
-      'pluggable-widgets',
-    ],
+    pages: ['page-variables', 'workflows', 'maia', 'data-widgets', 'pluggable-widgets'],
     category: 'studio_pro',
     priority: 'high',
   },
   apidocs: {
-    name: 'API Documentation', 
+    name: 'API Documentation',
     baseUrl: 'https://docs.mendix.com/apidocs-mxsdk/apidocs/',
     category: 'api',
     priority: 'medium',
@@ -90,20 +78,20 @@ const PRIORITY_TOPICS = [
   { query: 'workflows 2.0', minVersion: '10.0', category: 'new_features' },
   { query: 'maia ai assistant', minVersion: '10.12', category: 'ai' },
   { query: 'mendix assist', minVersion: '9.0', category: 'ai' },
-  
+
   // Theming & Design
   { query: 'atlas ui 3', category: 'theming' },
   { query: 'design tokens', category: 'theming' },
   { query: 'custom themes sass', category: 'theming' },
   { query: 'design system', category: 'theming' },
-  
+
   // Development patterns
   { query: 'pluggable widgets api', category: 'widgets' },
   { query: 'widget development', category: 'widgets' },
   { query: 'studio pro extensions', category: 'extensions' },
   { query: 'platform sdk', category: 'sdk' },
   { query: 'model sdk', category: 'sdk' },
-  
+
   // Best practices
   { query: 'performance best practices', category: 'best_practices' },
   { query: 'security best practices', category: 'best_practices' },
@@ -128,11 +116,7 @@ class KnowledgeHarvester {
    * Main harvest function - crawls all configured sources
    */
   async harvest(options = {}) {
-    const { 
-      sources = Object.keys(MENDIX_SOURCES), 
-      dryRun = false,
-      verbose = true 
-    } = options;
+    const { sources = Object.keys(MENDIX_SOURCES), dryRun = false, verbose = true } = options;
 
     this.log('🌾 Starting Knowledge Harvest...', verbose);
     this.log(`   Sources: ${sources.join(', ')}`, verbose);
@@ -153,16 +137,16 @@ class KnowledgeHarvester {
       }
 
       this.log(`\n📖 Harvesting: ${source.name}...`, verbose);
-      
+
       try {
         const entries = await this.harvestSource(sourceKey, source, verbose);
-        
+
         if (!dryRun && entries.length > 0) {
           const saveResult = await this.saveEntries(entries, source.category);
           results.newEntries.push(...saveResult.new);
           results.updatedEntries.push(...saveResult.updated);
         }
-        
+
         results.success.push({ source: sourceKey, entries: entries.length });
         this.log(`   ✅ Harvested ${entries.length} entries from ${source.name}`, verbose);
       } catch (error) {
@@ -253,7 +237,7 @@ class KnowledgeHarvester {
    */
   async harvestReleaseNotes(url, verbose) {
     const entries = [];
-    
+
     try {
       const html = await this.fetchPage(url);
       if (!html) return entries;
@@ -265,11 +249,11 @@ class KnowledgeHarvester {
       $('h2, h3').each((i, el) => {
         const title = $(el).text().trim();
         const versionMatch = title.match(/(\d+\.\d+(\.\d+)?)/);
-        
+
         if (versionMatch) {
           const version = versionMatch[1];
           const content = [];
-          
+
           // Get content until next heading
           let next = $(el).next();
           while (next.length && !next.is('h2, h3')) {
@@ -320,18 +304,19 @@ class KnowledgeHarvester {
       this.stats.pagesScanned++;
 
       // Get page title
-      const pageTitle = $('h1').first().text().trim() || 
-                       $('title').text().replace(' | Mendix Documentation', '').trim();
+      const pageTitle =
+        $('h1').first().text().trim() ||
+        $('title').text().replace(' | Mendix Documentation', '').trim();
 
       // Get main content
       const mainContent = $('.mx-page-content, .content, main, article').first();
-      
+
       if (mainContent.length) {
         // Extract sections
         mainContent.find('h2, h3').each((i, el) => {
           const sectionTitle = $(el).text().trim();
           const sectionContent = [];
-          
+
           let next = $(el).next();
           while (next.length && !next.is('h2, h3')) {
             const text = next.text().trim();
@@ -385,12 +370,12 @@ class KnowledgeHarvester {
    */
   async harvestTopic(topic, verbose) {
     const entries = [];
-    
+
     // Use docs.mendix.com search
     const searchUrl = `https://docs.mendix.com/search/?q=${encodeURIComponent(topic.query)}`;
-    
+
     this.log(`   🔍 Searching: "${topic.query}"`, verbose);
-    
+
     try {
       // Note: This is a simplified approach. Real implementation would
       // need to handle the search results page or use an API if available
@@ -416,12 +401,15 @@ class KnowledgeHarvester {
             category: topic.category,
             source: link ? `https://docs.mendix.com${link}` : searchUrl,
             harvested: new Date().toISOString(),
-            tags: [topic.query, topic.category, ...(topic.minVersion ? [`v${topic.minVersion}+`] : [])],
+            tags: [
+              topic.query,
+              topic.category,
+              ...(topic.minVersion ? [`v${topic.minVersion}+`] : []),
+            ],
             minVersion: topic.minVersion,
           });
         }
       });
-
     } catch (error) {
       this.log(`      Search failed: ${error.message}`, verbose);
     }
@@ -437,7 +425,7 @@ class KnowledgeHarvester {
       const response = await fetch(url, {
         headers: {
           'User-Agent': 'MendixExpert-MCP-Harvester/1.0 (Knowledge Indexer)',
-          'Accept': 'text/html,application/xhtml+xml',
+          Accept: 'text/html,application/xhtml+xml',
         },
         timeout: 10000,
       });
@@ -458,9 +446,9 @@ class KnowledgeHarvester {
    */
   async saveEntries(entries, category) {
     const result = { new: [], updated: [] };
-    
+
     const filePath = path.join(this.knowledgeBasePath, `harvested-${category}.json`);
-    
+
     let existing = { metadata: {}, entries: [] };
     try {
       const content = await fs.readFile(filePath, 'utf-8');
@@ -469,14 +457,18 @@ class KnowledgeHarvester {
       // File doesn't exist yet
     }
 
-    const existingIds = new Set(existing.entries.map(e => e.id));
+    const existingIds = new Set(existing.entries.map((e) => e.id));
 
     for (const entry of entries) {
       if (existingIds.has(entry.id)) {
         // Update existing
-        const idx = existing.entries.findIndex(e => e.id === entry.id);
+        const idx = existing.entries.findIndex((e) => e.id === entry.id);
         if (idx !== -1) {
-          existing.entries[idx] = { ...existing.entries[idx], ...entry, updated: new Date().toISOString() };
+          existing.entries[idx] = {
+            ...existing.entries[idx],
+            ...entry,
+            updated: new Date().toISOString(),
+          };
           result.updated.push(entry.id);
         }
       } else {
@@ -495,7 +487,7 @@ class KnowledgeHarvester {
     };
 
     await fs.writeFile(filePath, JSON.stringify(existing, null, 2));
-    
+
     return result;
   }
 
@@ -504,7 +496,7 @@ class KnowledgeHarvester {
    */
   async saveHarvestLog() {
     const logPath = path.join(this.knowledgeBasePath, 'harvest-log.json');
-    
+
     let logs = [];
     try {
       const content = await fs.readFile(logPath, 'utf-8');
@@ -548,25 +540,25 @@ class KnowledgeHarvester {
 
     // Common Mendix terms to tag
     const termMap = {
-      'microflow': 'microflows',
-      'nanoflow': 'nanoflows',
+      microflow: 'microflows',
+      nanoflow: 'nanoflows',
       'domain model': 'domain-model',
-      'entity': 'entities',
-      'page': 'pages',
-      'widget': 'widgets',
-      'workflow': 'workflows',
-      'integration': 'integration',
-      'rest': 'rest-api',
-      'odata': 'odata',
-      'security': 'security',
-      'xpath': 'xpath',
-      'java': 'java',
-      'javascript': 'javascript',
-      'sdk': 'sdk',
-      'maia': 'maia-ai',
-      'atlas': 'atlas-ui',
-      'theme': 'theming',
-      'sass': 'theming',
+      entity: 'entities',
+      page: 'pages',
+      widget: 'widgets',
+      workflow: 'workflows',
+      integration: 'integration',
+      rest: 'rest-api',
+      odata: 'odata',
+      security: 'security',
+      xpath: 'xpath',
+      java: 'java',
+      javascript: 'javascript',
+      sdk: 'sdk',
+      maia: 'maia-ai',
+      atlas: 'atlas-ui',
+      theme: 'theming',
+      sass: 'theming',
     };
 
     for (const [term, tag] of Object.entries(termMap)) {
@@ -582,7 +574,7 @@ class KnowledgeHarvester {
    * Rate limiting delay
    */
   delay() {
-    return new Promise(resolve => setTimeout(resolve, this.rateLimitDelay));
+    return new Promise((resolve) => setTimeout(resolve, this.rateLimitDelay));
   }
 
   /**

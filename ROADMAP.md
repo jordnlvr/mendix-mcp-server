@@ -3,6 +3,7 @@
 ## Current State: Phase 1 Complete ✅
 
 The server currently uses:
+
 - **JSON files** for knowledge storage
 - **TF-IDF** for text search with fuzzy matching
 - **Auto-harvester** for keeping docs up-to-date
@@ -14,6 +15,7 @@ The server currently uses:
 **Goal:** Automatically fetch and index Mendix documentation
 
 ### Features Implemented:
+
 - [x] `KnowledgeHarvester` class - crawls Mendix docs
 - [x] `HarvestScheduler` - runs weekly auto-harvests
 - [x] Release notes parser (Studio Pro 10, 11)
@@ -24,6 +26,7 @@ The server currently uses:
 - [x] `harvest_status` MCP tool for monitoring
 
 ### Sources Indexed:
+
 - Studio Pro Release Notes (10.x, 11.x)
 - Reference Guide sections
 - How-To Guides
@@ -31,6 +34,7 @@ The server currently uses:
 - SDK Documentation
 
 ### Priority Topics Auto-Harvested:
+
 - Page Variables (new in 10.0+)
 - Workflows 2.0
 - Maia AI Assistant
@@ -46,11 +50,13 @@ The server currently uses:
 **Goal:** Add semantic search using embeddings and Pinecone
 
 ### Status: Ready to implement when needed
+
 - Pinecone API key stored in `.env`
 - Free tier sufficient (100K vectors)
 - Architecture designed
 
 ### Planned Features:
+
 - [ ] Pinecone integration for vector storage
 - [ ] Embedding generation (OpenAI or local model)
 - [ ] Hybrid search (vector + keyword)
@@ -58,6 +64,7 @@ The server currently uses:
 - [ ] Related content suggestions
 
 ### Implementation Plan:
+
 ```javascript
 // src/vector/VectorStore.js (Phase 2)
 import { Pinecone } from '@pinecone-database/pinecone';
@@ -65,7 +72,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 class VectorStore {
   constructor() {
     this.pinecone = new Pinecone({
-      apiKey: process.env.PINECONE_API_KEY
+      apiKey: process.env.PINECONE_API_KEY,
     });
     this.index = this.pinecone.index('mendix-knowledge');
   }
@@ -82,11 +89,13 @@ class VectorStore {
 ```
 
 ### When to Upgrade:
+
 - When knowledge base exceeds ~500 entries
 - When semantic search becomes important ("how do I loop" should find "iteration")
 - When you want related content suggestions
 
 ### Cost Estimate:
+
 - **Pinecone Free Tier:** 100K vectors, 1 index = $0
 - **OpenAI Embeddings:** ~$0.0001 per 1K tokens ≈ $0.10 for entire knowledge base
 - **Total for single user:** Essentially free
@@ -98,17 +107,20 @@ class VectorStore {
 **Goal:** Use retrieved knowledge to generate contextual answers
 
 ### Concept:
+
 ```
 User Query → Retrieve Relevant Docs → LLM Generates Answer with Context
 ```
 
 ### Potential Features:
+
 - [ ] Claude/GPT integration for answer generation
 - [ ] Source citation in responses
 - [ ] Conversation memory
 - [ ] Code generation with context
 
 ### When to Consider:
+
 - When you want generated answers, not just retrieved docs
 - When building a user-facing product
 - When accuracy and citations matter
@@ -117,15 +129,15 @@ User Query → Retrieve Relevant Docs → LLM Generates Answer with Context
 
 ## Quick Reference: Current Capabilities
 
-| Capability | Status | Description |
-|------------|--------|-------------|
-| Keyword Search | ✅ | TF-IDF with stemming |
-| Fuzzy Matching | ✅ | Handles typos |
-| Auto-Harvest | ✅ | Weekly doc updates |
-| Manual Harvest | ✅ | `@mendix-expert harvest` |
-| Self-Learning | ✅ | Saves new knowledge |
-| Vector Search | 🔮 | Phase 2 |
-| RAG Answers | 🚀 | Phase 3 |
+| Capability     | Status | Description              |
+| -------------- | ------ | ------------------------ |
+| Keyword Search | ✅     | TF-IDF with stemming     |
+| Fuzzy Matching | ✅     | Handles typos            |
+| Auto-Harvest   | ✅     | Weekly doc updates       |
+| Manual Harvest | ✅     | `@mendix-expert harvest` |
+| Self-Learning  | ✅     | Saves new knowledge      |
+| Vector Search  | 🔮     | Phase 2                  |
+| RAG Answers    | 🚀     | Phase 3                  |
 
 ---
 
@@ -157,5 +169,5 @@ Or ask: "@mendix-expert upgrade to phase 2"
 
 ---
 
-*Last Updated: December 7, 2025*
-*By: Kai SDK*
+_Last Updated: December 7, 2025_
+_By: Kai SDK_

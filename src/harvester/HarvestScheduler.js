@@ -1,9 +1,9 @@
 /**
  * HarvestScheduler - Automated knowledge harvesting on a schedule
- * 
+ *
  * Runs weekly harvests of Mendix documentation to keep knowledge fresh.
  * Integrates with MaintenanceScheduler for coordinated maintenance.
- * 
+ *
  * @version 1.0.0
  * @author Kai SDK
  */
@@ -21,10 +21,10 @@ class HarvestScheduler {
     this.knowledgeBasePath = knowledgeBasePath || path.join(__dirname, '../../knowledge');
     this.stateFile = path.join(this.knowledgeBasePath, 'harvest-state.json');
     this.harvester = new KnowledgeHarvester(this.knowledgeBasePath);
-    
+
     // Harvest every 7 days by default
     this.harvestIntervalDays = 7;
-    
+
     // Track state
     this.state = {
       lastHarvest: null,
@@ -33,7 +33,7 @@ class HarvestScheduler {
       nextScheduledHarvest: null,
       isRunning: false,
     };
-    
+
     this.intervalId = null;
   }
 
@@ -42,16 +42,16 @@ class HarvestScheduler {
    */
   async initialize() {
     await this.loadState();
-    
+
     // Check if we need to harvest on startup
     if (this.shouldHarvest()) {
       console.log('📅 Scheduled harvest is due - running now...');
       await this.runHarvest();
     }
-    
+
     // Set up interval check (every hour)
     this.intervalId = setInterval(() => this.checkAndHarvest(), 60 * 60 * 1000);
-    
+
     console.log(`🌾 HarvestScheduler initialized. Next harvest: ${this.getNextHarvestDate()}`);
   }
 
@@ -79,11 +79,11 @@ class HarvestScheduler {
    */
   shouldHarvest() {
     if (!this.state.lastHarvest) return true;
-    
+
     const lastHarvest = new Date(this.state.lastHarvest);
     const now = new Date();
     const daysSinceHarvest = (now - lastHarvest) / (1000 * 60 * 60 * 24);
-    
+
     return daysSinceHarvest >= this.harvestIntervalDays;
   }
 
@@ -92,10 +92,12 @@ class HarvestScheduler {
    */
   getNextHarvestDate() {
     if (!this.state.lastHarvest) return 'Pending (first harvest)';
-    
+
     const lastHarvest = new Date(this.state.lastHarvest);
-    const nextHarvest = new Date(lastHarvest.getTime() + this.harvestIntervalDays * 24 * 60 * 60 * 1000);
-    
+    const nextHarvest = new Date(
+      lastHarvest.getTime() + this.harvestIntervalDays * 24 * 60 * 60 * 1000
+    );
+
     return nextHarvest.toISOString().split('T')[0];
   }
 

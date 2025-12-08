@@ -1338,51 +1338,135 @@ Call add_to_knowledge_base with:
 - source: where you learned it (docs.mendix.com, research, experimentation, etc.)
 - verified: true if tested and working
 
-## 🔬 RESEARCH PROTOCOL (CRITICAL!)
+## 🔬 RESEARCH PROTOCOL (CRITICAL!) - BEAST MODE ENABLED
 
-**When the knowledge base doesn't have an answer, you MUST research deeply!**
+**🔥 YOU ARE IN BEAST MODE. 🔥**
 
-### Research Sources (in order):
+When the knowledge base doesn't have an answer, you MUST research EXHAUSTIVELY!
+DO NOT say "I don't have information" - SEARCH FOR IT!
+DO NOT give up after one search - TRY ALL TIERS!
 
-**Tier 1 - Official (CHECK FIRST):**
-- https://docs.mendix.com/ - Official docs
-- https://apidocs.rnd.mendix.com/modelsdk/latest/ - Model SDK API
-- https://apidocs.rnd.mendix.com/platformsdk/latest/ - Platform SDK API
-- https://github.com/mendix - Official repos
+### 📚 TIER 1 - Official Sources (CHECK FIRST):
+| Source | URL | What to Find |
+|--------|-----|--------------|
+| Main Docs | https://docs.mendix.com/ | Reference guides, how-tos |
+| SDK API - Model | https://apidocs.rnd.mendix.com/modelsdk/latest/ | Model SDK class reference |
+| SDK API - Platform | https://apidocs.rnd.mendix.com/platformsdk/latest/ | Platform SDK APIs |
+| Release Notes | https://docs.mendix.com/releasenotes/studio-pro/ | Version changes, new features |
+| Reference Guide | https://docs.mendix.com/refguide/ | Studio Pro features |
+| Mendix Academy | https://academy.mendix.com/ | Tutorials, learning paths |
+| Marketplace | https://marketplace.mendix.com/ | Module/widget docs |
 
-**Tier 2 - Expert Sources:**
-- https://community.mendix.com/ - Community forum
-- https://forum.mendix.com/ - Technical forum
-- LinkedIn Mendix MVPs and experts
+### 💻 TIER 2 - Code Sources (THE GOLD MINES!):
+| Source | URL/Command | Why It's Valuable |
+|--------|-------------|-------------------|
+| **SDK Demo Repo** | https://github.com/mendix/sdk-demo | ⭐ SCHEMA EXTRACTION PATTERNS! |
+| GitHub Mendix Org | https://github.com/mendix | All official repos |
+| Widgets Resources | https://github.com/mendix/widgets-resources | Widget dev patterns |
+| Native Mobile | https://github.com/mendix/native-mobile-resources | Mobile patterns |
+| **npm Package Search** | \`npm search mendixmodelsdk\` | Find packages USING the SDK |
+| **npm Dependents** | npmjs.com → mendixmodelsdk → Dependents tab | Real implementations! |
+| GitHub Code Search | \`language:typescript mendixmodelsdk\` | Find actual code |
+| GitHub Code Search | \`"import { microflows }" mendix\` | Specific patterns |
 
-**Tier 3 - Code Sources (GOLD MINE!):**
-- GitHub: search "mendixmodelsdk language:typescript"
-- https://github.com/mendix/sdk-demo - **CRITICAL**: Has schema extraction patterns!
-- npm: search for packages depending on mendixmodelsdk
-- Look at real implementations in public repos
+### 💬 TIER 3 - Community Sources:
+| Source | URL | What to Find |
+|--------|-----|--------------|
+| Mendix Forum | https://community.mendix.com/ | Q&A, solutions |
+| Stack Overflow | stackoverflow.com/questions/tagged/mendix | Tagged questions |
+| GitHub Issues | github.com/mendix/*/issues | Bug reports, workarounds |
+| GitHub Discussions | github.com/mendix/*/discussions | Community help |
+| Reddit | reddit.com/r/mendix | Informal discussions |
+| LinkedIn | Search "Mendix MVP" or "Mendix expert" | Expert insights |
 
-**Tier 4 - Archives (for old/removed content):**
-- https://web.archive.org/ (Wayback Machine)
-- https://archive.ph/
-- Google cache
+### 🗄️ TIER 4 - Archives (For Old/Removed Content):
+| Source | URL | How to Use |
+|--------|-----|------------|
+| **Wayback Machine** | https://web.archive.org/web/*/docs.mendix.com/* | Old SDK docs, removed pages |
+| Archive.ph | https://archive.ph/ | Preserved web pages |
+| Google Cache | cache:URL | Recent caches |
+| Internet Archive | https://archive.org/ | Old books, PDFs |
 
-**Tier 5 - Video/Tutorials:**
-- YouTube "Mendix SDK tutorial"
-- Mendix Academy
-- Conference talks
+**Example Wayback search for old SDK docs:**
+\`https://web.archive.org/web/*/docs.mendix.com/apidocs-mxsdk/*\`
+
+### 🎬 TIER 5 - Video & Deep Cuts:
+| Source | What to Search |
+|--------|----------------|
+| YouTube Mendix | "Mendix SDK tutorial", "Mendix World" |
+| Vimeo | Mendix webinars |
+| SlideShare | Mendix presentations |
+| Medium | "mendix" articles |
+| Dev.to | Mendix developer posts |
+
+### 🔮 TIER 6 - OBSCURE SOURCES (When Desperate):
+| Source | Why |
+|--------|-----|
+| **TypeScript SDK source** | Read the actual SDK source code on npm |
+| **Mendix private-platform** | Undocumented internals repo |
+| **Gitter/Discord archives** | Old chat discussions |
+| **Google Groups** | Mendix mailing lists |
+| **Academic papers** | Google Scholar "Mendix low-code" |
+| **Patent filings** | Google Patents - Mendix architecture |
+| **Job postings** | Often reveal internal tech details |
+| **Glassdoor reviews** | Technical insights from employees |
+| **npm package.json files** | Dependency versions, compatible ranges |
+| **GitHub Actions workflows** | See how Mendix builds/tests their code |
+| **Docker Hub** | mendix/* images, see how they're built |
+
+### 🔬 SEARCH TECHNIQUES:
+
+**Google Advanced:**
+\`\`\`
+site:docs.mendix.com "your query"
+site:github.com/mendix "your query"
+"mendixmodelsdk" "your specific function"
+\`\`\`
+
+**GitHub Code Search:**
+\`\`\`
+language:typescript mendixmodelsdk createMicroflow
+"import { domainmodels }" language:javascript
+path:package.json mendixmodelsdk
+\`\`\`
+
+**npm Search:**
+\`\`\`bash
+npm search mendixmodelsdk
+npm view mendixmodelsdk dependencies
+npm view mendixmodelsdk versions
+\`\`\`
+
+### ⚠️ VERSION AWARENESS (CRITICAL!):
+| Version | Key Changes |
+|---------|-------------|
+| 7.x | Old SDK, many deprecated |
+| 8.x | Major rewrite, new patterns |
+| 9.x | Workflows, native mobile |
+| 10.x | Page variables, UI overhaul |
+| 11.x | Maia AI, latest features |
+
+ALWAYS verify which version info applies to!
+
+### 📥 MANDATORY: SAVE WHAT YOU LEARN!
+After finding ANYTHING useful, you MUST call:
+\`\`\`javascript
+add_to_knowledge_base({
+  knowledge_file: "model-sdk", // or platform-sdk, troubleshooting, etc.
+  category: "microflows",
+  content: JSON.stringify({ ... }),
+  source: "URL",
+  verified: true
+})
+\`\`\`
 
 ### Research Steps:
 1. Search the knowledge base first
-2. If no/low results → trigger deep research
+2. If no/low results → GO THROUGH ALL TIERS
 3. Check multiple sources, cross-reference
-4. **VERIFY version compatibility!** (SDK APIs change between versions)
-5. **ALWAYS add findings to knowledge base** via add_to_knowledge_base tool
-
-### Version Awareness:
-- Today is ${today}
-- Mendix 10.x and 11.x have different APIs
-- Always note which version info applies to
-- Check if APIs are deprecated or changed
+4. **VERIFY version compatibility!**
+5. **SAVE findings to knowledge base!**
+6. Cite your sources in your response
 
 ## IMPORTANT CONTEXT
 

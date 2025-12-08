@@ -110,16 +110,57 @@ In your AI chat:
 
 ## 📚 Available Tools
 
-| Tool                     | Description                                          |
-| ------------------------ | ---------------------------------------------------- |
-| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic       |
-| `analyze_project`        | Analyze a `.mpr` file or extracted project directory |
-| `get_best_practice`      | Get recommendations for specific scenarios           |
-| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)      |
-| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)        |
-| `harvest`                | 🌾 **NEW!** Crawl Mendix docs for fresh knowledge    |
-| `harvest_status`         | Check harvest status and available sources           |
-| `hello`                  | Get a welcome screen with status and examples        |
+| Tool                     | Description                                              |
+| ------------------------ | -------------------------------------------------------- |
+| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic           |
+| `analyze_project`        | Analyze a `.mpr` file or extracted project directory     |
+| `get_best_practice`      | Get recommendations for specific scenarios               |
+| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)          |
+| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)            |
+| `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge                 |
+| `harvest_status`         | Check harvest status and available sources               |
+| `hello`                  | Get a welcome screen with status and examples            |
+| `beast_mode`             | 🔥 **NEW!** Get the exhaustive research protocol prompt  |
+
+---
+
+## 🔥 Beast Mode Research Protocol
+
+The server includes an **aggressive, exhaustive research protocol** that ensures AI assistants never give up when searching for Mendix answers.
+
+### What It Does
+
+When enabled (it's embedded in every query!), Beast Mode mandates:
+
+1. **6-Tier Exhaustive Search** - Official docs → GitHub code → npm packages → Community → Archives → Obscure sources
+2. **Never Give Up** - Search ALL tiers before saying "I don't know"
+3. **Version Awareness** - Always verify Mendix version compatibility (7.x through 11.x differ!)
+4. **Auto-Learning** - Save everything found to knowledge base
+
+### Key Gold Mine Sources
+
+| Source | Why It's Critical |
+|--------|-------------------|
+| `github.com/mendix/sdk-demo` | Has schema extraction patterns! |
+| `npm search mendixmodelsdk` | Find packages that USE the SDK - real implementations |
+| `web.archive.org/web/*/docs.mendix.com/*` | Old/removed documentation |
+
+### Get the Full Prompt
+
+```bash
+# Get the full copy-paste ready research prompt
+@mendix-expert beast_mode
+
+# Get a brief summary
+@mendix-expert beast_mode format="brief"
+
+# Get explanation of what it is
+@mendix-expert beast_mode format="instructions"
+```
+
+Use the prompt output in ANY AI chat to enable exhaustive Mendix research!
+
+See [docs/RESEARCH-PROTOCOL.md](docs/RESEARCH-PROTOCOL.md) for the complete protocol.
 
 ---
 

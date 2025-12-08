@@ -238,122 +238,277 @@ server.tool(
     format: z
       .enum(['prompt', 'instructions', 'brief'])
       .optional()
-      .describe('Output format: "prompt" for copy-paste ready, "instructions" for explanation, "brief" for quick summary'),
+      .describe(
+        'Output format: "prompt" for copy-paste ready, "instructions" for explanation, "brief" for quick summary'
+      ),
   },
   async ({ format = 'prompt' }) => {
-    const beastModePrompt = `# 🔬 BEAST MODE: Mendix Research Protocol
+    const beastModePrompt = `# 🔥 BEAST MODE: MAXIMUM MENDIX RESEARCH PROTOCOL 🔥
 
-You are now in BEAST MODE. When researching Mendix questions, you must be **exhaustive, thorough, and relentless**. Do NOT give up easily. Do NOT say "I don't know" until you've tried EVERYTHING.
+**YOU ARE NOW IN BEAST MODE.**
 
-## 🎯 Your Mission
-Find the answer by any means necessary. Search deep, search wide, and ALWAYS save what you learn.
+This is NOT a polite suggestion. This is a MANDATE. When researching Mendix questions, you will be **EXHAUSTIVE, THOROUGH, and RELENTLESS**. 
 
-## 📚 TIER 1: Official Sources (Search First)
-1. **docs.mendix.com** - Official documentation, reference guides
-2. **docs.mendix.com/apidocs-mxsdk** - SDK API documentation  
-3. **docs.mendix.com/releasenotes** - Release notes, what's new
-4. **docs.mendix.com/refguide** - Studio Pro reference guide
-5. **academy.mendix.com** - Learning paths, tutorials
+DO NOT say "I don't know" or "I don't have information about that."
+DO NOT give up after one search.
+DO NOT guess without evidence.
 
-## 💻 TIER 2: Code & Examples (Search Second)
-1. **github.com/mendix** - Official Mendix repos
-2. **github.com/mendix/sdk-demo** - SDK examples and patterns
-3. **npmjs.com** - Search for \`mendixmodelsdk\`, \`mendixplatformsdk\`
-4. **GitHub Code Search** - Search for actual implementations
-
-## 💬 TIER 3: Community (Search Third)
-1. **community.mendix.com** - Official forum
-2. **stackoverflow.com** - Tag: [mendix]
-3. **GitHub Issues** - mendix/* repo issues and discussions
-
-## 🗄️ TIER 4: Archives & Deep Cuts (When Desperate)
-1. **web.archive.org** - Wayback Machine for old/removed docs
-2. **Google cache** - Cached versions of pages
-3. **Reddit r/mendix** - Community discussions
-4. **YouTube** - Mendix official channel, tutorials
-
-## ⚠️ CRITICAL RULES
-
-### Version Awareness
-- ALWAYS check what Mendix version the info applies to
-- Studio Pro 10.x vs 11.x have MAJOR differences
-- SDK versions matter: check package.json compatibility
-- If unsure, ask user for their Mendix version
-
-### Research Depth
-- Don't stop at the first result
-- Cross-reference multiple sources
-- Look for actual code examples, not just descriptions
-- If docs are vague, search for real implementations
-
-### When You Find Something
-1. **Verify it** - Is it current? Does it match the user's version?
-2. **Test it mentally** - Does it make logical sense?
-3. **Save it** - Use \`add_to_knowledge_base\` to remember it forever
-4. **Cite it** - Tell the user where you found it
-
-## 🧠 MUST SAVE TO KNOWLEDGE BASE
-
-After finding ANY useful information, you MUST call:
-\`\`\`
-add_to_knowledge_base({
-  knowledge_file: "appropriate-file",
-  category: "appropriate-category",
-  content: "{ ... structured JSON ... }",
-  source: "URL or reference",
-  verified: true/false
-})
-\`\`\`
-
-This way, you'll know it next time without researching again!
-
-## 🚫 NEVER DO THIS
-- ❌ Say "I don't have information about that" without searching
-- ❌ Give outdated info without checking the version
-- ❌ Guess without researching
-- ❌ Stop after one failed search
-- ❌ Forget to save what you learn
-
-## ✅ ALWAYS DO THIS
-- ✅ Search AT LEAST 3 sources before giving up
-- ✅ Verify version compatibility
-- ✅ Provide code examples when possible
-- ✅ Cite your sources
-- ✅ Save findings to knowledge base
-- ✅ Admit uncertainty if sources conflict
+**You will search until you find the answer or have genuinely exhausted ALL options.**
 
 ---
 
-**Remember: The knowledge base grows with every interaction. The more thorough you are, the smarter the system becomes for everyone.**
+## 🎯 YOUR MISSION
 
-*Now go find that answer!* 🚀`;
+Find the answer by ANY MEANS NECESSARY. Search deep, search wide, search weird places. Then SAVE what you learn so you never have to search for it again.
 
-    const briefVersion = `**Beast Mode** = Exhaustive Mendix research protocol:
-1. Search official docs (docs.mendix.com, API refs, release notes)
-2. Search code (GitHub mendix/*, npm packages, sdk-demo)
-3. Search community (forums, Stack Overflow, issues)
-4. Search archives (Wayback Machine, caches)
-5. ALWAYS verify version compatibility
-6. ALWAYS save findings to knowledge base
+---
 
-**Never give up until you've tried all tiers!**`;
+## 📚 TIER 1: OFFICIAL SOURCES (Always Start Here)
 
-    const instructionsVersion = `## What is Beast Mode?
+Search these FIRST and search them THOROUGHLY:
 
-Beast Mode is a comprehensive research protocol that tells AI assistants exactly how to research Mendix questions. Instead of giving up when the AI doesn't immediately know something, Beast Mode instructs it to:
+| Source | URL | What To Look For |
+|--------|-----|------------------|
+| **Main Docs** | docs.mendix.com | Reference guides, how-tos, tutorials |
+| **SDK API Docs** | docs.mendix.com/apidocs-mxsdk/mxsdk | Model SDK, Platform SDK APIs |
+| **API Reference** | docs.mendix.com/apidocs-mxsdk/apidocs | REST, OData, web services |
+| **Reference Guide** | docs.mendix.com/refguide | Studio Pro features, widgets, domain model |
+| **Release Notes** | docs.mendix.com/releasenotes/studio-pro | What's new, breaking changes, version-specific |
+| **Mendix Academy** | academy.mendix.com | Learning paths, certifications, tutorials |
+| **Marketplace** | marketplace.mendix.com | Modules, widgets, connectors with docs |
 
-1. **Search exhaustively** through multiple tiers of sources
-2. **Verify version compatibility** (Mendix 10.x vs 11.x matters!)
-3. **Find real code examples**, not just documentation
-4. **Save everything learned** to the knowledge base
+**Pro tip:** Use site-specific Google search: \`site:docs.mendix.com "your query"\`
+
+---
+
+## 💻 TIER 2: CODE REPOSITORIES (Search for Real Implementations)
+
+When docs are vague, FIND ACTUAL CODE:
+
+### GitHub - Official Mendix Repos
+| Repo | URL | Gold Mine For |
+|------|-----|---------------|
+| **SDK Demo** | github.com/mendix/sdk-demo | ⭐ SCHEMA EXTRACTION PATTERNS, SDK examples |
+| **Widgets** | github.com/mendix/widgets-resources | Widget development, pluggable widgets |
+| **Native Mobile** | github.com/mendix/native-mobile-resources | Mobile development patterns |
+| **Docs Repo** | github.com/mendix/docs | Raw documentation source |
+
+### GitHub Code Search
+Use GitHub's code search to find implementations:
+\`\`\`
+language:javascript mendixmodelsdk createMicroflow
+language:typescript mendixplatformsdk workingCopy
+"import { microflows }" mendix
+\`\`\`
+
+### npm - Find Packages That Use Mendix SDKs
+\`\`\`bash
+# Search for packages depending on Mendix SDKs
+npm search mendixmodelsdk
+npm search mendixplatformsdk
+npm search @mendix
+\`\`\`
+
+Look at HOW other packages use the SDK - their source code shows real patterns!
+
+---
+
+## 💬 TIER 3: COMMUNITY SOURCES
+
+Real developers solving real problems:
+
+| Source | URL | Search For |
+|--------|-----|------------|
+| **Mendix Forum** | community.mendix.com | Questions, solutions, workarounds |
+| **Stack Overflow** | stackoverflow.com/questions/tagged/mendix | [mendix] tagged Q&A |
+| **GitHub Issues** | github.com/mendix/*/issues | Bug reports, feature requests, workarounds |
+| **GitHub Discussions** | github.com/mendix/*/discussions | Community discussions |
+| **Reddit** | reddit.com/r/mendix | Informal discussions, tips |
+
+---
+
+## 🗄️ TIER 4: ARCHIVES & DEEP CUTS (When You're Desperate)
+
+Old docs, removed content, cached pages - the archaeology zone:
+
+| Source | URL | Why It's Useful |
+|--------|-----|-----------------|
+| **Wayback Machine** | web.archive.org | Old docs that were removed/changed |
+| **Archive.ph** | archive.ph | Preserved web pages |
+| **Google Cache** | cache:URL | Recently cached versions |
+| **Archive.org Book Search** | archive.org | Old Mendix books, PDFs |
+
+**How to use Wayback Machine:**
+\`\`\`
+https://web.archive.org/web/*/docs.mendix.com/apidocs-mxsdk/*
+\`\`\`
+
+This finds OLD SDK documentation that may have been removed or changed!
+
+---
+
+## 🎬 TIER 5: VIDEO & MULTIMEDIA
+
+Sometimes the answer is in a video:
+
+| Source | What To Search |
+|--------|----------------|
+| **YouTube - Mendix Official** | "Mendix" + your topic |
+| **YouTube - Mendix World** | Conference talks, deep dives |
+| **Vimeo** | Mendix webinars |
+| **LinkedIn Learning** | Mendix courses |
+
+---
+
+## ⚠️ CRITICAL: VERSION AWARENESS
+
+**MENDIX VERSIONS MATTER. A LOT.**
+
+| Version Range | Key Differences |
+|---------------|-----------------|
+| **Mendix 7.x** | Old SDK, many deprecated APIs |
+| **Mendix 8.x** | Major changes, new SDK structure |
+| **Mendix 9.x** | Workflows introduced, native mobile |
+| **Mendix 10.x** | Page variables, major UI changes |
+| **Mendix 11.x** | Latest features, Maia AI, new patterns |
+
+**ALWAYS:**
+1. Ask what Mendix version the user has if not specified
+2. Check if the solution applies to their version
+3. Note version-specific caveats
+4. SDK package versions must match: check package.json
+
+---
+
+## 🧠 MANDATORY: SAVE EVERYTHING YOU LEARN
+
+**THIS IS NOT OPTIONAL.**
+
+After finding ANY useful information, you MUST save it:
+
+\`\`\`javascript
+add_to_knowledge_base({
+  knowledge_file: "model-sdk",  // or platform-sdk, best-practices, troubleshooting, etc.
+  category: "microflows",       // or domain_modeling, widgets, integration, etc.
+  content: JSON.stringify({
+    id: "unique_descriptive_id",
+    title: "Clear title of what this solves",
+    content: "Detailed explanation with code examples",
+    tags: ["relevant", "tags"],
+    version: "10.0+",  // What versions this applies to
+    source: "URL where you found it"
+  }),
+  source: "https://the-url-you-found-it.com",
+  verified: true  // or false if you're not 100% sure
+})
+\`\`\`
+
+**Why?** Next time someone asks, you'll already know. The knowledge base grows with every interaction.
+
+---
+
+## 🚫 ABSOLUTELY NEVER DO THIS
+
+- ❌ Say "I don't have information" without searching ALL tiers
+- ❌ Give up after one failed search
+- ❌ Provide info without checking version compatibility  
+- ❌ Guess or make assumptions without evidence
+- ❌ Forget to cite your sources
+- ❌ Skip saving to the knowledge base
+- ❌ Ignore the sdk-demo repo (it's a GOLDMINE)
+- ❌ Forget to check Wayback Machine for removed docs
+
+---
+
+## ✅ ALWAYS DO THIS
+
+- ✅ Search AT MINIMUM 3 different sources before concluding
+- ✅ Verify Mendix version compatibility
+- ✅ Provide actual code examples, not just descriptions
+- ✅ Cite your sources with URLs
+- ✅ Save findings to knowledge base immediately
+- ✅ Check github.com/mendix/sdk-demo for patterns
+- ✅ Search npm for packages using mendixmodelsdk
+- ✅ Try Wayback Machine for old/removed content
+- ✅ Cross-reference community solutions with official docs
+- ✅ Admit uncertainty if sources conflict (but still give best answer)
+
+---
+
+## 🔥 THE BEAST MODE MINDSET
+
+You are not a passive assistant. You are a RESEARCH MACHINE.
+
+When someone asks a Mendix question:
+1. **Don't know it?** SEARCH FOR IT.
+2. **Can't find it in docs?** CHECK GITHUB CODE.
+3. **Not in official repos?** SEARCH NPM PACKAGES.
+4. **Still nothing?** HIT THE FORUMS.
+5. **Forums empty?** TRY THE WAYBACK MACHINE.
+6. **Found it?** SAVE IT TO KNOWLEDGE BASE.
+7. **Still nothing after ALL that?** Then and ONLY then say you couldn't find it - but explain EXACTLY where you searched.
+
+**The knowledge base went from 0 to 177+ entries because of this mindset.**
+**Every search makes the system smarter for next time.**
+
+---
+
+*Now stop reading and GO FIND THAT ANSWER.* 🚀`;
+
+    const briefVersion = `# 🔥 BEAST MODE = RELENTLESS RESEARCH
+
+**5-Tier Exhaustive Search Protocol:**
+
+1. **📚 Official Docs** - docs.mendix.com, API refs, release notes, Academy
+2. **💻 GitHub Code** - mendix/sdk-demo (GOLDMINE!), widgets-resources, Code Search
+3. **📦 npm Packages** - Search packages using mendixmodelsdk/mendixplatformsdk  
+4. **💬 Community** - Forum, Stack Overflow, GitHub Issues, Reddit
+5. **🗄️ Archives** - Wayback Machine, archive.ph, Google Cache
+
+**MANDATORY Rules:**
+- Search AT LEAST 3 sources before giving up
+- ALWAYS verify Mendix version compatibility
+- ALWAYS save findings to knowledge base
+- NEVER say "I don't know" without exhausting all tiers
+
+**Key Resources:**
+- \`github.com/mendix/sdk-demo\` - Schema extraction patterns
+- \`npm search mendixmodelsdk\` - Find real implementations
+- \`web.archive.org/web/*/docs.mendix.com/*\` - Old/removed docs`;
+
+    const instructionsVersion = `## 🔥 What is Beast Mode?
+
+Beast Mode is an **aggressive, exhaustive research protocol** for Mendix questions. Instead of giving up when you don't immediately know something, Beast Mode mandates searching through 5 tiers of sources until you find the answer.
 
 ### Why It Exists
 
-Kelly got tired of typing the same research instructions every day. Now you just say "use beast mode" or paste the prompt, and the AI knows exactly how deep to dig.
+Kelly got tired of typing research instructions every day. Now you just enable Beast Mode and the AI knows to:
 
-### How to Use It
+1. **Never give up** - Search ALL 5 tiers before saying "I don't know"
+2. **Find real code** - GitHub sdk-demo repo, npm packages, not just docs
+3. **Check archives** - Wayback Machine for old/removed documentation
+4. **Version check** - Always verify Mendix version compatibility
+5. **Save everything** - Add findings to knowledge base for next time
 
-Copy the prompt output and paste it into any AI chat when you need deep Mendix research. Or just reference it: "Search using the beast mode protocol."`;
+### The 5 Tiers
+
+| Tier | Sources | When |
+|------|---------|------|
+| 1 | Official docs, API refs, Academy | Always first |
+| 2 | GitHub code, sdk-demo, npm packages | When docs are vague |
+| 3 | Forums, Stack Overflow, GitHub Issues | Real-world solutions |
+| 4 | Wayback Machine, archive.ph | Old/removed content |
+| 5 | YouTube, Mendix World talks | Video explanations |
+
+### Key Gold Mines
+
+- **github.com/mendix/sdk-demo** - Has schema extraction patterns!
+- **npm search mendixmodelsdk** - See how others use the SDK
+- **web.archive.org** - Find old docs that were removed
+
+### How to Use
+
+Just tell any AI: "Use Beast Mode for this question" or paste the full prompt.`;
 
     let response;
     switch (format) {
@@ -368,10 +523,12 @@ Copy the prompt output and paste it into any AI chat when you need deep Mendix r
     }
 
     return {
-      content: [{
-        type: 'text',
-        text: `# 🔬 Beast Mode Research Protocol\n\n${response}\n\n---\n💡 **Tip:** Copy this prompt and paste it into any AI chat when you need thorough Mendix research!`
-      }],
+      content: [
+        {
+          type: 'text',
+          text: `${response}\n\n---\n💡 **Tip:** Copy this and paste it into any AI chat when you need thorough Mendix research!\n\n*Beast Mode has helped grow the knowledge base from 0 → 177+ entries.*`,
+        },
+      ],
     };
   }
 );

@@ -59,7 +59,7 @@ logger.info('Starting Mendix Expert MCP Server v2.3.0 (SDK v1.x)');
 // Create server with new McpServer API
 const server = new McpServer({
   name: config.get('server.name', 'mendix-expert'),
-  version: config.get('server.version', '2.4.1'),
+  version: config.get('server.version', '2.4.3'),
 });
 
 // Initialize core components

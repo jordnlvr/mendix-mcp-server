@@ -4,7 +4,7 @@ title: Home
 ---
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.4.2-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-2.4.3-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/MCP-compatible-purple.svg" alt="MCP Compatible">
   <img src="https://img.shields.io/badge/Pinecone-vector%20search-orange.svg" alt="Vector Search">
   <img src="https://img.shields.io/badge/Azure%20OpenAI-embeddings-0078D4.svg" alt="Azure OpenAI">

@@ -40,8 +40,8 @@ import WebFetcher from './utils/WebFetcher.js';
 import { HarvestScheduler } from './harvester/index.js';
 
 // Vector search components (Phase 2) - NOW ACTIVE!
-import VectorStore from './vector/VectorStore.js';
 import HybridSearch from './vector/HybridSearch.js';
+import VectorStore from './vector/VectorStore.js';
 
 // Initialize
 const logger = new Logger('Server');
@@ -82,20 +82,23 @@ const vectorStore = new VectorStore();
 const hybridSearch = new HybridSearch();
 
 // Initialize vector store in background (don't block startup)
-vectorStore.initialize().then(async (ready) => {
-  if (ready) {
-    logger.info('Vector search available (Pinecone connected)');
-    // Index knowledge base for vector search
-    const kb = knowledgeManager.knowledgeBase;
-    if (Object.keys(kb).length > 0) {
-      await hybridSearch.indexKnowledgeBase(kb);
+vectorStore
+  .initialize()
+  .then(async (ready) => {
+    if (ready) {
+      logger.info('Vector search available (Pinecone connected)');
+      // Index knowledge base for vector search
+      const kb = knowledgeManager.knowledgeBase;
+      if (Object.keys(kb).length > 0) {
+        await hybridSearch.indexKnowledgeBase(kb);
+      }
+    } else {
+      logger.info('Vector search disabled (no Pinecone API key)');
     }
-  } else {
-    logger.info('Vector search disabled (no Pinecone API key)');
-  }
-}).catch((err) => {
-  logger.warn('VectorStore initialization failed (non-critical)', { error: err.message });
-});
+  })
+  .catch((err) => {
+    logger.warn('VectorStore initialization failed (non-critical)', { error: err.message });
+  });
 
 // Initialize maintenance scheduler with all components
 const maintenanceScheduler = new MaintenanceScheduler({
@@ -1081,7 +1084,9 @@ server.tool(
     const vectorStats = await vectorStore.getStats();
     statusText += `\n## 🔮 Vector Search (Phase 2)\n\n`;
     statusText += `| Metric | Value |\n|--------|-------|\n`;
-    statusText += `| Status | ${vectorStats.status === 'ready' ? '✅ Ready' : '⚠️ ' + vectorStats.status} |\n`;
+    statusText += `| Status | ${
+      vectorStats.status === 'ready' ? '✅ Ready' : '⚠️ ' + vectorStats.status
+    } |\n`;
     statusText += `| Vectors indexed | ${vectorStats.vectors || 0} |\n`;
     statusText += `| Dimension | ${vectorStats.dimension || 'N/A'} |\n`;
 
@@ -1104,10 +1109,12 @@ server.tool(
 
       if (results.length === 0) {
         return {
-          content: [{
-            type: 'text',
-            text: `No semantic matches found for "${query}". Try using different terms or concepts.\n\n**Tip:** Vector search works best for conceptual queries like "how to iterate over a list" rather than exact terms.`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `No semantic matches found for "${query}". Try using different terms or concepts.\n\n**Tip:** Vector search works best for conceptual queries like "how to iterate over a list" rather than exact terms.`,
+            },
+          ],
         };
       }
 
@@ -1143,7 +1150,11 @@ server.tool(
   {
     query: z.string().describe('The search query'),
     limit: z.number().optional().default(10).describe('Maximum results'),
-    mode: z.enum(['hybrid', 'keyword', 'vector']).optional().default('hybrid').describe('Search mode'),
+    mode: z
+      .enum(['hybrid', 'keyword', 'vector'])
+      .optional()
+      .default('hybrid')
+      .describe('Search mode'),
   },
   async ({ query, limit, mode }) => {
     try {
@@ -1157,10 +1168,12 @@ server.tool(
 
       if (results.length === 0) {
         return {
-          content: [{
-            type: 'text',
-            text: `No results found for "${query}". Try broader terms or check spelling.`
-          }]
+          content: [
+            {
+              type: 'text',
+              text: `No results found for "${query}". Try broader terms or check spelling.`,
+            },
+          ],
         };
       }
 
@@ -1176,7 +1189,8 @@ server.tool(
         resultText += `- **Match Type:** ${r.matchType}\n`;
         if (r.fusedScore) resultText += `- **Fused Score:** ${(r.fusedScore * 100).toFixed(1)}%\n`;
         if (r.keywordScore) resultText += `- **Keyword Score:** ${r.keywordScore.toFixed(2)}\n`;
-        if (r.vectorScore) resultText += `- **Vector Score:** ${(r.vectorScore * 100).toFixed(1)}%\n`;
+        if (r.vectorScore)
+          resultText += `- **Vector Score:** ${(r.vectorScore * 100).toFixed(1)}%\n`;
         resultText += `\n`;
       });
 
@@ -1237,7 +1251,11 @@ server.tool(
   'reindex_vectors',
   'Re-index all knowledge into the vector store. Use after adding new knowledge or if search quality seems degraded.',
   {
-    clear: z.boolean().optional().default(false).describe('Clear existing vectors before re-indexing'),
+    clear: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe('Clear existing vectors before re-indexing'),
   },
   async ({ clear }) => {
     try {

@@ -1,15 +1,15 @@
 /**
  * HybridSearch - Combines TF-IDF keyword search with vector semantic search
- * 
+ *
  * Uses a fusion algorithm to merge results from both search methods,
  * providing both exact keyword matching and semantic understanding.
- * 
+ *
  * @version 2.3.0
  */
 
 import SearchEngine from '../core/SearchEngine.js';
+import Logger from '../utils/logger.js';
 import VectorStore from './VectorStore.js';
-import { Logger } from '../utils/Logger.js';
 
 const logger = new Logger('HybridSearch');
 
@@ -17,14 +17,14 @@ export default class HybridSearch {
   constructor(options = {}) {
     this.keywordWeight = options.keywordWeight || 0.6;
     this.vectorWeight = options.vectorWeight || 0.4;
-    
+
     this.keywordEngine = new SearchEngine();
     this.vectorStore = new VectorStore(options.vector || {});
-    
+
     this.initialized = false;
-    logger.info('HybridSearch created', { 
-      keywordWeight: this.keywordWeight, 
-      vectorWeight: this.vectorWeight 
+    logger.info('HybridSearch created', {
+      keywordWeight: this.keywordWeight,
+      vectorWeight: this.vectorWeight,
     });
   }
 
@@ -33,10 +33,10 @@ export default class HybridSearch {
    */
   async initialize() {
     if (this.initialized) return;
-    
+
     await this.vectorStore.initialize();
     this.initialized = true;
-    
+
     logger.info('HybridSearch initialized');
   }
 
@@ -46,7 +46,7 @@ export default class HybridSearch {
   async indexKnowledgeBase(knowledgeBase) {
     // Index for keyword search
     this.keywordEngine.indexKnowledgeBase(knowledgeBase);
-    
+
     // Flatten knowledge base for vector indexing
     const documents = [];
     for (const [category, entries] of Object.entries(knowledgeBase)) {
@@ -56,22 +56,22 @@ export default class HybridSearch {
           category,
           content: this.extractContent(entry),
           source: entry.source || 'knowledge-base',
-          version: entry.version || entry.mendix_version || 'unknown'
+          version: entry.version || entry.mendix_version || 'unknown',
         });
       }
     }
 
     // Index for vector search
     const vectorStats = await this.vectorStore.indexDocuments(documents);
-    
+
     logger.info('Knowledge base indexed', {
       keywordEntries: this.keywordEngine.index?.size || 0,
-      vectorEntries: vectorStats.indexed
+      vectorEntries: vectorStats.indexed,
     });
 
     return {
       keyword: { entries: this.keywordEngine.index?.size || 0 },
-      vector: vectorStats
+      vector: vectorStats,
     };
   }
 
@@ -80,7 +80,7 @@ export default class HybridSearch {
    */
   extractContent(entry) {
     const parts = [];
-    
+
     if (entry.description) parts.push(entry.description);
     if (entry.content) parts.push(entry.content);
     if (entry.definition) parts.push(entry.definition);
@@ -88,11 +88,11 @@ export default class HybridSearch {
     if (entry.summary) parts.push(entry.summary);
     if (entry.tips) parts.push(Array.isArray(entry.tips) ? entry.tips.join(' ') : entry.tips);
     if (entry.best_practices) {
-      parts.push(Array.isArray(entry.best_practices) 
-        ? entry.best_practices.join(' ') 
-        : entry.best_practices);
+      parts.push(
+        Array.isArray(entry.best_practices) ? entry.best_practices.join(' ') : entry.best_practices
+      );
     }
-    
+
     return parts.join(' ');
   }
 
@@ -124,7 +124,7 @@ export default class HybridSearch {
 
     // Reciprocal Rank Fusion
     const fusedResults = this.reciprocalRankFusion(keywordResults, vectorResults);
-    
+
     return fusedResults.slice(0, limit);
   }
 
@@ -141,14 +141,14 @@ export default class HybridSearch {
       const id = result.entry?.title || result.title || `kw-${rank}`;
       const rrfScore = this.keywordWeight / (k + rank + 1);
       scores.set(id, (scores.get(id) || 0) + rrfScore);
-      
+
       if (!metadata.has(id)) {
         metadata.set(id, {
           title: result.entry?.title || result.title,
           category: result.category,
           entry: result.entry,
           keywordScore: result.score,
-          sources: ['keyword']
+          sources: ['keyword'],
         });
       } else {
         metadata.get(id).keywordScore = result.score;
@@ -161,14 +161,14 @@ export default class HybridSearch {
       const id = result.title || `vec-${rank}`;
       const rrfScore = this.vectorWeight / (k + rank + 1);
       scores.set(id, (scores.get(id) || 0) + rrfScore);
-      
+
       if (!metadata.has(id)) {
         metadata.set(id, {
           title: result.title,
           category: result.category,
           preview: result.preview,
           vectorScore: result.score,
-          sources: ['vector']
+          sources: ['vector'],
         });
       } else {
         metadata.get(id).vectorScore = result.score;
@@ -184,7 +184,7 @@ export default class HybridSearch {
       .map(([id, fusedScore]) => ({
         ...metadata.get(id),
         fusedScore,
-        matchType: metadata.get(id).sources.length > 1 ? 'both' : metadata.get(id).sources[0]
+        matchType: metadata.get(id).sources.length > 1 ? 'both' : metadata.get(id).sources[0],
       }));
 
     return sorted;
@@ -194,12 +194,12 @@ export default class HybridSearch {
    * Format keyword results for consistency
    */
   formatKeywordResults(results) {
-    return results.map(r => ({
+    return results.map((r) => ({
       title: r.entry?.title || r.title,
       category: r.category,
       entry: r.entry,
       keywordScore: r.score,
-      matchType: 'keyword'
+      matchType: 'keyword',
     }));
   }
 
@@ -207,12 +207,12 @@ export default class HybridSearch {
    * Format vector results for consistency
    */
   formatVectorResults(results) {
-    return results.map(r => ({
+    return results.map((r) => ({
       title: r.title,
       category: r.category,
       preview: r.preview,
       vectorScore: r.score,
-      matchType: 'vector'
+      matchType: 'vector',
     }));
   }
 
@@ -221,17 +221,17 @@ export default class HybridSearch {
    */
   async getStats() {
     const vectorStats = await this.vectorStore.getStats();
-    
+
     return {
       keyword: {
         indexed: this.keywordEngine.index?.size || 0,
-        terms: this.keywordEngine.documentFrequency?.size || 0
+        terms: this.keywordEngine.documentFrequency?.size || 0,
       },
       vector: vectorStats,
       weights: {
         keyword: this.keywordWeight,
-        vector: this.vectorWeight
-      }
+        vector: this.vectorWeight,
+      },
     };
   }
 }

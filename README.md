@@ -113,21 +113,21 @@ In your AI chat:
 
 ## 📚 Available Tools
 
-| Tool                     | Description                                             |
-| ------------------------ | ------------------------------------------------------- |
-| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic          |
-| `analyze_project`        | Analyze a `.mpr` file or extracted project directory    |
-| `get_best_practice`      | Get recommendations for specific scenarios              |
-| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)         |
-| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)           |
-| `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge                |
-| `harvest_status`         | Check harvest status and available sources              |
-| `hello`                  | Get a welcome screen with status and examples           |
-| `beast_mode`             | 🔥 Get the exhaustive research protocol prompt          |
-| `vector_search`          | 🔮 **NEW!** Semantic search - find concepts             |
-| `hybrid_search`          | 🎯 **NEW!** Combined keyword + semantic search          |
-| `vector_status`          | Check Pinecone index and search stats                   |
-| `reindex_vectors`        | Re-index knowledge for vector search                    |
+| Tool                     | Description                                          |
+| ------------------------ | ---------------------------------------------------- |
+| `query_mendix_knowledge` | Search the knowledge base for any Mendix topic       |
+| `analyze_project`        | Analyze a `.mpr` file or extracted project directory |
+| `get_best_practice`      | Get recommendations for specific scenarios           |
+| `add_to_knowledge_base`  | Contribute new knowledge (auto quality scoring)      |
+| `sync_mcp_server`        | Sync with GitHub (pull updates, push changes)        |
+| `harvest`                | 🌾 Crawl Mendix docs for fresh knowledge             |
+| `harvest_status`         | Check harvest status and available sources           |
+| `hello`                  | Get a welcome screen with status and examples        |
+| `beast_mode`             | 🔥 Get the exhaustive research protocol prompt       |
+| `vector_search`          | 🔮 **NEW!** Semantic search - find concepts          |
+| `hybrid_search`          | 🎯 **NEW!** Combined keyword + semantic search       |
+| `vector_status`          | Check Pinecone index and search stats                |
+| `reindex_vectors`        | Re-index knowledge for vector search                 |
 
 ---
 
@@ -234,11 +234,11 @@ The server now includes **semantic vector search** using Pinecone! This means yo
 
 ### Why Vector Search?
 
-| Keyword Search | Vector Search |
-|----------------|---------------|
-| Finds "microflow" | Finds "microflow", "workflow", "automation", "business logic" |
-| Exact match required | Semantic understanding |
-| "loop" won't find "iterate" | "loop" finds "iterate", "forEach", "while" |
+| Keyword Search              | Vector Search                                                 |
+| --------------------------- | ------------------------------------------------------------- |
+| Finds "microflow"           | Finds "microflow", "workflow", "automation", "business logic" |
+| Exact match required        | Semantic understanding                                        |
+| "loop" won't find "iterate" | "loop" finds "iterate", "forEach", "while"                    |
 
 ### Setup (Optional)
 

@@ -1,15 +1,15 @@
 /**
  * VectorStore - Pinecone-based semantic search for Mendix knowledge
- * 
+ *
  * Uses TF-IDF based dense vectors for semantic search without external APIs.
  * Can be upgraded to use OpenAI embeddings later for better quality.
- * 
+ *
  * @version 2.3.0
  */
 
 import { Pinecone } from '@pinecone-database/pinecone';
 import { createHash } from 'crypto';
-import { Logger } from '../utils/Logger.js';
+import Logger from '../utils/logger.js';
 
 const logger = new Logger('VectorStore');
 
@@ -36,16 +36,14 @@ class LocalEmbedder {
     for (const doc of documents) {
       const terms = this.tokenize(doc.content || doc.text || '');
       const uniqueTerms = new Set(terms);
-      
+
       for (const term of uniqueTerms) {
         docFreq.set(term, (docFreq.get(term) || 0) + 1);
       }
     }
 
     // Calculate IDF and build vocabulary (top terms by document frequency)
-    const sortedTerms = [...docFreq.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, this.dimension);
+    const sortedTerms = [...docFreq.entries()].sort((a, b) => b[1] - a[1]).slice(0, this.dimension);
 
     let idx = 0;
     for (const [term, freq] of sortedTerms) {
@@ -53,9 +51,9 @@ class LocalEmbedder {
       this.idf.set(term, Math.log(this.docCount / (freq + 1)) + 1);
     }
 
-    logger.info('Vocabulary built', { 
-      terms: this.vocabulary.size, 
-      documents: this.docCount 
+    logger.info('Vocabulary built', {
+      terms: this.vocabulary.size,
+      documents: this.docCount,
     });
   }
 
@@ -67,8 +65,8 @@ class LocalEmbedder {
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)
-      .filter(t => t.length > 2)
-      .map(t => this.stem(t));
+      .filter((t) => t.length > 2)
+      .map((t) => this.stem(t));
   }
 
   /**
@@ -126,7 +124,7 @@ export default class VectorStore {
     this.pinecone = null;
     this.index = null;
     this.initialized = false;
-    
+
     logger.info('VectorStore created', { indexName: this.indexName });
   }
 
@@ -144,10 +142,10 @@ export default class VectorStore {
 
     try {
       this.pinecone = new Pinecone({ apiKey });
-      
+
       // Check if index exists, create if not
       const indexes = await this.pinecone.listIndexes();
-      const indexExists = indexes.indexes?.some(i => i.name === this.indexName);
+      const indexExists = indexes.indexes?.some((i) => i.name === this.indexName);
 
       if (!indexExists) {
         logger.info('Creating Pinecone index', { name: this.indexName });
@@ -158,18 +156,18 @@ export default class VectorStore {
           spec: {
             serverless: {
               cloud: 'aws',
-              region: 'us-east-1'
-            }
-          }
+              region: 'us-east-1',
+            },
+          },
         });
-        
+
         // Wait for index to be ready
         await this.waitForIndex();
       }
 
       this.index = this.pinecone.index(this.indexName);
       this.initialized = true;
-      
+
       logger.info('VectorStore initialized', { index: this.indexName });
       return true;
     } catch (error) {
@@ -188,7 +186,7 @@ export default class VectorStore {
       if (description.status?.ready) {
         return true;
       }
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise((r) => setTimeout(r, 2000));
     }
     throw new Error('Index creation timed out');
   }
@@ -216,18 +214,30 @@ export default class VectorStore {
     // Build vocabulary from all documents
     this.embedder.buildVocabulary(documents);
 
-    // Prepare vectors for upsert
-    const vectors = documents.map(doc => ({
-      id: this.generateId(doc),
-      values: this.embedder.embed(doc.content || doc.text || doc.title),
-      metadata: {
-        title: doc.title?.slice(0, 500) || '',
-        category: doc.category || 'general',
-        source: doc.source || 'knowledge-base',
-        version: doc.version || 'unknown',
-        preview: (doc.content || doc.text || '').slice(0, 200)
-      }
-    }));
+    // Prepare vectors for upsert, filtering out empty vectors
+    const vectors = documents
+      .map((doc) => {
+        const embedding = this.embedder.embed(doc.content || doc.text || doc.title);
+        // Check if vector has any non-zero values
+        const hasContent = embedding.some(v => v !== 0);
+        if (!hasContent) {
+          return null; // Skip empty vectors
+        }
+        return {
+          id: this.generateId(doc),
+          values: embedding,
+          metadata: {
+            title: doc.title?.slice(0, 500) || '',
+            category: doc.category || 'general',
+            source: doc.source || 'knowledge-base',
+            version: doc.version || 'unknown',
+            preview: (doc.content || doc.text || '').slice(0, 200),
+          },
+        };
+      })
+      .filter(v => v !== null); // Remove null entries
+
+    logger.info('Vectors prepared', { total: documents.length, valid: vectors.length, skipped: documents.length - vectors.length });
 
     // Upsert in batches of 100
     const batchSize = 100;
@@ -237,10 +247,10 @@ export default class VectorStore {
       const batch = vectors.slice(i, i + batchSize);
       await this.index.namespace(this.namespace).upsert(batch);
       indexed += batch.length;
-      
-      logger.info('Indexed batch', { 
-        batch: Math.floor(i / batchSize) + 1, 
-        total: Math.ceil(vectors.length / batchSize) 
+
+      logger.info('Indexed batch', {
+        batch: Math.floor(i / batchSize) + 1,
+        total: Math.ceil(vectors.length / batchSize),
       });
     }
 
@@ -252,7 +262,7 @@ export default class VectorStore {
    * Semantic search for relevant knowledge
    */
   async search(query, options = {}) {
-    const { topK = 10, filter = {}, minScore = 0.3 } = options;
+    const { topK = 10, filter, minScore = 0.3 } = options;
 
     if (!this.initialized) {
       const ready = await this.initialize();
@@ -264,23 +274,29 @@ export default class VectorStore {
     const queryVector = this.embedder.embed(query);
 
     try {
-      const results = await this.index.namespace(this.namespace).query({
+      const queryOptions = {
         vector: queryVector,
         topK,
-        filter,
-        includeMetadata: true
-      });
+        includeMetadata: true,
+      };
+      
+      // Only add filter if it has keys (Pinecone requires non-empty filter)
+      if (filter && Object.keys(filter).length > 0) {
+        queryOptions.filter = filter;
+      }
+
+      const results = await this.index.namespace(this.namespace).query(queryOptions);
 
       return (results.matches || [])
-        .filter(match => match.score >= minScore)
-        .map(match => ({
+        .filter((match) => match.score >= minScore)
+        .map((match) => ({
           id: match.id,
           score: match.score,
           title: match.metadata?.title,
           category: match.metadata?.category,
           source: match.metadata?.source,
           version: match.metadata?.version,
-          preview: match.metadata?.preview
+          preview: match.metadata?.preview,
         }));
     } catch (error) {
       logger.error('Search failed', { error: error.message });
@@ -302,7 +318,7 @@ export default class VectorStore {
         status: 'ready',
         vectors: stats.totalRecordCount || 0,
         namespaces: stats.namespaces || {},
-        dimension: this.dimension
+        dimension: this.dimension,
       };
     } catch (error) {
       return { status: 'error', error: error.message };
@@ -314,7 +330,7 @@ export default class VectorStore {
    */
   async clear() {
     if (!this.initialized) return;
-    
+
     try {
       await this.index.namespace(this.namespace).deleteAll();
       logger.info('Vector store cleared');

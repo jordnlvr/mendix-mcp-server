@@ -1,0 +1,50 @@
+# npm ignore file
+# Only include what's needed for the package to work
+
+# Development files
+.github/
+docs/
+tests/
+*.test.js
+
+# Config files not needed for runtime
+.eslintrc*
+.prettierrc*
+.editorconfig
+tsconfig.json
+nodemon.json
+jest.config.*
+
+# Build/Cache
+node_modules/
+.cache/
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment (users will create their own)
+.env
+.env.local
+.env.*.local
+
+# Harvested data (users generate their own)
+knowledge/harvested/
+*.backup
+
+# Git
+.git/
+.gitignore
+
+# Other
+*.md
+!README.md
+CHANGELOG*

@@ -15,7 +15,10 @@
     "build": "npx smithery build",
     "test": "node --test tests/**/*.test.js",
     "harvest": "node -e \"import('./src/harvester/index.js').then(m => new m.HarvestScheduler().harvestNow())\"",
+    "reindex": "node scripts/reindex-vectors.js",
+    "reindex:force": "node scripts/reindex-vectors.js --force",
     "vector-status": "node -e \"import('./src/vector/VectorStore.js').then(m => new m.default().getStats().then(console.log))\"",
+    "maintenance": "node -e \"import('./src/utils/MaintenanceScheduler.js').then(m => new m.default({}).runFullMaintenance())\"",
     "legacy": "node server.js",
     "prepublishOnly": "node -e \"console.log('Publishing @jordnlvr/mendix-mcp-server v' + require('./package.json').version)\""
   },

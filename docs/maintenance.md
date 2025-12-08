@@ -8,6 +8,32 @@ nav_order: 8
 
 How to keep the Mendix Expert server running optimally.
 
+## Quick Reference: npm Scripts
+
+```bash
+# Start the MCP server
+npm start
+
+# Start REST API for ChatGPT
+npm run rest
+
+# Run automated maintenance
+npm run maintenance
+
+# Reindex vectors (after knowledge updates)
+npm run reindex
+npm run reindex:force    # Clear and rebuild all vectors
+
+# Check vector store status
+npm run vector-status
+
+# Harvest new knowledge from Mendix docs
+npm run harvest
+
+# Run tests
+npm test
+```
+
 ## Automatic Maintenance
 
 The server handles most maintenance automatically:
@@ -30,6 +56,12 @@ When you want fresh content immediately:
 @mendix-expert harvest
 ```
 
+Or via npm:
+
+```bash
+npm run harvest
+```
+
 For specific sources only:
 
 ```
@@ -38,15 +70,25 @@ For specific sources only:
 
 ### 2. Re-index Vectors
 
-If search results seem off:
+If search results seem off, use the reindex script:
 
-```
-@mendix-expert reindex_vectors
+```bash
+# Standard reindex (upserts changes)
+npm run reindex
+
+# Force full reindex (clears and rebuilds)
+npm run reindex:force
+
+# Reindex specific file only
+node scripts/reindex-vectors.js --file=theme-analysis.json
+
+# Preview what would be indexed
+node scripts/reindex-vectors.js --dry-run
 ```
 
 This:
 
-- Clears all existing vectors
+- Clears all existing vectors (with --force)
 - Re-generates embeddings for all knowledge
 - Takes ~30 seconds for 300+ entries
 

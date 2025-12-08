@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Enhanced Font Configuration** (`theme-analysis.json` v1.4.0):
+
   - 4 new font rules: `FONT-006` through `FONT-009`
   - `font-display: swap` best practice
   - Weight optimization guidance (only include used weights)
@@ -41,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Comprehensive Design Properties Documentation** (`theme-analysis.json` v1.3.0):
+
   - All 5 property types: Toggle, Dropdown, ColorPicker, ToggleButtonGroup, Spacing
   - 3 CRITICAL warnings: migration danger, reserved "Common" category, multiSelect issues
   - 7 IMPORTANT rules for CSS class validation, widget types, etc.
@@ -76,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **ThemeAnalyzer** (`src/analyzers/ThemeAnalyzer.js`):
+
   - Complete analyzer framework for Mendix themes (50KB)
   - Deep structure analysis with nested file extraction
   - Custom variable detection (colors, fonts, spacing, etc.)

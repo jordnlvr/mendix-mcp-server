@@ -7,9 +7,21 @@
 
 # 🧠 Mendix Expert MCP Server
 
-> **A self-learning, high-performance MCP server providing comprehensive Mendix development knowledge and dynamic project analysis.**
+> **A self-learning, auto-researching MCP server that gives AI assistants deep Mendix expertise and grows smarter with every interaction.**
 
-The **mendix-expert** server transforms how you work with Mendix by giving AI assistants deep knowledge of the Mendix platform, SDK patterns, best practices, and the ability to analyze your actual `.mpr` project files.
+---
+
+## 🤔 What Is This?
+
+This is a **Model Context Protocol (MCP) server** that supercharges AI assistants (like GitHub Copilot, Claude) with:
+
+1. **Deep Mendix Knowledge** - 177+ curated entries about SDK patterns, best practices, troubleshooting
+2. **Auto-Research Protocol** - When the AI doesn't know something, it researches official docs, GitHub, forums, and learns
+3. **Self-Learning** - Every discovery gets saved to the knowledge base automatically
+4. **Project Analysis** - Can analyze your actual `.mpr` files to understand your project structure
+5. **Cross-Machine Sync** - Keep knowledge synced across multiple computers via GitHub
+
+**Think of it as giving your AI assistant a Mendix expert's brain that keeps getting smarter.**
 
 ---
 
@@ -17,12 +29,31 @@ The **mendix-expert** server transforms how you work with Mendix by giving AI as
 
 | Feature | Description |
 |---------|-------------|
-| 🔍 **Intelligent Search** | TF-IDF with Levenshtein fuzzy matching - typos like "micorflow" still find "microflow" |
-| 🧠 **Self-Learning** | Automatically grows smarter as you add knowledge and track usage patterns |
-| 📊 **Analytics** | 92% hit rate, 2ms response, tracks missed queries to identify knowledge gaps |
-| 🔧 **Auto-Maintenance** | Scheduled validation, staleness detection, cache cleanup - runs itself |
-| 📁 **Project Analysis** | Analyze any `.mpr` file - discover modules, entities, microflows dynamically |
-| 🌐 **Web Suggestions** | When local knowledge misses, suggests official Mendix documentation URLs |
+| 🔍 **Intelligent Search** | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow" |
+| 🧠 **Self-Learning** | Automatically grows smarter as you add knowledge |
+| 🔬 **Auto-Research** | Embedded research protocol guides AI to find answers in docs, GitHub, forums |
+| 📊 **Analytics** | 92% hit rate, tracks missed queries to identify knowledge gaps |
+| 🔧 **Auto-Maintenance** | Scheduled validation, staleness detection, cache cleanup |
+| 📁 **Project Analysis** | Analyze any `.mpr` file - discover modules, entities, microflows |
+| 🔄 **Sync Reminder** | Reminds you to sync with GitHub after 7 days |
+
+---
+
+## 🔬 The Research Protocol
+
+**This is the magic.** When the knowledge base doesn't have an answer, the AI is instructed to:
+
+1. **Search official docs** - docs.mendix.com, API references
+2. **Check GitHub** - mendix/sdk-demo repo, public implementations
+3. **Search npm** - packages that depend on mendixmodelsdk
+4. **Check forums** - community.mendix.com, Stack Overflow
+5. **Try archives** - Wayback Machine for old/removed content
+6. **Verify version** - Make sure info matches your Mendix version
+7. **Save findings** - Automatically add to knowledge base
+
+**The knowledge base grows every time you use it!**
+
+See [docs/RESEARCH-PROTOCOL.md](docs/RESEARCH-PROTOCOL.md) for the full protocol.
 
 ---
 

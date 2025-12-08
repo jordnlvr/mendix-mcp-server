@@ -2,7 +2,29 @@
 
 ## Project Overview
 
-This is a **Model Context Protocol (MCP) server** that provides AI assistants with deep Mendix development knowledge. It features TF-IDF search with fuzzy matching, auto-maintenance, and project analysis capabilities.
+This is a **Model Context Protocol (MCP) server** that provides AI assistants with deep Mendix development knowledge. It features TF-IDF search with fuzzy matching, auto-maintenance, project analysis, and **a built-in research protocol that teaches AI to find and learn new information**.
+
+## 🔬 CRITICAL: Research Protocol
+
+**When you don't have an answer, you MUST research it!**
+
+### Research Sources (in priority order):
+
+1. **Official Docs**: https://docs.mendix.com/
+2. **Model SDK API**: https://apidocs.rnd.mendix.com/modelsdk/latest/
+3. **Platform SDK API**: https://apidocs.rnd.mendix.com/platformsdk/latest/
+4. **SDK Demo Repo**: https://github.com/mendix/sdk-demo (GOLD MINE for patterns!)
+5. **GitHub Code Search**: `mendixmodelsdk language:typescript`
+6. **npm packages**: Search for packages depending on mendixmodelsdk
+7. **Community Forum**: https://community.mendix.com/
+8. **Archives**: Wayback Machine, archive.ph for old content
+
+### After Research:
+- **ALWAYS add findings to knowledge base** using `add_to_knowledge_base` tool
+- Note the Mendix version the info applies to
+- Cite your sources
+
+See [docs/RESEARCH-PROTOCOL.md](docs/RESEARCH-PROTOCOL.md) for the full protocol.
 
 ## Architecture
 
@@ -17,10 +39,11 @@ src/
 │   └── QualityScorer.js     # Result quality ranking
 └── utils/
     ├── MaintenanceScheduler.js  # Automated periodic maintenance
-    ├── WebFetcher.js           # Web documentation suggestions
-    ├── config.js               # Configuration loader
-    ├── logger.js               # Logging utility
-    └── validator.js            # Input validation
+    ├── SyncReminder.js          # GitHub sync tracking and reminders
+    ├── WebFetcher.js            # Web documentation suggestions
+    ├── config.js                # Configuration loader
+    ├── logger.js                # Logging utility
+    └── validator.js             # Input validation
 ```
 
 ## Key Patterns
@@ -43,8 +66,8 @@ src/
 ### MCP Protocol
 
 - Uses `@modelcontextprotocol/sdk` for server implementation
-- Exposes **tools** for search, analysis, knowledge management
-- Exposes **resources** for stats, validation, analytics
+- Exposes **tools** for search, analysis, knowledge management, sync
+- Exposes **resources** for stats, validation, analytics, sync status
 
 ## Coding Standards
 
@@ -74,6 +97,15 @@ src/
 }
 ```
 
+## Syncing with GitHub
+
+```powershell
+.\sync.ps1 status   # Check sync status
+.\sync.ps1 pull     # Get updates
+.\sync.ps1 push     # Backup changes
+.\sync.ps1 both     # Full sync
+```
+
 ## Testing Commands
 
 ```bash
@@ -93,3 +125,4 @@ node -e "const SE = require('./src/core/SearchEngine.js'); const e = new SE(); e
 - Don't commit test files (`test-*.js`)
 - Don't hardcode file paths - use config
 - Don't skip validation before commits
+- Don't give up when knowledge base doesn't have an answer - **RESEARCH IT!**

@@ -142,6 +142,9 @@ class ThemeAnalyzer {
     // Analyze themesource modules
     const moduleAnalysis = await this.analyzeThemeModules(projectDir);
 
+    // Analyze font configuration
+    const fontAnalysis = await this.analyzeFontConfiguration(projectDir);
+
     // Calculate overall score
     const scores = this.calculateScores({
       structure: structureAnalysis,
@@ -156,8 +159,27 @@ class ThemeAnalyzer {
       web: webAnalysis,
       native: nativeAnalysis,
       modules: moduleAnalysis,
+      fonts: fontAnalysis,
       projectInfo,
     });
+
+    // Add font issues and recommendations
+    if (fontAnalysis.issues) {
+      recommendations.push(
+        ...fontAnalysis.issues.map((i) => ({
+          ...i,
+          category: 'fonts',
+        }))
+      );
+    }
+    if (fontAnalysis.recommendations) {
+      recommendations.push(
+        ...fontAnalysis.recommendations.map((r) => ({
+          ...r,
+          category: 'fonts',
+        }))
+      );
+    }
 
     // Determine grade
     const grade = this.calculateGrade(scores.overall);
@@ -179,6 +201,7 @@ class ThemeAnalyzer {
         webTheme: webAnalysis,
         nativeTheme: nativeAnalysis,
         modules: moduleAnalysis,
+        fontConfiguration: fontAnalysis,
       },
 
       recommendations: {
@@ -296,11 +319,11 @@ class ThemeAnalyzer {
     }
 
     results.score = Math.round((passedChecks / totalRequired) * 100);
-    
+
     // Check for Scaffold Pattern compliance
     const scaffoldAnalysis = await this.analyzeScaffoldPattern(projectDir);
     results.scaffoldPattern = scaffoldAnalysis;
-    
+
     // Adjust score based on scaffold pattern
     if (scaffoldAnalysis.mirrorsAtlasStructure) {
       results.score = Math.min(100, results.score + 10);
@@ -313,7 +336,7 @@ class ThemeAnalyzer {
       // Add scaffold pattern issues to main issues
       results.issues.push(...scaffoldAnalysis.issues);
     }
-    
+
     return results;
   }
 
@@ -351,7 +374,7 @@ class ThemeAnalyzer {
     // Define expected Atlas folder structure that should be mirrored
     const expectedAtlasFolders = [
       '_base',
-      '_helpers', 
+      '_helpers',
       '_widgets',
       '_widgets/_core',
       '_widgets/_pluggable',
@@ -379,9 +402,10 @@ class ThemeAnalyzer {
     }
 
     // Calculate scaffold compliance
-    const complianceRatio = results.atlasStructureFound.length > 0 
-      ? mirroredCount / results.atlasStructureFound.length 
-      : 0;
+    const complianceRatio =
+      results.atlasStructureFound.length > 0
+        ? mirroredCount / results.atlasStructureFound.length
+        : 0;
 
     results.mirrorsAtlasStructure = complianceRatio >= 0.7; // 70% threshold
 
@@ -391,7 +415,7 @@ class ThemeAnalyzer {
       for (const file of scssFiles) {
         const content = await fs.readFile(file, 'utf-8');
         const strippedContent = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
-        
+
         if (strippedContent.length < 50) {
           results.stubbedFilesCount++;
         } else {
@@ -413,10 +437,14 @@ class ThemeAnalyzer {
 
       results.recommendations.push({
         title: 'Implement Scaffold Pattern',
-        description: 'Mirror the Atlas_Core folder structure in your custom theme. Create empty stubbed files that serve as placeholders for future customizations.',
-        benefit: 'Makes it immediately clear where to add overrides, prevents duplication, follows cascade correctly',
+        description:
+          'Mirror the Atlas_Core folder structure in your custom theme. Create empty stubbed files that serve as placeholders for future customizations.',
+        benefit:
+          'Makes it immediately clear where to add overrides, prevents duplication, follows cascade correctly',
         folders: results.recommendedFolders,
-        example: `// In ${results.recommendedFolders[0] || '_widgets'}/_buttons.scss:\n// Custom button overrides - leave empty if no customizations needed\n// Override Atlas_Core styles here\n`,
+        example: `// In ${
+          results.recommendedFolders[0] || '_widgets'
+        }/_buttons.scss:\n// Custom button overrides - leave empty if no customizations needed\n// Override Atlas_Core styles here\n`,
       });
     }
 
@@ -425,9 +453,12 @@ class ThemeAnalyzer {
     if (await this.pathExists(mainScssPath)) {
       try {
         const mainContent = await fs.readFile(mainScssPath, 'utf-8');
-        
+
         // Check for imports of Atlas files (potential duplication)
-        if (mainContent.includes('themesource/Atlas_Core') || mainContent.includes('../themesource/Atlas_Core')) {
+        if (
+          mainContent.includes('themesource/Atlas_Core') ||
+          mainContent.includes('../themesource/Atlas_Core')
+        ) {
           results.issues.push({
             severity: 'critical',
             message: 'main.scss imports from Atlas_Core - this causes CSS duplication!',
@@ -440,7 +471,7 @@ class ThemeAnalyzer {
           const atlasImportMatch = mainContent.match(/@import\s+['"][^'"]*atlas[^'"]*['"]/gi);
           if (atlasImportMatch) {
             results.issues.push({
-              severity: 'warning', 
+              severity: 'warning',
               message: `Potential Atlas import detected: ${atlasImportMatch[0]}`,
               fix: 'Verify this import is necessary. Atlas styles are automatically included by Mendix.',
             });
@@ -459,13 +490,13 @@ class ThemeAnalyzer {
    */
   async findFilesRecursive(dir, extension) {
     const files = [];
-    
+
     try {
       const entries = await fs.readdir(dir, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
-        
+
         if (entry.isDirectory()) {
           const subFiles = await this.findFilesRecursive(fullPath, extension);
           files.push(...subFiles);
@@ -476,7 +507,7 @@ class ThemeAnalyzer {
     } catch (error) {
       // Ignore errors (permission issues, etc.)
     }
-    
+
     return files;
   }
 
@@ -757,7 +788,389 @@ class ThemeAnalyzer {
       analysis.webFileCount = webFiles.length;
     }
 
+    // Detailed design properties analysis
+    if (analysis.hasDesignProperties) {
+      analysis.designPropertiesAnalysis = await this.analyzeDesignProperties(modulePath);
+    }
+
     return analysis;
+  }
+
+  /**
+   * Analyze design-properties.json for a module
+   * Validates CSS classes exist in SCSS and checks for proper structure
+   * Enhanced with comprehensive checks for common pitfalls
+   */
+  async analyzeDesignProperties(modulePath) {
+    const results = {
+      valid: true,
+      propertyCount: 0,
+      propertyTypes: {},
+      widgetTypes: [],
+      missingClasses: [],
+      cssVariables: [],
+      issues: [],
+      recommendations: [],
+      criticalWarnings: [],
+    };
+
+    // Valid property types in Mendix design-properties.json
+    const validPropertyTypes = [
+      'Toggle',
+      'Dropdown',
+      'Colorpicker',
+      'ToggleButtonGroup',
+      'Spacing',
+    ];
+
+    // Valid core widget types (from Model SDK)
+    const validCoreWidgets = [
+      'DivContainer',
+      'Text',
+      'ActionButton',
+      'LinkButton',
+      'Image',
+      'StaticImage',
+      'DynamicImage',
+      'Label',
+      'Title',
+      'PageTitle',
+      'TextBox',
+      'TextArea',
+      'ReferenceSelector',
+      'InputReferenceSetSelector',
+      'DatePicker',
+      'DropDown',
+      'CheckBox',
+      'RadioButtons',
+      'DataGrid2',
+      'ListView',
+      'TabContainer',
+      'GroupBox',
+      'ScrollContainer',
+      'LayoutGrid',
+      'Table',
+      'Snippet',
+      'DataView',
+      'NavigationTree',
+      'MenuBar',
+      'Header',
+      'Footer',
+      'All',
+    ];
+
+    // Check both web and native
+    for (const platform of ['web', 'native']) {
+      const dpPath = path.join(modulePath, platform, 'design-properties.json');
+
+      if (!(await this.pathExists(dpPath))) {
+        continue;
+      }
+
+      try {
+        const content = await fs.readFile(dpPath, 'utf-8');
+        const designProps = JSON.parse(content);
+
+        // Analyze the structure
+        if (Array.isArray(designProps)) {
+          for (const widgetGroup of designProps) {
+            // Collect widget types
+            if (widgetGroup.widgetTypes && Array.isArray(widgetGroup.widgetTypes)) {
+              for (const wt of widgetGroup.widgetTypes) {
+                if (!results.widgetTypes.includes(wt)) {
+                  results.widgetTypes.push(wt);
+                }
+                // Validate widget type (allow pluggable widget IDs like com.mendix.*)
+                if (!validCoreWidgets.includes(wt) && !wt.includes('.')) {
+                  results.issues.push({
+                    severity: 'warning',
+                    message: `Unknown widget type: "${wt}"`,
+                    fix: 'Verify widget type name matches Model SDK documentation or use fully qualified pluggable widget ID',
+                  });
+                }
+              }
+            }
+
+            if (widgetGroup.properties) {
+              for (const prop of widgetGroup.properties) {
+                results.propertyCount++;
+
+                // Validate property type
+                const propType = prop.type || 'unknown';
+                results.propertyTypes[propType] = (results.propertyTypes[propType] || 0) + 1;
+
+                if (!validPropertyTypes.includes(propType)) {
+                  results.issues.push({
+                    severity: 'critical',
+                    message: `Invalid property type: "${propType}"`,
+                    fix: `Use one of: ${validPropertyTypes.join(', ')}`,
+                  });
+                }
+
+                // CRITICAL CHECK: Category cannot be "Common"
+                if (prop.category && prop.category.toLowerCase() === 'common') {
+                  results.criticalWarnings.push({
+                    severity: 'critical',
+                    message: `Property "${prop.name}" uses reserved category "Common"`,
+                    fix: 'Change category to a different name like "Appearance" or "Layout". "Common" is reserved by Mendix.',
+                  });
+                  results.valid = false;
+                }
+
+                // Validate required fields based on property type
+                this.validatePropertyFields(prop, results);
+
+                // Collect CSS classes that need validation
+                if (prop.class) {
+                  // Toggle type - single class
+                  await this.validateCssClass(modulePath, platform, prop.class, results);
+                }
+
+                // Track CSS variables from Colorpicker and Spacing types
+                if (prop.property) {
+                  results.cssVariables.push({
+                    name: prop.property,
+                    type: propType,
+                    propertyName: prop.name,
+                  });
+                }
+
+                if (prop.options && Array.isArray(prop.options)) {
+                  // Check for duplicate classes in options
+                  const optionClasses = prop.options.filter((o) => o.class).map((o) => o.class);
+                  const duplicates = optionClasses.filter(
+                    (item, index) => optionClasses.indexOf(item) !== index && item !== ''
+                  );
+                  if (duplicates.length > 0) {
+                    results.issues.push({
+                      severity: 'warning',
+                      message: `Property "${prop.name}" has duplicate option classes: ${[
+                        ...new Set(duplicates),
+                      ].join(', ')}`,
+                      fix: 'Ensure each option has a unique class name',
+                    });
+                  }
+
+                  // Dropdown/ToggleButtonGroup - validate each option's class
+                  for (const option of prop.options) {
+                    if (option.class) {
+                      await this.validateCssClass(modulePath, platform, option.class, results);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        results.platforms = results.platforms || [];
+        results.platforms.push(platform);
+      } catch (error) {
+        results.valid = false;
+        results.issues.push({
+          severity: 'critical',
+          message: `Invalid JSON in ${platform}/design-properties.json: ${error.message}`,
+          fix: 'Validate JSON syntax in design-properties.json',
+        });
+      }
+    }
+
+    // Add recommendations if missing classes found
+    if (results.missingClasses.length > 0) {
+      results.issues.push({
+        severity: 'important',
+        message: `${results.missingClasses.length} CSS class(es) in design-properties.json not found in SCSS`,
+        details:
+          results.missingClasses.slice(0, 5).join(', ') +
+          (results.missingClasses.length > 5
+            ? ` ...and ${results.missingClasses.length - 5} more`
+            : ''),
+        fix: 'Ensure all CSS classes referenced in design-properties.json exist in your SCSS files',
+      });
+    }
+
+    // Add recommendation about CSS variables
+    if (results.cssVariables.length > 0) {
+      results.recommendations.push({
+        title: 'CSS Variables in Design Properties',
+        description: `Found ${results.cssVariables.length} CSS variable(s) used. Ensure each is defined with a fallback value in your SCSS.`,
+        example: 'background-color: var(--my-color, #ffffff);',
+        variables: results.cssVariables.slice(0, 5),
+      });
+    }
+
+    // Add critical migration warning if this is a custom module
+    const moduleName = path.basename(modulePath);
+    if (!['Atlas_Core', 'Atlas_Web_Content', 'Atlas_NativeMobile_Content'].includes(moduleName)) {
+      results.recommendations.push({
+        title: 'Migration Warning',
+        severity: 'critical',
+        description:
+          'When moving or changing themes, you MUST copy design-properties.json to the new theme module. Forgetting this file will cause all custom styling options to disappear in Studio Pro!',
+        checklist: [
+          'Copy design-properties.json to new theme module',
+          'Verify all CSS classes exist in new theme SCSS',
+          'Test in Studio Pro that design options appear correctly',
+        ],
+      });
+    }
+
+    return results;
+  }
+
+  /**
+   * Validate that required fields are present for each property type
+   */
+  validatePropertyFields(prop, results) {
+    const requiredFields = {
+      Toggle: ['type', 'name', 'class'],
+      Dropdown: ['type', 'name', 'options'],
+      Colorpicker: ['type', 'name', 'property'],
+      ToggleButtonGroup: ['type', 'name', 'options'],
+      Spacing: ['type', 'name', 'property'],
+    };
+
+    const required = requiredFields[prop.type];
+    if (required) {
+      for (const field of required) {
+        if (!prop[field]) {
+          results.issues.push({
+            severity: 'warning',
+            message: `Property "${prop.name || 'unnamed'}" (${
+              prop.type
+            }) missing required field: ${field}`,
+            fix: `Add the "${field}" field to this design property`,
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate that a CSS class exists in SCSS files
+   */
+  async validateCssClass(modulePath, platform, className, results) {
+    if (!className) return;
+
+    const platformPath = path.join(modulePath, platform);
+    try {
+      const scssFiles = await this.findFilesRecursive(platformPath, '.scss');
+
+      let classFound = false;
+      const classPattern = new RegExp(`\\.${className.replace(/[-]/g, '[-]')}\\b`);
+
+      for (const file of scssFiles) {
+        const content = await fs.readFile(file, 'utf-8');
+        if (classPattern.test(content)) {
+          classFound = true;
+          break;
+        }
+      }
+
+      if (!classFound) {
+        results.missingClasses.push(className);
+      }
+    } catch (error) {
+      // Ignore validation errors
+    }
+  }
+
+  /**
+   * Analyze font configuration in the theme
+   */
+  async analyzeFontConfiguration(projectDir) {
+    const results = {
+      fontStrategy: 'unknown',
+      fontImportVariable: null,
+      issues: [],
+      recommendations: [],
+      gdprCompliant: null,
+    };
+
+    const customVarsPath = path.join(projectDir, 'theme', 'web', 'custom-variables.scss');
+
+    if (!(await this.pathExists(customVarsPath))) {
+      return results;
+    }
+
+    try {
+      const content = await fs.readFile(customVarsPath, 'utf-8');
+
+      // Check for $font-family-import variable
+      const fontImportMatch = content.match(/\$font-family-import\s*:\s*["']([^"']+)["']/);
+
+      if (fontImportMatch) {
+        results.fontImportVariable = fontImportMatch[1];
+
+        if (fontImportMatch[1].includes('fonts.googleapis.com')) {
+          results.fontStrategy = 'google-cdn';
+          results.gdprCompliant = false;
+          results.recommendations.push({
+            severity: 'suggestion',
+            message: 'Using Google Fonts CDN - consider local fonts for GDPR compliance',
+            fix: 'Download fonts from github.com/mendix/open-sans, place in theme/web/fonts/, update $font-family-import to "./fonts/open-sans.css"',
+            impact:
+              'Google Fonts may track users via IP address, which requires consent under GDPR',
+          });
+        } else if (fontImportMatch[1].startsWith('./') || fontImportMatch[1].startsWith('../')) {
+          results.fontStrategy = 'local';
+          results.gdprCompliant = true;
+
+          // Verify the local font file exists
+          const fontPath = path.join(
+            projectDir,
+            'theme',
+            'web',
+            fontImportMatch[1].replace('./', '')
+          );
+          if (!(await this.pathExists(fontPath))) {
+            results.issues.push({
+              severity: 'important',
+              message: `Local font file not found: ${fontImportMatch[1]}`,
+              fix: 'Ensure font CSS file exists at the specified path',
+            });
+          }
+        } else {
+          results.fontStrategy = 'external';
+        }
+      } else {
+        // No custom font import - using Atlas defaults
+        results.fontStrategy = 'atlas-default';
+        results.recommendations.push({
+          severity: 'suggestion',
+          message:
+            'Using Atlas default fonts (Google Fonts CDN) - consider configuring for your brand',
+          fix: 'Add $font-family-import variable in custom-variables.scss to configure fonts',
+        });
+      }
+
+      // Check for font family variables
+      const hasFontFamily = /\$font-family-(base|headings)/.test(content);
+      if (!hasFontFamily) {
+        results.recommendations.push({
+          severity: 'suggestion',
+          message: 'No custom font family variables defined',
+          fix: 'Define $font-family-base and $font-family-headings for consistent typography',
+        });
+      }
+
+      // Check for font fallback stack
+      const fontFamilyMatch = content.match(/\$font-family-base\s*:\s*([^;]+)/);
+      if (fontFamilyMatch && !fontFamilyMatch[1].includes(',')) {
+        results.issues.push({
+          severity: 'suggestion',
+          message: 'Font family has no fallback fonts',
+          fix: "Add fallback fonts: $font-family-base: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;",
+        });
+      }
+    } catch (error) {
+      results.issues.push({
+        severity: 'warning',
+        message: `Could not analyze font configuration: ${error.message}`,
+      });
+    }
+
+    return results;
   }
 
   /**
@@ -837,7 +1250,7 @@ class ThemeAnalyzer {
     // Add scaffold pattern recommendations if present
     if (analyses.structure.scaffoldPattern) {
       const scaffold = analyses.structure.scaffoldPattern;
-      
+
       if (scaffold.recommendations && scaffold.recommendations.length > 0) {
         for (const rec of scaffold.recommendations) {
           recommendations.push({
@@ -858,7 +1271,8 @@ class ThemeAnalyzer {
           category: 'scaffold-pattern',
           message: 'Custom theme has styles but does not mirror Atlas structure',
           fix: 'Reorganize styles to match Atlas_Core folder structure. Create corresponding folders and move styles to matching locations.',
-          impact: 'Makes maintenance easier, prevents developer confusion about where to add overrides',
+          impact:
+            'Makes maintenance easier, prevents developer confusion about where to add overrides',
         });
       }
     }
@@ -901,6 +1315,42 @@ class ThemeAnalyzer {
           impact: 'Enables consistent branding across multiple Mendix apps',
         });
       }
+
+      // Check for design properties in custom modules
+      for (const mod of analyses.modules.modules) {
+        if (mod.hasDesignProperties && mod.designPropertiesAnalysis) {
+          const dpAnalysis = mod.designPropertiesAnalysis;
+
+          // Add missing CSS class issues
+          if (dpAnalysis.issues) {
+            for (const issue of dpAnalysis.issues) {
+              recommendations.push({
+                ...issue,
+                category: 'design-properties',
+                module: mod.name,
+              });
+            }
+          }
+        }
+      }
+
+      // Add design-properties.json migration reminder for custom modules
+      const customModulesWithDesignProps = analyses.modules.modules.filter(
+        (m) =>
+          m.hasDesignProperties &&
+          !['Atlas_Core', 'Atlas_Web_Content', 'Atlas_NativeMobile_Content'].includes(m.name)
+      );
+
+      if (customModulesWithDesignProps.length > 0) {
+        recommendations.push({
+          severity: 'important',
+          category: 'design-properties',
+          message: '⚠️ Remember: When migrating themes, ALWAYS copy design-properties.json!',
+          fix: 'If you copy/migrate to a new theme, ensure design-properties.json is also copied to preserve Studio Pro design options',
+          impact: 'Without this file, widgets lose their custom styling options in Studio Pro',
+          modules: customModulesWithDesignProps.map((m) => m.name),
+        });
+      }
     }
 
     return recommendations;
@@ -911,11 +1361,21 @@ class ThemeAnalyzer {
    */
   categorizeIssue(issue) {
     const message = issue.message.toLowerCase();
-    if (message.includes('scaffold') || message.includes('mirror') || message.includes('atlas structure')) {
+    if (
+      message.includes('scaffold') ||
+      message.includes('mirror') ||
+      message.includes('atlas structure')
+    ) {
       return 'scaffold-pattern';
     }
     if (message.includes('duplication') || message.includes('imports from atlas')) {
       return 'scaffold-pattern';
+    }
+    if (message.includes('design-properties') || message.includes('css class')) {
+      return 'design-properties';
+    }
+    if (message.includes('font') || message.includes('gdpr') || message.includes('typography')) {
+      return 'fonts';
     }
     if (message.includes('variable') || message.includes('color') || message.includes('token')) {
       return 'design-tokens';

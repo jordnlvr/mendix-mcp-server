@@ -9,8 +9,87 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 
-- GitHub Actions CI/CD pipeline
-- More community resources integration
+- Automated vector reindexing on knowledge updates
+- Weekly harvest of Mendix release notes
+
+---
+
+## [2.7.3] - 2025-12-08
+
+### Added
+
+- **Enhanced Font Configuration** (`theme-analysis.json` v1.4.0):
+  - 4 new font rules: `FONT-006` through `FONT-009`
+  - `font-display: swap` best practice
+  - Weight optimization guidance (only include used weights)
+  - Hardcoded URL detection warning
+  - Network debugging checklist
+  - 3 common font mistakes with symptoms and fixes
+  - Detailed 4-step local font setup from official Mendix repo
+
+- **Enhanced Design System Workflow** (`theme-analysis.json`):
+  - Expanded to 8-step workflow (was 7)
+  - New Step 3: UI Resources module ordering (critical!)
+  - Detailed howTo instructions for each step
+  - Building block and page template creation guides
+  - 4 common design system mistakes with fixes
+
+---
+
+## [2.7.2] - 2025-12-08
+
+### Added
+
+- **Comprehensive Design Properties Documentation** (`theme-analysis.json` v1.3.0):
+  - All 5 property types: Toggle, Dropdown, ColorPicker, ToggleButtonGroup, Spacing
+  - 3 CRITICAL warnings: migration danger, reserved "Common" category, multiSelect issues
+  - 7 IMPORTANT rules for CSS class validation, widget types, etc.
+  - Real-world examples from Atlas repo (button sizes, container borders)
+  - Common pitfalls section with 5 specific dangers
+
+- **ThemeAnalyzer Enhancements** (`src/analyzers/ThemeAnalyzer.js`):
+  - `analyzeDesignProperties()` method for deep validation
+  - Property type validation against 5 valid types
+  - Reserved "Common" category detection
+  - CSS class existence validation (checks SCSS files)
+  - Widget type validation
+  - Duplicate class detection across properties
+  - Automatic migration warning injection
+
+---
+
+## [2.7.1] - 2025-12-08
+
+### Added
+
+- **Scaffold Pattern Documentation** (`theme-analysis.json`):
+  - Complete scaffold pattern with 5 rules (SCAFFOLD-001 through SCAFFOLD-005)
+  - Real-world examples showing good vs bad approaches
+  - Atlas_Core folder structure reference
+  - Stubbed file templates with comment headers
+  - Import order best practices
+
+---
+
+## [2.7.0] - 2025-12-08
+
+### Added
+
+- **ThemeAnalyzer** (`src/analyzers/ThemeAnalyzer.js`):
+  - Complete analyzer framework for Mendix themes (50KB)
+  - Deep structure analysis with nested file extraction
+  - Custom variable detection (colors, fonts, spacing, etc.)
+  - Design properties validation
+  - Atlas compliance scoring
+  - Scaffold pattern validation
+  - Best practice recommendations
+  - Integration with MCP tools
+
+- **Theme Analysis Knowledge Base** (`knowledge/theme-analysis.json`):
+  - Comprehensive SCSS best practices
+  - Variable naming conventions
+  - Import order rules
+  - Design properties structure
 
 ---
 

@@ -2,12 +2,7 @@
   "topic": "Mendix Development Best Practices",
   "description": "Comprehensive collection of Mendix development best practices covering domain modeling, microflows, pages, security, performance, and architecture. Based on official Mendix guidelines, community consensus, and enterprise experience.",
   "last_updated": "2025-12-01",
-  "mendix_versions": [
-    "10.24 (LTS)",
-    "11.4.0",
-    "11.5.0",
-    "Most practices are version-agnostic"
-  ],
+  "mendix_versions": ["10.24 (LTS)", "11.4.0", "11.5.0", "Most practices are version-agnostic"],
   "official_docs": [
     "https://docs.mendix.com/refguide/community-best-practices-for-app-performance/",
     "https://docs.mendix.com/refguide/performance-best-practices/",
@@ -116,15 +111,8 @@
         "description": "Model hierarchical reference data (categories) with parent-child associations",
         "implementation": {
           "structure": "Top → Middle → Bottom (e.g., Area → Specialty → Focus)",
-          "entities": [
-            "Area (parent)",
-            "Specialty (child of Area)",
-            "Focus (child of Specialty)"
-          ],
-          "associations": [
-            "Area_Specialty (1-*)",
-            "Specialty_Focus (1-*)"
-          ],
+          "entities": ["Area (parent)", "Specialty (child of Area)", "Focus (child of Specialty)"],
+          "associations": ["Area_Specialty (1-*)", "Specialty_Focus (1-*)"],
           "seeding": "Use After Startup microflow (ASU_) to seed reference data"
         },
         "naming_convention": {
@@ -134,12 +122,7 @@
         },
         "real_world_example": {
           "project": "SmartHub (RequestHub module)",
-          "areas": [
-            "Mendix",
-            "RapidMiner",
-            "Siemens",
-            "Other"
-          ],
+          "areas": ["Mendix", "RapidMiner", "Siemens", "Other"],
           "specialties_per_area": "Technical skill areas within each Area",
           "focus_per_specialty": "Specific products/topics within Specialty"
         },
@@ -561,11 +544,7 @@
           "ui_testing": {
             "description": "End-to-end testing of user interfaces",
             "tool": "Mendix Application Test Suite (ATS)",
-            "alternatives": [
-              "Selenium",
-              "Cypress",
-              "Playwright"
-            ],
+            "alternatives": ["Selenium", "Cypress", "Playwright"],
             "ats_features": [
               "Record and playback",
               "Mendix-aware element selection",
@@ -575,18 +554,8 @@
           },
           "performance_testing": {
             "description": "Test application under load",
-            "tools": [
-              "JMeter",
-              "Gatling",
-              "k6",
-              "Azure Load Testing"
-            ],
-            "metrics": [
-              "Response time",
-              "Throughput",
-              "Error rate",
-              "Resource utilization"
-            ],
+            "tools": ["JMeter", "Gatling", "k6", "Azure Load Testing"],
+            "metrics": ["Response time", "Throughput", "Error rate", "Resource utilization"],
             "best_practices": [
               "Test realistic user scenarios",
               "Gradually increase load",
@@ -596,17 +565,9 @@
           },
           "security_testing": {
             "description": "Verify security controls",
-            "areas": [
-              "Authentication",
-              "Authorization",
-              "XPath constraints",
-              "API security"
-            ],
+            "areas": ["Authentication", "Authorization", "XPath constraints", "API security"],
             "approach": "Test as different user roles, verify data isolation",
-            "tools": [
-              "OWASP ZAP",
-              "Burp Suite for penetration testing"
-            ]
+            "tools": ["OWASP ZAP", "Burp Suite for penetration testing"]
           }
         },
         "test_data_management": {

@@ -1,10 +1,10 @@
 {
   "metadata": {
     "name": "Theme Analysis & Best Practices",
-    "version": "1.1.0",
-    "lastUpdated": "2025-12-08",
-    "source": "docs.mendix.com + expert patterns",
-    "description": "Comprehensive theme analysis rules and best practices for Mendix custom themes"
+    "version": "1.4.0",
+    "lastUpdated": "2025-06-12",
+    "source": "docs.mendix.com + expert patterns + Atlas GitHub repo",
+    "description": "Comprehensive theme analysis rules and best practices for Mendix custom themes. Version 1.4.0 enhances font configuration with detailed local font setup, @font-face rules, and common mistakes. Design system section expanded with UI Resources module ordering, 8-step workflow, and common mistakes."
   },
   "bestPractices": {
     "scaffoldPattern": {
@@ -59,6 +59,660 @@
           "good": "// Only override what's different\n.btn-primary { background-color: $brand-primary; }"
         }
       ]
+    },
+    "designProperties": {
+      "title": "Design Properties Configuration (design-properties.json)",
+      "importance": "critical",
+      "description": "design-properties.json exposes customizable style options in Studio Pro's Properties panel. It maps CSS classes or CSS variables to user-friendly toggles, dropdowns, color pickers, and more. This file is ESSENTIAL when migrating themes!",
+      "location": "themesource/{module}/{web|native}/design-properties.json",
+      "criticalWarnings": [
+        {
+          "id": "DPROP-CRITICAL-001",
+          "warning": "MIGRATION DANGER: When moving or changing themes, you MUST copy design-properties.json!",
+          "why": "If you migrate to a new theme module and forget this file, ALL custom styling options in Studio Pro DISAPPEAR for widgets. Your existing widgets will show 'Unknown class' errors and lose their design properties.",
+          "checklist": [
+            "Copy design-properties.json to new theme module's themesource/{module}/web/ folder",
+            "Verify ALL CSS classes referenced in the JSON exist in your SCSS files",
+            "Test in Studio Pro that design options appear correctly for widgets",
+            "Update any old module references if you renamed the theme module"
+          ]
+        },
+        {
+          "id": "DPROP-CRITICAL-002",
+          "warning": "The 'category' field cannot be set to 'Common'",
+          "why": "'Common' is a reserved category name in Mendix. Using it will cause errors or unexpected behavior.",
+          "bad": "{ \"category\": \"Common\" }",
+          "good": "{ \"category\": \"Appearance\" } or { \"category\": \"Layout\" }"
+        },
+        {
+          "id": "DPROP-CRITICAL-003",
+          "warning": "DO NOT change 'multiSelect' field after design properties are in use",
+          "why": "Changing multiSelect from true to false (or vice versa) after properties are already applied to widgets causes consistency errors. Mendix cannot migrate the existing property values.",
+          "consequence": "Widgets using the property may show errors or lose their styling"
+        }
+      ],
+      "rules": [
+        {
+          "id": "DPROP-001",
+          "rule": "Every CSS class in design-properties.json MUST exist in your SCSS",
+          "why": "If you reference .btn-xl in design-properties.json but that class doesn't exist in your SCSS, applying the property does nothing - the user sees an option that appears to work but has no effect",
+          "validation": "For each 'class' value in design-properties.json, verify .{class} exists in compiled CSS",
+          "example": {
+            "designProperty": "{ \"name\": \"Extra Large\", \"class\": \"btn-xl\" }",
+            "requiredScss": ".btn-xl { font-size: 1.5rem; padding: 1rem 2rem; }"
+          }
+        },
+        {
+          "id": "DPROP-002",
+          "rule": "Use CSS Variables for dynamic styling, CSS Classes for static variants",
+          "why": "CSS variables (via 'property' field) allow runtime changes without additional classes. CSS classes (via 'class' field) are better for pre-defined variants.",
+          "cssClassApproach": {
+            "use": "Pre-defined variants like sizes, colors, states",
+            "example": "{ \"type\": \"Dropdown\", \"options\": [{ \"name\": \"Large\", \"class\": \"btn-lg\" }] }",
+            "pros": ["Clear, predictable CSS", "Easy to debug"],
+            "cons": ["Cannot be changed at runtime"]
+          },
+          "cssVariableApproach": {
+            "use": "Dynamic values like specific colors, spacing that varies per instance",
+            "example": "{ \"type\": \"Colorpicker\", \"name\": \"Background\", \"property\": \"--widget-bg-color\" }",
+            "pros": ["Runtime flexibility", "User can pick exact values"],
+            "cons": ["Requires CSS variable support in your styles"]
+          }
+        },
+        {
+          "id": "DPROP-003",
+          "rule": "Use semantic category names that match Studio Pro conventions",
+          "why": "Studio Pro groups properties by category - using standard names improves UX",
+          "recommendedCategories": [
+            "Appearance",
+            "Layout",
+            "Spacing",
+            "Typography",
+            "Effects",
+            "Interaction"
+          ],
+          "avoidCategories": ["Common (reserved)", "Generic", "Other", "Misc"]
+        },
+        {
+          "id": "DPROP-004",
+          "rule": "Provide clear 'description' fields for each property",
+          "why": "Description shows as tooltip in Studio Pro - helps developers understand what the option does",
+          "bad": "{ \"name\": \"Size\" }",
+          "good": "{ \"name\": \"Button Size\", \"description\": \"Controls the button's height and padding. Large is recommended for primary actions.\" }"
+        },
+        {
+          "id": "DPROP-005",
+          "rule": "Use 'oldNames' when renaming design properties",
+          "why": "Allows Mendix to automatically migrate widgets using the old property name to the new name",
+          "example": "{ \"name\": \"Button Variant\", \"oldNames\": [\"btn-style\", \"buttonStyle\"] }"
+        }
+      ],
+      "propertyTypes": {
+        "Toggle": {
+          "description": "Boolean on/off switch for a single CSS class",
+          "useWhen": "Adding/removing a single style feature (shadow, border, etc.)",
+          "requiredFields": ["type", "name", "class"],
+          "optionalFields": ["description", "category"],
+          "example": {
+            "type": "Toggle",
+            "name": "Show Shadow",
+            "description": "Adds a subtle drop shadow to the widget",
+            "class": "has-shadow"
+          },
+          "scssRequired": ".has-shadow { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }"
+        },
+        "Dropdown": {
+          "description": "Single selection from a list of options, each with its own CSS class",
+          "useWhen": "Mutually exclusive variants (Size: Small/Medium/Large)",
+          "requiredFields": ["type", "name", "options"],
+          "optionalFields": ["description", "category"],
+          "options": {
+            "structure": "Array of { name, class } objects",
+            "emptyFirst": "First option typically has empty class (default style)",
+            "example": [
+              { "name": "Default", "class": "" },
+              { "name": "Small", "class": "btn-sm" },
+              { "name": "Large", "class": "btn-lg" },
+              { "name": "Extra Large", "class": "btn-xl" }
+            ]
+          },
+          "example": {
+            "type": "Dropdown",
+            "name": "Button Size",
+            "description": "Controls the overall size of the button",
+            "options": [
+              { "name": "Default", "class": "" },
+              { "name": "Small", "class": "btn-sm" },
+              { "name": "Large", "class": "btn-lg" }
+            ]
+          },
+          "scssRequired": ".btn-sm { padding: 0.25rem 0.5rem; }\n.btn-lg { padding: 0.75rem 1.5rem; }"
+        },
+        "Colorpicker": {
+          "description": "Color selection that sets a CSS variable value",
+          "useWhen": "User needs to pick a specific color value (backgrounds, borders)",
+          "requiredFields": ["type", "name", "property"],
+          "optionalFields": ["description", "category"],
+          "note": "Uses CSS variable (--property-name), NOT a CSS class",
+          "example": {
+            "type": "Colorpicker",
+            "name": "Background Color",
+            "description": "Sets the background color of this widget",
+            "property": "--widget-bg-color"
+          },
+          "scssRequired": ".my-widget { background-color: var(--widget-bg-color, #ffffff); }"
+        },
+        "ToggleButtonGroup": {
+          "description": "Multi-select - user can enable multiple options simultaneously",
+          "useWhen": "Multiple independent styles can be combined (border sides, effects)",
+          "requiredFields": ["type", "name", "options"],
+          "optionalFields": ["description", "category"],
+          "example": {
+            "type": "ToggleButtonGroup",
+            "name": "Borders",
+            "description": "Select which sides should have a border",
+            "options": [
+              { "name": "Top", "class": "border-top" },
+              { "name": "Right", "class": "border-right" },
+              { "name": "Bottom", "class": "border-bottom" },
+              { "name": "Left", "class": "border-left" }
+            ]
+          },
+          "scssRequired": ".border-top { border-top: 1px solid var(--border-color); }\n// ... etc for each side"
+        },
+        "Spacing": {
+          "description": "Uses Studio Pro's built-in spacing picker for margin/padding",
+          "useWhen": "Controlling spacing with Mendix's standard spacing scale",
+          "requiredFields": ["type", "name", "property"],
+          "optionalFields": ["description", "category", "attribute"],
+          "propertyValues": ["margin", "padding"],
+          "attributeValues": ["Top", "Right", "Bottom", "Left", "Horizontal", "Vertical", null],
+          "example": {
+            "type": "Spacing",
+            "name": "Outer Spacing",
+            "description": "Margin around the widget",
+            "property": "margin"
+          },
+          "withAttribute": {
+            "type": "Spacing",
+            "name": "Top Margin",
+            "property": "margin",
+            "attribute": "Top"
+          }
+        }
+      },
+      "widgetTypes": {
+        "description": "The 'widgetTypes' key in design-properties.json specifies which widgets can use the property",
+        "coreWidgets": [
+          "DivContainer",
+          "Text",
+          "ActionButton",
+          "LinkButton",
+          "Image",
+          "StaticImage",
+          "DynamicImage",
+          "Label",
+          "Title",
+          "PageTitle",
+          "TextBox",
+          "TextArea",
+          "ReferenceSelector",
+          "InputReferenceSetSelector",
+          "DatePicker",
+          "DropDown",
+          "CheckBox",
+          "RadioButtons",
+          "DataGrid2",
+          "ListView",
+          "TabContainer",
+          "GroupBox",
+          "ScrollContainer",
+          "LayoutGrid",
+          "Table",
+          "Snippet",
+          "DataView",
+          "NavigationTree",
+          "MenuBar",
+          "Header",
+          "Footer"
+        ],
+        "pluggableWidgets": "Use the fully qualified widget ID from the widget package (e.g., 'com.mendix.widget.native.badge.Badge')",
+        "allWidgets": "Use 'All' to apply to every widget type",
+        "example": {
+          "widgetTypes": ["DivContainer", "LayoutGrid"],
+          "properties": [{ "type": "Toggle", "name": "Flex Layout", "class": "d-flex" }]
+        }
+      },
+      "precedenceOrder": {
+        "description": "When multiple modules define the same design property, later modules override earlier ones",
+        "order": [
+          "1. Non-UI Marketplace modules (lowest priority)",
+          "2. UI Resources modules in App Settings order (Atlas_Core, then other UI modules)",
+          "3. Non-UI user modules",
+          "4. Custom theme module set in App Settings > Theme (highest priority)"
+        ],
+        "extending": "To add options to existing Atlas properties, create design-properties.json in your module and define the same property name with additional options",
+        "overriding": "To completely replace an Atlas property, define it with the same name - your version takes precedence"
+      },
+      "commonPitfalls": [
+        {
+          "pitfall": "CSS class doesn't exist",
+          "symptom": "Design property appears in Studio Pro but applying it has no visual effect",
+          "fix": "Ensure the CSS class is defined in your compiled SCSS"
+        },
+        {
+          "pitfall": "Forgot to copy design-properties.json during theme migration",
+          "symptom": "All custom design options disappear from Studio Pro after switching themes",
+          "fix": "Copy design-properties.json from old theme module to new one"
+        },
+        {
+          "pitfall": "Using 'Common' as category name",
+          "symptom": "Properties may not appear or cause errors",
+          "fix": "Use a different category name like 'Appearance' or 'Layout'"
+        },
+        {
+          "pitfall": "Changing multiSelect on existing property",
+          "symptom": "Consistency errors on widgets using the property",
+          "fix": "Create a new property with different name instead of modifying multiSelect"
+        },
+        {
+          "pitfall": "CSS variable not defined with default",
+          "symptom": "Colorpicker property has no effect until color is explicitly set",
+          "fix": "Always provide default value: var(--my-color, #default)"
+        },
+        {
+          "pitfall": "Property options conflict with each other",
+          "symptom": "Selecting multiple options causes unexpected styling",
+          "fix": "For mutually exclusive options, use Dropdown instead of ToggleButtonGroup"
+        }
+      ],
+      "validationChecklist": [
+        "✓ File is valid JSON (no syntax errors)",
+        "✓ Every 'class' value exists as a CSS class in compiled output",
+        "✓ Every 'property' value (CSS variable) is used in SCSS with a default",
+        "✓ No category is named 'Common'",
+        "✓ Widget types specified exist in Mendix or are valid pluggable widget IDs",
+        "✓ All required fields present for each property type",
+        "✓ Dropdown options have unique class names (no duplicates)",
+        "✓ Property names are unique within each widget type section"
+      ],
+      "atlasExamples": {
+        "buttonSizes": {
+          "widgetTypes": ["ActionButton", "LinkButton"],
+          "properties": [
+            {
+              "type": "Dropdown",
+              "name": "Size",
+              "description": "Button size variant",
+              "options": [
+                { "name": "Default", "class": "" },
+                { "name": "Small", "class": "btn-sm" },
+                { "name": "Large", "class": "btn-lg" }
+              ]
+            }
+          ]
+        },
+        "containerBorders": {
+          "widgetTypes": ["DivContainer"],
+          "properties": [
+            {
+              "type": "Dropdown",
+              "name": "Border",
+              "options": [
+                { "name": "None", "class": "div-border-toggle-none" },
+                { "name": "All sides", "class": "div-border-toggle-all" },
+                { "name": "Top only", "class": "div-border-toggle-top" },
+                { "name": "Bottom only", "class": "div-border-toggle-bottom" }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "fontConfiguration": {
+      "title": "Font Configuration & Best Practices",
+      "importance": "high",
+      "description": "Mendix uses the $font-family-import variable to control where fonts are loaded from. By default it uses Google Fonts CDN, but can be configured for local fonts.",
+      "rules": [
+        {
+          "id": "FONT-001",
+          "rule": "Choose font loading strategy based on requirements",
+          "options": [
+            {
+              "strategy": "Google Fonts CDN (default)",
+              "config": "$font-family-import: \"https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700\";",
+              "pros": ["Fast CDN delivery", "Automatic caching", "Easy setup"],
+              "cons": ["External dependency", "GDPR concerns", "May be blocked by CSP"]
+            },
+            {
+              "strategy": "Local Fonts",
+              "config": "$font-family-import: \"./fonts/open-sans.css\";",
+              "pros": [
+                "GDPR compliant",
+                "Works with strict CSP",
+                "No external dependencies",
+                "Works offline"
+              ],
+              "cons": ["Larger app bundle", "Manual updates for new fonts"],
+              "setup": {
+                "overview": "Mendix provides official Open Sans fonts at github.com/mendix/open-sans for local hosting",
+                "steps": [
+                  {
+                    "step": 1,
+                    "action": "Download font files",
+                    "source": "https://github.com/mendix/open-sans",
+                    "note": "Clone or download ZIP from the repo"
+                  },
+                  {
+                    "step": 2,
+                    "action": "Create fonts folder",
+                    "location": "theme/web/fonts/",
+                    "note": "Create this folder inside your theme module if it doesn't exist"
+                  },
+                  {
+                    "step": 3,
+                    "action": "Copy font files and CSS",
+                    "files": ["open-sans.css", "*.woff", "*.woff2", "*.ttf"],
+                    "destination": "theme/web/fonts/"
+                  },
+                  {
+                    "step": 4,
+                    "action": "Update $font-family-import variable",
+                    "file": "theme/web/custom-variables.scss",
+                    "value": "$font-family-import: \"./fonts/open-sans.css\";",
+                    "note": "Path is relative to compiled CSS location"
+                  }
+                ],
+                "fontFaceExample": {
+                  "description": "Example @font-face rule structure (provided in open-sans.css)",
+                  "css": "@font-face {\n  font-family: 'Open Sans';\n  src: local('Open Sans Regular'),\n       url('open-sans-regular.woff2') format('woff2'),\n       url('open-sans-regular.woff') format('woff');\n  font-weight: 400;\n  font-style: normal;\n  font-display: swap;\n}"
+                },
+                "customFonts": {
+                  "note": "For fonts other than Open Sans, create your own CSS file with @font-face rules",
+                  "steps": [
+                    "Download font files (.woff2 preferred, .woff for fallback)",
+                    "Create a CSS file with @font-face declarations for each weight/style",
+                    "Include font-display: swap for better loading performance",
+                    "Update $font-family-import to point to your CSS file",
+                    "Update $font-family-base with your font name"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "id": "FONT-002",
+          "rule": "Use local fonts for GDPR/privacy compliance",
+          "why": "Google Fonts CDN can track users via IP address. European regulations may require explicit consent for external font loading.",
+          "recommendation": "For EU-facing applications or strict privacy requirements, always use local fonts"
+        },
+        {
+          "id": "FONT-003",
+          "rule": "Use local fonts for Content Security Policy (CSP) compliance",
+          "why": "Strict CSP headers may block requests to fonts.googleapis.com. Local fonts avoid this entirely.",
+          "cspExample": "style-src 'self'; font-src 'self';"
+        },
+        {
+          "id": "FONT-004",
+          "rule": "Define font family variables in custom-variables.scss",
+          "why": "Centralizes typography settings for easy theming",
+          "variables": [
+            "$font-family-import: font source URL or path",
+            "$font-family-base: primary font stack",
+            "$font-family-headings: heading font (if different)",
+            "$font-size-base: base font size (typically 14px)",
+            "$font-weight-normal: normal weight (400)",
+            "$font-weight-semibold: semibold weight (600)",
+            "$font-weight-bold: bold weight (700)"
+          ]
+        },
+        {
+          "id": "FONT-005",
+          "rule": "Include fallback fonts in font-family stacks",
+          "why": "Ensures readable text even if primary font fails to load",
+          "example": "$font-family-base: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+        },
+        {
+          "id": "FONT-006",
+          "severity": "important",
+          "rule": "Use font-display: swap to prevent invisible text",
+          "why": "Without font-display: swap, text may be invisible while fonts load (FOIT - Flash of Invisible Text). Using 'swap' shows fallback font immediately, then swaps when custom font loads.",
+          "implementation": {
+            "inFontFace": "@font-face { font-display: swap; }",
+            "forGoogleFonts": "https://fonts.googleapis.com/css2?family=Open+Sans&display=swap"
+          }
+        },
+        {
+          "id": "FONT-007",
+          "severity": "warning",
+          "rule": "Only include font weights you actually use",
+          "why": "Each font weight adds ~20-50KB to download. Loading unused weights (300, 500, 800) wastes bandwidth and slows page load.",
+          "recommendation": "Audit your SCSS for $font-weight-* usages. Most apps need only 400, 600, and 700.",
+          "example": {
+            "bad": "@import url('https://fonts.googleapis.com/css?family=Open+Sans:100,200,300,400,500,600,700,800,900');",
+            "good": "@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,600,700');"
+          }
+        },
+        {
+          "id": "FONT-008",
+          "severity": "critical",
+          "rule": "Never hardcode font URLs in multiple places",
+          "why": "If $font-family-import is overridden but other files still reference Google Fonts directly, you get duplicate font loading AND GDPR/CSP violations.",
+          "danger": "Searching codebase for 'fonts.googleapis.com' may reveal violations",
+          "solution": "Always use $font-family-import variable. Never use @import url() directly in SCSS files."
+        },
+        {
+          "id": "FONT-009",
+          "severity": "important",
+          "rule": "Test fonts with browser developer tools Network tab",
+          "why": "Verify correct fonts load from expected source (local vs CDN). Check for 404 errors on font files.",
+          "checks": [
+            "Filter by 'Font' in Network tab",
+            "Verify fonts load from your domain (local) or fonts.gstatic.com (Google CDN)",
+            "Check for failed font requests (red entries)",
+            "Verify only needed weights are loaded"
+          ]
+        }
+      ],
+      "commonMistakes": [
+        {
+          "id": "FONT-MISTAKE-001",
+          "mistake": "Copying theme without updating font paths",
+          "symptom": "Fonts don't load, text shows in fallback font, 404 errors in console",
+          "fix": "Update $font-family-import path to match new folder structure"
+        },
+        {
+          "id": "FONT-MISTAKE-002",
+          "mistake": "Wrong relative path for local fonts",
+          "symptom": "Local fonts show 404 in Network tab",
+          "note": "Path is relative to compiled CSS, not SCSS source",
+          "fix": "Usually ./fonts/filename.css from the CSS file's perspective"
+        },
+        {
+          "id": "FONT-MISTAKE-003",
+          "mistake": "Missing font file formats",
+          "symptom": "Fonts work in Chrome but not Safari/older browsers",
+          "fix": "Include both .woff2 (modern) and .woff (fallback) formats"
+        }
+      ]
+    },
+    "designSystem": {
+      "title": "Company Design System Creation",
+      "importance": "medium",
+      "description": "A design system is the single source of truth containing all elements needed to design and develop consistent product interfaces. Mendix enables creating custom design systems that can be shared across multiple apps.",
+      "components": {
+        "styling": [
+          "Brand colors",
+          "Typography",
+          "Spacing scale",
+          "Shadow definitions",
+          "Border radius"
+        ],
+        "patterns": ["Page templates", "Building blocks", "Layouts"],
+        "components": ["Custom widget styling", "Button variants", "Form elements"],
+        "documentation": ["Usage guidelines", "Design principles", "Best practices"]
+      },
+      "creationWorkflow": [
+        {
+          "step": 1,
+          "title": "Create Design System App",
+          "description": "Create a dedicated Mendix app to serve as your design system showcase and development environment",
+          "details": {
+            "recommendation": "Start from Atlas Design System template on mendix.com",
+            "purpose": "Single source of truth for all company styles, patterns, and components",
+            "showcase": "Use pages to demonstrate each component with usage examples"
+          }
+        },
+        {
+          "step": 2,
+          "title": "Add Theme Module",
+          "description": "Create a theme module (e.g., 'MyCompany_Theme') that will contain all styling. Mark it as UI Resources module.",
+          "details": {
+            "howToCreate": [
+              "Right-click on App > Add module",
+              "Name it descriptively (e.g., 'Acme_DesignSystem')",
+              "Right-click module > Mark as UI Resources module"
+            ],
+            "folderStructure": {
+              "moduleName/themesource/modulename/web/": [
+                "custom-variables.scss (brand colors, typography)",
+                "_custom.scss (override styles)",
+                "design-properties.json"
+              ]
+            },
+            "critical": "The module MUST be marked as UI Resources module for styles to compile"
+          }
+        },
+        {
+          "step": 3,
+          "title": "Configure UI Resources Module Order",
+          "description": "Set the compilation order of UI Resources modules in App Settings",
+          "details": {
+            "location": "App Settings > Theme tab > UI Resources modules order",
+            "purpose": "Controls which module's styles 'win' when there are conflicts",
+            "order": "Modules listed LAST take precedence (their styles override earlier modules)",
+            "recommendation": "Place your custom theme module AFTER Atlas_Core to override Atlas defaults",
+            "example": ["Atlas_Core", "Atlas_Web_Content", "MyCompany_Theme"]
+          }
+        },
+        {
+          "step": 4,
+          "title": "Customize Styling",
+          "description": "Override Atlas variables, add custom styles, implement brand guidelines in SCSS",
+          "details": {
+            "variablesFile": "custom-variables.scss - Override $brand-primary, $font-family-base, etc.",
+            "customFile": "_custom.scss - Add new classes and style overrides",
+            "tip": "Use Atlas variable names where possible for better maintainability",
+            "reference": "See atlasdesignsystem.mendixcloud.com for available variables"
+          }
+        },
+        {
+          "step": 5,
+          "title": "Add Design Properties",
+          "description": "Create design-properties.json to expose style options in Studio Pro",
+          "details": {
+            "location": "themesource/modulename/web/design-properties.json",
+            "purpose": "Let developers choose styles from dropdowns instead of typing class names",
+            "seeAlso": "designProperties section in this knowledge base for full documentation"
+          }
+        },
+        {
+          "step": 6,
+          "title": "Create Building Blocks",
+          "description": "Design reusable page sections, card layouts, headers, etc.",
+          "details": {
+            "howToCreate": [
+              "Design the UI pattern on a page",
+              "Select all widgets",
+              "Right-click > Create building block",
+              "Name and categorize appropriately"
+            ],
+            "categories": "Use consistent categories: Cards, Headers, Footers, Lists, Forms, etc.",
+            "tip": "Include placeholder content that demonstrates intended usage"
+          }
+        },
+        {
+          "step": 7,
+          "title": "Create Page Templates",
+          "description": "Build common page layouts (dashboard, form, list view, etc.)",
+          "details": {
+            "howToCreate": [
+              "Create a page with the desired layout",
+              "Right-click page in Project Explorer > Create page template",
+              "Assign to appropriate category"
+            ],
+            "bestPractices": [
+              "Use placeholder widgets where content varies",
+              "Include responsive design for mobile",
+              "Provide templates for common use cases (CRUD, dashboard, wizard)"
+            ]
+          }
+        },
+        {
+          "step": 8,
+          "title": "Document and Share",
+          "description": "Add documentation pages, publish to Private Marketplace or create starter app",
+          "details": {
+            "documentation": "Create documentation pages showing usage guidelines and examples",
+            "publishing": {
+              "marketplace": "Export module and upload to Private Marketplace",
+              "starterApp": "Create new blank app based on your design system app"
+            }
+          }
+        }
+      ],
+      "sharingOptions": [
+        {
+          "method": "Private Marketplace Module",
+          "use": "Share theme module independently for existing apps to import",
+          "pros": ["Easy updates via Marketplace", "Apps can upgrade independently"],
+          "howTo": [
+            "Right-click theme module > Export module package",
+            "Upload .mpk to Private Marketplace",
+            "Other apps: Marketplace > Private > Import module"
+          ]
+        },
+        {
+          "method": "Company Starter App",
+          "use": "New apps start with design system pre-configured",
+          "pros": ["Fastest setup for new apps", "Consistent starting point"],
+          "howTo": [
+            "Create fully configured app with theme, templates, common pages",
+            "Share via Private Marketplace as 'Starter App'",
+            "New projects: Create App > Company Starter Apps tab"
+          ]
+        },
+        {
+          "method": "Both",
+          "use": "Recommended - publish module AND create starter app",
+          "pros": ["New apps get latest version", "Existing apps can update"],
+          "maintenance": "Update both when design system changes"
+        }
+      ],
+      "commonMistakes": [
+        {
+          "mistake": "Not marking module as UI Resources",
+          "symptom": "Styles in themesource/ folder don't apply",
+          "fix": "Right-click module > Mark as UI Resources module"
+        },
+        {
+          "mistake": "Wrong UI Resources module order",
+          "symptom": "Custom styles don't override Atlas defaults",
+          "fix": "Move your module AFTER Atlas modules in App Settings > Theme > UI Resources order"
+        },
+        {
+          "mistake": "Putting styles in theme/ instead of themesource/",
+          "symptom": "Styles work in one app but don't transfer with exported module",
+          "fix": "Use themesource/modulename/ for shareable styles"
+        },
+        {
+          "mistake": "Forgetting to export design-properties.json",
+          "symptom": "Design properties work locally but not in other apps",
+          "fix": "Ensure design-properties.json is in themesource/ folder, not theme/"
+        }
+      ],
+      "atlasDesignSystemReference": "https://atlasdesignsystem.mendixcloud.com/"
     },
     "structure": {
       "title": "Theme Folder Structure",

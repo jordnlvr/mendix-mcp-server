@@ -4,12 +4,14 @@
   "description": "Self-learning MCP server for Mendix development with semantic vector search, auto-harvesting, and project analysis",
   "type": "module",
   "main": "src/index.js",
+  "module": "smithery-entry.js",
   "bin": {
     "mendix-mcp-server": "bin/cli.js"
   },
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
+    "dev": "npx smithery dev",
+    "build": "npx smithery build",
     "test": "node --test tests/**/*.test.js",
     "harvest": "node -e \"import('./src/harvester/index.js').then(m => new m.HarvestScheduler().harvestNow())\"",
     "vector-status": "node -e \"import('./src/vector/VectorStore.js').then(m => new m.default().getStats().then(console.log))\"",
@@ -66,6 +68,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@smithery/cli": "^1.6.6",
     "nodemon": "^3.0.2"
   },
   "engines": {

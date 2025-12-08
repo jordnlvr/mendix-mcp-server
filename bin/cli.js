@@ -2,17 +2,16 @@
 
 /**
  * Mendix Expert MCP Server - CLI Entry Point
- * 
+ *
  * This CLI starts the MCP server in stdio mode.
- * 
+ *
  * Usage:
  *   npx @jordnlvr/mendix-mcp-server
- *   
+ *
  * Or after global install:
  *   mendix-mcp-server
  */
 
-import { createRequire } from 'module';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 

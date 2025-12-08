@@ -26,6 +26,7 @@ src/
 ## Key Patterns
 
 ### Search Engine
+
 - Uses **inverted index** for O(1) term lookups
 - **TF-IDF scoring** for relevance ranking
 - **Levenshtein distance** for fuzzy matching (edit distance 1-2)
@@ -33,12 +34,14 @@ src/
 - **Stemming** (7 suffix rules)
 
 ### Knowledge Base
+
 - JSON files in `knowledge/` directory
 - Each entry has: id, title, category, content, keywords, source, lastUpdated
 - Validation checks for required fields, duplicates, quality issues
 - Staleness detection for entries older than 90 days
 
 ### MCP Protocol
+
 - Uses `@modelcontextprotocol/sdk` for server implementation
 - Exposes **tools** for search, analysis, knowledge management
 - Exposes **resources** for stats, validation, analytics

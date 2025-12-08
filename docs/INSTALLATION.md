@@ -106,12 +106,14 @@ npm install  # if package.json changed
 ### "node is not recognized"
 
 Node.js isn't in your PATH. Either:
+
 - Restart your terminal after installing Node
 - Or use the full path: `"C:/Program Files/nodejs/node.exe"`
 
 ### "ENOENT: no such file"
 
 The path in your config is wrong. Make sure:
+
 - Use forward slashes `/` or escaped backslashes `\\`
 - The path points to `src/index.js`, not just the folder
 

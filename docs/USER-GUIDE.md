@@ -40,12 +40,12 @@ git push
 
 ### MCP Resources (access via @mendix-expert)
 
-| Resource | What It Shows |
-|----------|---------------|
-| `mendix://knowledge/overview` | All knowledge files and entry counts |
-| `mendix://analytics` | Search hit rate, top terms, missed queries |
-| `mendix://validation/report` | Errors and warnings in knowledge base |
-| `mendix://maintenance` | Auto-maintenance schedule and status |
+| Resource                      | What It Shows                              |
+| ----------------------------- | ------------------------------------------ |
+| `mendix://knowledge/overview` | All knowledge files and entry counts       |
+| `mendix://analytics`          | Search hit rate, top terms, missed queries |
+| `mendix://validation/report`  | Errors and warnings in knowledge base      |
+| `mendix://maintenance`        | Auto-maintenance schedule and status       |
 
 ---
 
@@ -125,11 +125,11 @@ Add to `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ### Keyboard Shortcuts (VS Code)
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+Shift+I` | Open Copilot Chat |
+| Shortcut         | Action              |
+| ---------------- | ------------------- |
+| `Ctrl+Shift+I`   | Open Copilot Chat   |
 | `@mendix-expert` | Activate MCP server |
-| `Ctrl+Enter` | Submit query |
+| `Ctrl+Enter`     | Submit query        |
 
 ---
 
@@ -171,6 +171,7 @@ git push
 ```
 
 This automatically:
+
 - Updates version in package.json and config
 - Validates the knowledge base
 - Creates a git tag
@@ -184,6 +185,7 @@ This automatically:
 ### Quick Add (Single Entry)
 
 1. Open the appropriate file in `knowledge/`:
+
    - `best-practices.json` - Naming, architecture, patterns
    - `model-sdk.json` - Model manipulation, elements
    - `platform-sdk.json` - Working copies, commits
@@ -205,11 +207,13 @@ This automatically:
 ```
 
 3. Validate:
+
 ```powershell
 node -e "const KM = require('./src/core/KnowledgeManager.js'); new KM('./knowledge').validateKnowledgeBase().then(r => console.log(r.summary));"
 ```
 
 4. Commit and push:
+
 ```powershell
 git add -A
 git commit -m "knowledge: Add microflow error handling entry"
@@ -236,11 +240,13 @@ You can also add knowledge via the MCP server:
 ### Share the Whole Server
 
 Give someone your GitHub URL:
+
 ```
 https://github.com/jordnlvr/mendix-mcp-server
 ```
 
 They can clone and use it immediately:
+
 ```bash
 git clone https://github.com/jordnlvr/mendix-mcp-server.git
 cd mendix-mcp-server
@@ -262,6 +268,7 @@ npm install
 ### Share Just the Knowledge
 
 Export knowledge files:
+
 ```powershell
 # Copy knowledge folder
 Copy-Item -Path "knowledge" -Destination "C:\Shared\mendix-knowledge" -Recurse
@@ -285,6 +292,7 @@ node src/index.js
 ### "Command not found: node"
 
 Node.js isn't in your PATH:
+
 ```powershell
 # Check if Node is installed
 node --version
@@ -323,6 +331,7 @@ git push
 ### Check Knowledge Gaps
 
 See what people search for but don't find:
+
 ```powershell
 node -e "
 const SE = require('./src/core/SearchEngine.js');
@@ -378,14 +387,14 @@ console.log('Recent Misses:', a.recentMisses.slice(0, 5));
 
 ## 📍 File Locations
 
-| What | Where |
-|------|-------|
-| MCP Server | `D:\Users\kelly.seale\VSCode-Dream-Workspace\mendix-mcp-server\` |
-| Knowledge Files | `mendix-mcp-server\knowledge\*.json` |
-| Configuration | `mendix-mcp-server\config\default.json` |
-| VS Code Settings | `%APPDATA%\Code - Insiders\User\settings.json` |
-| Claude Desktop Config | `%APPDATA%\Claude\claude_desktop_config.json` |
-| GitHub Repo | https://github.com/jordnlvr/mendix-mcp-server |
+| What                  | Where                                                            |
+| --------------------- | ---------------------------------------------------------------- |
+| MCP Server            | `D:\Users\kelly.seale\VSCode-Dream-Workspace\mendix-mcp-server\` |
+| Knowledge Files       | `mendix-mcp-server\knowledge\*.json`                             |
+| Configuration         | `mendix-mcp-server\config\default.json`                          |
+| VS Code Settings      | `%APPDATA%\Code - Insiders\User\settings.json`                   |
+| Claude Desktop Config | `%APPDATA%\Claude\claude_desktop_config.json`                    |
+| GitHub Repo           | https://github.com/jordnlvr/mendix-mcp-server                    |
 
 ---
 
@@ -398,4 +407,4 @@ console.log('Recent Misses:', a.recentMisses.slice(0, 5));
 
 ---
 
-*Last updated: December 7, 2025*
+_Last updated: December 7, 2025_

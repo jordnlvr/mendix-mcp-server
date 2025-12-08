@@ -30,6 +30,7 @@ import SearchEngine from './core/SearchEngine.js';
 import { getConfig } from './utils/config.js';
 import Logger from './utils/logger.js';
 import MaintenanceScheduler from './utils/MaintenanceScheduler.js';
+import SyncReminder from './utils/SyncReminder.js';
 import WebFetcher from './utils/WebFetcher.js';
 
 // Initialize
@@ -58,6 +59,7 @@ const knowledgeManager = new KnowledgeManager();
 const webFetcher = new WebFetcher({ enabled: true });
 const searchEngine = new SearchEngine();
 const qualityScorer = new QualityScorer();
+const syncReminder = new SyncReminder();
 
 // Initialize maintenance scheduler with all components
 const maintenanceScheduler = new MaintenanceScheduler({
@@ -72,6 +74,13 @@ const maintenanceScheduler = new MaintenanceScheduler({
   stalenessInterval: 7 * 24 * 60 * 60 * 1000, // 7 days
   maintenanceInterval: 14 * 24 * 60 * 60 * 1000, // 14 days (2 weeks)
 });
+
+// Check for sync reminder on startup
+const syncStatus = syncReminder.shouldRemind();
+if (syncStatus.remind) {
+  logger.warn('Sync reminder triggered', syncStatus);
+  console.log(syncReminder.getReminderMessage());
+}
 
 // ============================================================================
 // TOOL REGISTRATIONS
@@ -353,6 +362,104 @@ server.tool(
   }
 );
 
+// Tool 5: Sync Server with GitHub
+server.tool(
+  'sync_mcp_server',
+  'Sync the MCP server with GitHub - pull updates, push local changes, or check sync status. Use this to keep your server in sync across machines.',
+  {
+    action: z
+      .enum(['status', 'pull', 'push', 'both', 'dismiss'])
+      .describe('Action to perform: status (check), pull (get updates), push (backup changes), both (full sync), dismiss (snooze reminder)'),
+    dismiss_days: z
+      .number()
+      .optional()
+      .describe('Days to dismiss reminder (only used with dismiss action, default 7)'),
+  },
+  async ({ action, dismiss_days = 7 }) => {
+    try {
+      logger.info('Sync action requested', { action });
+
+      if (action === 'status') {
+        const data = syncReminder.getReminderData();
+        
+        let statusText = `# 🔄 Sync Status\n\n`;
+        statusText += `**Repository:** ${data.repoUrl}\n`;
+        statusText += `**Local Path:** ${data.repoPath}\n\n`;
+        
+        statusText += `## Current State\n\n`;
+        statusText += `| Metric | Value |\n|--------|-------|\n`;
+        statusText += `| Days since last pull | ${data.status.daysSincePull} |\n`;
+        statusText += `| Days since last push | ${data.status.daysSincePush} |\n`;
+        statusText += `| Has local changes | ${data.status.hasLocalChanges ? '✅ Yes' : '❌ No'} |\n`;
+        statusText += `| Has remote updates | ${data.status.hasRemoteChanges ? '✅ Yes' : '❌ No'} |\n`;
+        
+        if (data.shouldRemind) {
+          statusText += `\n⚠️ **Sync recommended!**\n\n`;
+          if (data.status.hasLocalChanges) {
+            statusText += `- You have local changes that should be backed up\n`;
+          }
+          if (data.status.hasRemoteChanges) {
+            statusText += `- There are updates available from GitHub\n`;
+          }
+        } else {
+          statusText += `\n✅ **All synced!**\n`;
+        }
+        
+        statusText += `\n## Quick Commands\n\n`;
+        statusText += `\`\`\`powershell\n# Pull updates\n${data.commands.pull}\n\n# Push changes\n${data.commands.push}\n\`\`\``;
+
+        return { content: [{ type: 'text', text: statusText }] };
+      }
+
+      if (action === 'dismiss') {
+        const result = syncReminder.dismissReminder(dismiss_days);
+        return {
+          content: [{
+            type: 'text',
+            text: `✅ Sync reminder dismissed until ${new Date(result.until).toLocaleDateString()}.\n\nI'll remind you again after ${dismiss_days} days.`
+          }]
+        };
+      }
+
+      // Execute sync (pull, push, or both)
+      const result = await syncReminder.executeSync(action);
+
+      let resultText = `# 🔄 Sync Results\n\n`;
+      
+      for (const op of result.operations) {
+        if (op.success) {
+          resultText += `✅ **${op.operation.toUpperCase()}** succeeded\n`;
+          if (op.output && op.output !== 'No local changes to push') {
+            resultText += `\`\`\`\n${op.output}\n\`\`\`\n`;
+          } else if (op.output) {
+            resultText += `_${op.output}_\n`;
+          }
+        } else {
+          resultText += `❌ **${op.operation.toUpperCase()}** failed\n`;
+          resultText += `Error: ${op.error}\n`;
+        }
+        resultText += '\n';
+      }
+
+      if (result.success) {
+        resultText += `🎉 **Sync complete!** Your server is now in sync with GitHub.`;
+      } else {
+        resultText += `\n⚠️ **Some operations failed.** You may need to resolve conflicts manually:\n`;
+        resultText += `\`\`\`powershell\ncd "${syncReminder.repoPath}"\ngit status\n\`\`\``;
+      }
+
+      return { content: [{ type: 'text', text: resultText }] };
+
+    } catch (error) {
+      logger.error('Sync failed', { error: error.message });
+      return {
+        content: [{ type: 'text', text: `Sync failed: ${error.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
 // ============================================================================
 // RESOURCE REGISTRATIONS
 // ============================================================================
@@ -531,6 +638,29 @@ server.resource(
           uri: 'mendix://maintenance/status',
           mimeType: 'application/json',
           text: JSON.stringify(status, null, 2),
+        },
+      ],
+    };
+  }
+);
+
+// Resource 9: Sync Status
+server.resource(
+  'sync-status',
+  'mendix://sync/status',
+  {
+    title: 'Sync Status',
+    description: 'GitHub sync status - when to pull/push, local changes, remote updates',
+    mimeType: 'application/json',
+  },
+  async () => {
+    const data = syncReminder.getReminderData();
+    return {
+      contents: [
+        {
+          uri: 'mendix://sync/status',
+          mimeType: 'application/json',
+          text: JSON.stringify(data, null, 2),
         },
       ],
     };

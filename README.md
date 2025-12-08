@@ -269,6 +269,7 @@ Vector search requires **Pinecone** (vector database) and **OpenAI** (embeddings
 #### 3. Standard OpenAI (Fallback)
 
 If you don't have Azure, you can use standard OpenAI:
+
 ```
 OPENAI_API_KEY=sk-proj-your_key_here
 ```
@@ -524,25 +525,28 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 The MCP server is designed to be **self-maintaining**:
 
-| Feature | How It Works | Frequency |
-|---------|--------------|-----------|
-| **Auto-Harvest** | Crawls docs.mendix.com for new content | Weekly (every 7 days) |
-| **Self-Learning** | Saves solutions discovered during research | On every discovery |
-| **Vector Re-Index** | Updates semantic embeddings when knowledge changes | Automatic |
+| Feature             | How It Works                                       | Frequency             |
+| ------------------- | -------------------------------------------------- | --------------------- |
+| **Auto-Harvest**    | Crawls docs.mendix.com for new content             | Weekly (every 7 days) |
+| **Self-Learning**   | Saves solutions discovered during research         | On every discovery    |
+| **Vector Re-Index** | Updates semantic embeddings when knowledge changes | Automatic             |
 
 ### Manual Maintenance Tasks
 
 1. **Trigger Manual Harvest**
+
    ```bash
    @mendix-expert harvest
    ```
 
 2. **Re-index Vectors** (if search seems off)
+
    ```bash
    @mendix-expert reindex_vectors
    ```
 
 3. **Check Index Health**
+
    ```bash
    @mendix-expert vector_status
    ```
@@ -560,12 +564,13 @@ The MCP server is designed to be **self-maintaining**:
 
 ### Troubleshooting
 
-| Issue | Fix |
-|-------|-----|
-| Search results seem wrong | Run `reindex_vectors` |
-| Missing new Mendix features | Run `harvest` to fetch latest docs |
-| Slow embeddings | Check if Azure OpenAI key is configured (faster than standard OpenAI) |
-| No vector results | Verify `PINECONE_API_KEY` is set in `.env` |
+| Issue                       | Fix                                                                   |
+| --------------------------- | --------------------------------------------------------------------- |
+| Search results seem wrong   | Run `reindex_vectors`                                                 |
+| Missing new Mendix features | Run `harvest` to fetch latest docs                                    |
+| Slow embeddings             | Check if Azure OpenAI key is configured (faster than standard OpenAI) |
+| No vector results           | Verify `PINECONE_API_KEY` is set in `.env`                            |
+
 - ✅ Web suggestions for missed queries
 - ✅ Staleness detection for old entries
 - ✅ GitHub sync reminder system

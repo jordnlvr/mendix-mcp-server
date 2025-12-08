@@ -6,7 +6,7 @@
  * 2. OpenAI text-embedding-3-small (1536 dims) - Best quality, requires API key
  * 3. Local TF-IDF (384 dims) - Free fallback, decent quality
  *
- * @version 2.4.0
+ * @version 2.4.1
  */
 
 import { Pinecone } from '@pinecone-database/pinecone';
@@ -14,6 +14,58 @@ import { createHash } from 'crypto';
 import Logger from '../utils/logger.js';
 
 const logger = new Logger('VectorStore');
+
+/**
+ * LRU Cache for query embeddings - avoids re-embedding repeated queries
+ * Huge performance boost for common searches!
+ */
+class EmbeddingCache {
+  constructor(maxSize = 500) {
+    this.maxSize = maxSize;
+    this.cache = new Map();
+    this.hits = 0;
+    this.misses = 0;
+  }
+
+  get(key) {
+    if (this.cache.has(key)) {
+      // Move to end (most recently used)
+      const value = this.cache.get(key);
+      this.cache.delete(key);
+      this.cache.set(key, value);
+      this.hits++;
+      return value;
+    }
+    this.misses++;
+    return null;
+  }
+
+  set(key, value) {
+    // Remove oldest if at capacity
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+    this.cache.set(key, value);
+  }
+
+  getStats() {
+    const total = this.hits + this.misses;
+    return {
+      size: this.cache.size,
+      maxSize: this.maxSize,
+      hits: this.hits,
+      misses: this.misses,
+      hitRate: total > 0 ? ((this.hits / total) * 100).toFixed(1) + '%' : '0%',
+    };
+  }
+
+  clear() {
+    this.cache.clear();
+    this.hits = 0;
+    this.misses = 0;
+  }
+}
 
 /**
  * Azure OpenAI Embeddings - High quality semantic embeddings via Azure
@@ -234,6 +286,9 @@ export default class VectorStore {
   constructor(options = {}) {
     this.indexName = options.indexName || 'mendix-knowledge';
     this.namespace = options.namespace || 'default';
+
+    // Query embedding cache - avoids re-embedding repeated queries
+    this.queryCache = new EmbeddingCache(500);
 
     // Try Azure OpenAI first, then standard OpenAI, fall back to local
     this.azureEmbedder = new AzureOpenAIEmbedder();
@@ -461,20 +516,33 @@ export default class VectorStore {
       }
     }
 
-    // Get query embedding (async for OpenAI/Azure, sync for local)
-    let queryVector;
-    const isCloudEmbedding =
-      this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
+    // Normalize query for consistent caching
+    const normalizedQuery = query.trim().toLowerCase();
+    const cacheKey = `${normalizedQuery}:${this.embeddingMode}`;
 
-    if (isCloudEmbedding) {
-      try {
-        queryVector = await this.embedder.embed(query);
-      } catch (error) {
-        logger.warn('Cloud query embedding failed, using local', { error: error.message });
-        queryVector = this.localEmbedder.embed(query);
+    // Check cache first - huge speedup for repeated queries!
+    let queryVector = this.queryCache.get(cacheKey);
+    
+    if (!queryVector) {
+      // Get query embedding (async for OpenAI/Azure, sync for local)
+      const isCloudEmbedding =
+        this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
+
+      if (isCloudEmbedding) {
+        try {
+          queryVector = await this.embedder.embed(normalizedQuery);
+        } catch (error) {
+          logger.warn('Cloud query embedding failed, using local', { error: error.message });
+          queryVector = this.localEmbedder.embed(normalizedQuery);
+        }
+      } else {
+        queryVector = this.localEmbedder.embed(normalizedQuery);
       }
+
+      // Cache the embedding for future use
+      this.queryCache.set(cacheKey, queryVector);
     } else {
-      queryVector = this.localEmbedder.embed(query);
+      logger.debug('Query embedding cache hit', { query: normalizedQuery });
     }
 
     try {
@@ -523,6 +591,8 @@ export default class VectorStore {
         vectors: stats.totalRecordCount || 0,
         namespaces: stats.namespaces || {},
         dimension: this.dimension,
+        embeddingMode: this.embeddingMode,
+        queryCache: this.queryCache.getStats(),
       };
     } catch (error) {
       return { status: 'error', error: error.message };
@@ -537,6 +607,7 @@ export default class VectorStore {
 
     try {
       await this.index.namespace(this.namespace).deleteAll();
+      this.queryCache.clear(); // Clear cache on re-index
       logger.info('Vector store cleared');
       return true;
     } catch (error) {

@@ -4,7 +4,7 @@
  * Uses a fusion algorithm to merge results from both search methods,
  * providing both exact keyword matching and semantic understanding.
  *
- * @version 2.4.0
+ * @version 2.4.1
  */
 
 import SearchEngine from '../core/SearchEngine.js';
@@ -12,6 +12,35 @@ import Logger from '../utils/logger.js';
 import VectorStore from './VectorStore.js';
 
 const logger = new Logger('HybridSearch');
+
+/**
+ * Mendix-specific term expansions for better search coverage
+ * These help when users use acronyms or alternative terminology
+ */
+const TERM_EXPANSIONS = {
+  sdk: ['software development kit', 'platform sdk', 'model sdk', 'mendixmodelsdk'],
+  mf: ['microflow', 'microflows'],
+  nf: ['nanoflow', 'nanoflows'],
+  dm: ['domain model', 'domain modeling'],
+  sp: ['studio pro'],
+  api: ['application programming interface', 'rest api', 'odata'],
+  crud: ['create read update delete', 'basic operations'],
+  acl: ['access control list', 'security rules', 'xpath constraints'],
+  xpath: ['query language', 'retrieve expressions'],
+  oql: ['object query language', 'reporting queries'],
+  jwt: ['json web token', 'authentication token'],
+  sso: ['single sign-on', 'authentication'],
+  saml: ['security assertion markup language', 'sso authentication'],
+  oidc: ['openid connect', 'oauth authentication'],
+  ci: ['continuous integration', 'pipeline', 'automation'],
+  cd: ['continuous deployment', 'deployment pipeline'],
+  mx: ['mendix'],
+  attr: ['attribute', 'attributes'],
+  assoc: ['association', 'associations', 'relationship'],
+  enum: ['enumeration', 'enumerations'],
+  np: ['non-persistent', 'transient', 'non persistent entity'],
+  pe: ['persistent entity', 'database entity'],
+};
 
 export default class HybridSearch {
   constructor(options = {}) {
@@ -243,22 +272,54 @@ export default class HybridSearch {
   }
 
   /**
+   * Expand query with Mendix-specific term mappings
+   * "SDK" becomes "SDK software development kit platform sdk model sdk"
+   */
+  expandQuery(query) {
+    const words = query.toLowerCase().split(/\s+/);
+    const expanded = [...words];
+
+    for (const word of words) {
+      if (TERM_EXPANSIONS[word]) {
+        expanded.push(...TERM_EXPANSIONS[word]);
+      }
+    }
+
+    // Remove duplicates and rejoin
+    return [...new Set(expanded)].join(' ');
+  }
+
+  /**
    * Hybrid search combining keyword and vector results
+   * Runs both searches in PARALLEL for speed!
    */
   async search(query, options = {}) {
-    const { limit = 10, keywordOnly = false, vectorOnly = false } = options;
+    const { limit = 10, keywordOnly = false, vectorOnly = false, expandTerms = true } = options;
 
-    // Keyword search
-    let keywordResults = [];
+    // Expand query with Mendix-specific terms
+    const expandedQuery = expandTerms ? this.expandQuery(query) : query;
+
+    // Run keyword and vector searches IN PARALLEL for speed!
+    const searchPromises = [];
+
+    // Keyword search (synchronous but wrap in promise)
     if (!vectorOnly) {
-      keywordResults = this.keywordEngine.search(query, { limit: limit * 2 });
+      searchPromises.push(
+        Promise.resolve(this.keywordEngine.search(expandedQuery, { limit: limit * 2 }))
+      );
+    } else {
+      searchPromises.push(Promise.resolve([]));
     }
 
-    // Vector search
-    let vectorResults = [];
+    // Vector search (uses original query - embeddings understand meaning better)
     if (!keywordOnly && this.vectorStore.initialized) {
-      vectorResults = await this.vectorStore.search(query, { topK: limit * 2 });
+      searchPromises.push(this.vectorStore.search(query, { topK: limit * 2 }));
+    } else {
+      searchPromises.push(Promise.resolve([]));
     }
+
+    // Wait for both to complete
+    const [keywordResults, vectorResults] = await Promise.all(searchPromises);
 
     // If only one engine available, return its results
     if (keywordOnly || vectorResults.length === 0) {
@@ -335,7 +396,52 @@ export default class HybridSearch {
         matchType: metadata.get(id).sources.length > 1 ? 'both' : metadata.get(id).sources[0],
       }));
 
-    return sorted;
+    // Deduplicate near-duplicates (same title with slight variations)
+    return this.deduplicateResults(sorted);
+  }
+
+  /**
+   * Remove near-duplicate results based on title similarity
+   * Keeps the highest-scoring version of similar results
+   */
+  deduplicateResults(results) {
+    const seen = new Map(); // normalized title -> best result
+    const deduplicated = [];
+
+    for (const result of results) {
+      // Normalize title for comparison
+      const normalizedTitle = this.normalizeForDedup(result.title);
+      
+      if (!seen.has(normalizedTitle)) {
+        seen.set(normalizedTitle, result);
+        deduplicated.push(result);
+      } else {
+        // Keep the one with higher score or more sources
+        const existing = seen.get(normalizedTitle);
+        if (result.fusedScore > existing.fusedScore || 
+            (result.sources?.length || 0) > (existing.sources?.length || 0)) {
+          // Replace existing with better result
+          const idx = deduplicated.indexOf(existing);
+          if (idx !== -1) {
+            deduplicated[idx] = result;
+            seen.set(normalizedTitle, result);
+          }
+        }
+      }
+    }
+
+    return deduplicated;
+  }
+
+  /**
+   * Normalize title for deduplication comparison
+   */
+  normalizeForDedup(title) {
+    if (!title) return '';
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '') // Remove punctuation
+      .replace(/\s+/g, '');       // Remove spaces
   }
 
   /**

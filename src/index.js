@@ -818,7 +818,7 @@ server.tool(
       await knowledgeManager.reload();
       searchEngine.clear();
       searchEngine.indexKnowledgeBase(knowledgeManager.knowledgeBase);
-      
+
       // Re-index vectors for semantic search (critical for self-learning)
       let vectorStatus = 'Vector indexing skipped (not available)';
       if (hybridSearch) {

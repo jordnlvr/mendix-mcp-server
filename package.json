@@ -67,7 +67,7 @@
     "fs-extra": "^11.2.0",
     "glob": "^10.3.10",
     "node-fetch": "^3.3.2",
-    "uuid": "^11.0.3",
+    "uuid": "^13.0.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {

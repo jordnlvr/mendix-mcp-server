@@ -1,5 +1,7 @@
 # Mendix Expert MCP Server
+
 ## Complete User & Integration Guide
+
 ### v2.7.3 | December 2025
 
 ---
@@ -27,14 +29,14 @@
 
 ### What Makes It Special
 
-| Feature | What It Does |
-|---------|--------------|
+| Feature                   | What It Does                                       |
+| ------------------------- | -------------------------------------------------- |
 | **700KB+ Knowledge Base** | Verified Mendix patterns, SDK code, best practices |
-| **Semantic Search** | Understands meaning, not just keywords |
-| **Self-Learning** | Automatically harvests new Mendix documentation |
-| **Project Analysis** | Analyzes your actual `.mpr` files |
-| **Theme Analysis** | Deep SCSS/design-properties validation |
-| **Beast Mode** | Exhaustive research when you need it |
+| **Semantic Search**       | Understands meaning, not just keywords             |
+| **Self-Learning**         | Automatically harvests new Mendix documentation    |
+| **Project Analysis**      | Analyzes your actual `.mpr` files                  |
+| **Theme Analysis**        | Deep SCSS/design-properties validation             |
+| **Beast Mode**            | Exhaustive research when you need it               |
 
 ---
 
@@ -170,31 +172,31 @@ Without these, the server uses local TF-IDF search (still good, just not semanti
 
 ### Core Knowledge Tools
 
-| Tool | Purpose | Example Call |
-|------|---------|--------------|
-| `query_mendix_knowledge` | Search the knowledge base | `"How do I create a microflow?"` |
-| `search_mendix` | Hybrid keyword + semantic search | `"nanoflow vs microflow performance"` |
-| `get_best_practice` | Get recommendations for a scenario | `"security for public REST APIs"` |
+| Tool                     | Purpose                            | Example Call                          |
+| ------------------------ | ---------------------------------- | ------------------------------------- |
+| `query_mendix_knowledge` | Search the knowledge base          | `"How do I create a microflow?"`      |
+| `search_mendix`          | Hybrid keyword + semantic search   | `"nanoflow vs microflow performance"` |
+| `get_best_practice`      | Get recommendations for a scenario | `"security for public REST APIs"`     |
 
 ### Project Analysis Tools
 
-| Tool | Purpose | Example Call |
-|------|---------|--------------|
-| `analyze_project` | Analyze a Mendix .mpr file | `analyze_project path="D:/MyApp/MyApp.mpr"` |
-| `analyze_theme` | Deep theme/SCSS analysis | `analyze_theme path="D:/MyApp" format="detailed"` |
+| Tool              | Purpose                    | Example Call                                      |
+| ----------------- | -------------------------- | ------------------------------------------------- |
+| `analyze_project` | Analyze a Mendix .mpr file | `analyze_project path="D:/MyApp/MyApp.mpr"`       |
+| `analyze_theme`   | Deep theme/SCSS analysis   | `analyze_theme path="D:/MyApp" format="detailed"` |
 
 ### Self-Learning Tools
 
-| Tool | Purpose | Example Call |
-|------|---------|--------------|
-| `add_to_knowledge_base` | Save new knowledge | Auto-used when learning |
-| `harvest` | Fetch fresh Mendix docs | `harvest sources=["releaseNotes"]` |
+| Tool                    | Purpose                 | Example Call                       |
+| ----------------------- | ----------------------- | ---------------------------------- |
+| `add_to_knowledge_base` | Save new knowledge      | Auto-used when learning            |
+| `harvest`               | Fetch fresh Mendix docs | `harvest sources=["releaseNotes"]` |
 
 ### System Tools
 
-| Tool | Purpose | Example Call |
-|------|---------|--------------|
-| `hello` | Health check & stats | `hello` |
+| Tool                  | Purpose                   | Example Call          |
+| --------------------- | ------------------------- | --------------------- |
+| `hello`               | Health check & stats      | `hello`               |
 | `get_usage_analytics` | See what's being searched | `get_usage_analytics` |
 
 ---
@@ -279,11 +281,13 @@ Beast Mode triggers exhaustive, multi-step research. Instead of a quick answer, 
 ### How to Activate
 
 **Option 1: Explicit Request**
+
 ```
 @mendix-expert [BEAST MODE] Tell me everything about workflow best practices
 ```
 
 **Option 2: Use Trigger Phrases**
+
 ```
 @mendix-expert Do deep research on pluggable widget development
 ```
@@ -301,12 +305,14 @@ Beast Mode triggers exhaustive, multi-step research. Instead of a quick answer, 
 ### When to Use Beast Mode
 
 ✅ **Good for:**
+
 - Learning a new Mendix feature thoroughly
 - Preparing documentation or training materials
 - Debugging complex issues
 - SDK development requiring verified patterns
 
 ❌ **Overkill for:**
+
 - Quick syntax questions
 - Simple "how do I..." queries
 - Yes/no questions
@@ -326,12 +332,14 @@ Beast Mode triggers exhaustive, multi-step research. Instead of a quick answer, 
 ### Option B: REST API + ChatGPT
 
 **Pros:** Works in browser, shareable Custom GPT
-**Setup:** 
+**Setup:**
+
 ```bash
 npm run rest          # Start local server
 ngrok http 5050       # Expose to internet
 # Import openapi.json into ChatGPT Actions
 ```
+
 **Best for:** Sharing with team members without local setup
 
 ---
@@ -360,12 +368,12 @@ console.log(result);
 
 ### ⚠️ Common Pitfalls
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| "Server not found" | Wrong path in config | Use absolute paths with forward slashes |
-| Stale answers | Old knowledge | Run `npm run harvest` to refresh |
-| No semantic search | Missing API keys | Add Pinecone + OpenAI/Azure keys to `.env` |
-| Slow responses | Large project analysis | Use `module_name` filter in analyze tools |
+| Issue              | Cause                  | Fix                                        |
+| ------------------ | ---------------------- | ------------------------------------------ |
+| "Server not found" | Wrong path in config   | Use absolute paths with forward slashes    |
+| Stale answers      | Old knowledge          | Run `npm run harvest` to refresh           |
+| No semantic search | Missing API keys       | Add Pinecone + OpenAI/Azure keys to `.env` |
+| Slow responses     | Large project analysis | Use `module_name` filter in analyze tools  |
 
 ---
 
@@ -381,6 +389,7 @@ The knowledge base marks patterns as **verified** or **unverified**:
 **Always test SDK code in a scratch app first!**
 
 Known SDK gotchas documented in knowledge base:
+
 - `model.allEntities()` does NOT exist (use `domainModel.load().entities`)
 - `StringTemplate.createIn()` does NOT exist (use `createInLogMessageActionUnderMessageTemplate`)
 - Always delete flows BEFORE activities in microflow modifications
@@ -417,6 +426,7 @@ npm test               # Run test suite
 **Automatic:** Weekly harvest via GitHub Actions
 
 **Manual:**
+
 ```bash
 npm run harvest
 npm run reindex
@@ -431,6 +441,7 @@ npm run reindex
 ```
 
 Returns:
+
 - Version number
 - Knowledge entry count
 - Search index status
@@ -494,14 +505,14 @@ npm run rest
 
 ## Quick Reference Card
 
-| I want to... | Command |
-|--------------|---------|
-| Ask a question | `@mendix-expert <question>` |
+| I want to...       | Command                                        |
+| ------------------ | ---------------------------------------------- |
+| Ask a question     | `@mendix-expert <question>`                    |
 | Analyze my project | `@mendix-expert analyze my project at D:/path` |
-| Get best practices | `@mendix-expert best practice for <topic>` |
-| Deep research | `@mendix-expert [BEAST MODE] <topic>` |
-| Check status | `@mendix-expert hello` |
-| Update knowledge | `npm run harvest && npm run reindex` |
+| Get best practices | `@mendix-expert best practice for <topic>`     |
+| Deep research      | `@mendix-expert [BEAST MODE] <topic>`          |
+| Check status       | `@mendix-expert hello`                         |
+| Update knowledge   | `npm run harvest && npm run reindex`           |
 
 ---
 
@@ -514,6 +525,6 @@ npm run rest
 
 ---
 
-*Built with ❤️ for the Mendix community*
+_Built with ❤️ for the Mendix community_
 
 </div>

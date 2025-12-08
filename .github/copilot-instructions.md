@@ -1,12 +1,29 @@
 # Mendix Expert MCP Server - Copilot Instructions
 
+## 🚨 FIRST: Read AI-SESSION-CONTEXT.md
+
+**Before doing any work, read `AI-SESSION-CONTEXT.md` in the project root.** It contains:
+- Full project context and architecture
+- Owner preferences (Kelly Seale)
+- Release workflow
+- Beast Mode research protocol
+- npm scripts and environment setup
+
 ## Project Overview
 
-This is a **Model Context Protocol (MCP) server** that provides AI assistants with deep Mendix development knowledge. It features TF-IDF search with fuzzy matching, auto-maintenance, project analysis, and **a built-in research protocol that teaches AI to find and learn new information**.
+This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade MCP server for Mendix development.
 
-## 🔬 CRITICAL: Research Protocol
+**Version:** Check `package.json` for current version  
+**npm:** `@jordnlvr/mendix-mcp-server`  
+**GitHub:** `jordnlvr/mendix-mcp-server`  
+**Docs:** `jordnlvr.github.io/mendix-mcp-server`
+
+## 🔬 CRITICAL: Research Protocol (Beast Mode)
 
 **When you don't have an answer, you MUST research it!**
+
+### Trigger Words for Beast Mode
+`deep`, `comprehensive`, `exhaustive`, `everything about`, `complete guide`, `[BEAST MODE]`
 
 ### Research Sources (in priority order):
 

@@ -90,6 +90,30 @@ Security best practices:
 - Authorization strategies
 - Security checklist
 
+### 9. `pluggable-widgets.json` ✨ NEW
+
+**VERIFIED December 2025** - All patterns tested with mendix@11.5.0
+
+Pluggable Widget development:
+
+- Core widget types (EditableValue, DynamicValue, ActionValue, ListValue, etc.)
+- React hooks (useConst, useSetup, useDebounce, useLazyListValue, etc.)
+- Filter builders API (types vs runtime)
+- Widget XML configuration
+- Project structure and build commands
+- Best practices for widget development
+
+### 10. `getting-started.json` ✨ NEW
+
+**VERIFIED December 2025** - Step-by-step setup guides
+
+Environment setup for different development scenarios:
+
+- Platform/Model SDK setup (tokens, npm, first script)
+- Pluggable Widget generator and project structure
+- Studio Pro Extension development (C# and Web)
+- mx.exe local analysis (offline MPR analysis)
+
 ## Research Sources
 
 All knowledge compiled from:
@@ -127,6 +151,27 @@ These knowledge files power the Mendix MCP Server to provide expert-level assist
 ✅ Version-specific details clearly noted  
 ✅ Performance implications documented  
 ✅ Security considerations included
+✅ **SDK patterns live-tested December 2025** (model-sdk.json, platform-sdk.json)
+✅ **Widget patterns compiled-tested December 2025** (pluggable-widgets.json)
+
+## Verification Testing (December 2025)
+
+The following patterns were **live-tested** against CompanionTestApp3:
+
+### Platform/Model SDK Verified
+
+- Entity creation with all attribute types (String, Integer, Boolean, DateTime, Decimal)
+- Association creation (Reference type)
+- Microflow creation with Start → LogMessageAction → End
+- Correct API: `model.allDomainModels()`, `domainModel.load().entities`
+- Correct API: `StartEvent.createIn(mf.objectCollection)`
+- Correct API: `StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction)`
+
+### Widget API Verified (TypeScript compilation)
+
+- 9 core widget types compile correctly
+- 8 React hooks compile correctly
+- Filter builder types exist (functions are runtime-only)
 
 ---
 

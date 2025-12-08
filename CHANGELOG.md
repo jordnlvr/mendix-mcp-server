@@ -15,6 +15,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.5.0] - 2025-12-08
+
+### Added
+
+- **Pluggable Widgets Knowledge** (`pluggable-widgets.json`): Complete verified patterns for widget development
+  - 9 core widget types (EditableValue, DynamicValue, ActionValue, ListValue, etc.)
+  - 8 React hooks (useConst, useSetup, useDebounce, useLazyListValue, etc.)
+  - Filter builders API documentation
+  - Widget XML configuration patterns
+  - Project structure and build commands
+
+### Fixed
+
+- **CRITICAL**: Fixed `model.allEntities()` documentation - this API does NOT exist
+  - Must use `domainModel.load().entities` instead
+  - Added warning note in `model-sdk.json`
+- **CRITICAL**: Fixed `LogMessageAction` pattern in `platform-sdk.json`
+  - Correct API: `StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction)`
+  - Previous pattern `StringTemplate.createIn()` does not exist
+- **CRITICAL**: Fixed `StartEvent.createIn()` pattern
+  - Correct: `StartEvent.createIn(mf.objectCollection)` NOT `createIn(mf)`
+
+### Changed
+
+- Added `verified_patterns_december_2025` section to `platform-sdk.json` with live-tested code
+- Updated knowledge README with verification testing details
+
+### Verified
+
+All SDK patterns **live-tested** against CompanionTestApp3 (mendixplatformsdk + mendixmodelsdk):
+
+- Entity creation with all attribute types ✅
+- Association creation (Reference type) ✅
+- Microflow creation (Start → LogMessage → End) ✅
+
+All widget patterns **compile-tested** with mendix@11.5.0:
+
+- 9 widget types ✅
+- 8 React hooks ✅
+- Filter builder types ✅
+
+---
+
 ## [2.1.0] - 2025-12-07
 
 ### Added

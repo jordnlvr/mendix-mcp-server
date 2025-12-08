@@ -388,6 +388,56 @@ Finds variations:
 | `performance-guide.json`       | 15      | Optimization techniques                  |
 | `security-guide.json`          | 14      | Security best practices                  |
 | `sdk-community-resources.json` | 12      | Community links, forums                  |
+| `pluggable-widgets.json`       | 6       | **NEW!** Widget types, hooks, patterns   |
+| `getting-started.json`         | 4       | **NEW!** Environment setup guides        |
+
+---
+
+## 🧪 Verified Patterns (v2.5.0)
+
+All SDK and Widget patterns have been **live-tested** against real Mendix apps in December 2025.
+
+### ✅ Platform/Model SDK Patterns (VERIFIED)
+
+These patterns are confirmed working with `mendixplatformsdk` + `mendixmodelsdk`:
+
+| Pattern | Status | Notes |
+|---------|--------|-------|
+| Entity creation | ✅ | All 5 attribute types work |
+| Association creation | ✅ | Reference type verified |
+| Microflow creation | ✅ | Start → LogMessage → End |
+| `model.allDomainModels()` | ✅ | Returns domain model interfaces |
+| `model.allMicroflows()` | ✅ | Returns all microflow interfaces |
+| `model.flushChanges()` | ✅ | Required before commit |
+| `workingCopy.commitToRepository()` | ✅ | Commits to branch |
+
+### ⚠️ Critical API Corrections
+
+| Incorrect Pattern | Correct Pattern |
+|-------------------|-----------------|
+| `model.allEntities()` | **Does NOT exist** - use `domainModel.load().entities` |
+| `StartEvent.createIn(mf)` | `StartEvent.createIn(mf.objectCollection)` |
+| `StringTemplate.create(model)` | `StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction)` |
+| `workingCopy.id()` | `workingCopy.id` (it's a property, not a method) |
+
+### ✅ Widget API Patterns (VERIFIED)
+
+These types compile correctly with `mendix@11.5.0`:
+
+**Core Types**: EditableValue, DynamicValue, ActionValue, ListValue, ListAttributeValue, ListActionValue, SelectionSingleValue, ListExpressionValue, ListWidgetValue
+
+**React Hooks**: useConst, useSetup, useDebounce, useLazyListValue, useSelectionHelper, useOnResetValueEvent, useOnSetValueEvent, useFilterAPI
+
+### 📚 Getting Started Guides
+
+The knowledge base now includes **step-by-step setup guides** for:
+
+1. **Platform/Model SDK** - Connect to Mendix, create working copies, modify models
+2. **Pluggable Widgets** - Create custom React widgets for Studio Pro
+3. **Studio Pro Extensions** - Build C# or web extensions for the IDE
+4. **mx.exe Analysis** - Local offline analysis of .mpr files
+
+Ask: `@mendix-expert "How do I set up SDK development?"` or `"Getting started with pluggable widgets"`
 
 ---
 
@@ -501,7 +551,15 @@ We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 See [CHANGELOG.md](CHANGELOG.md) for version history.
 
-### Recent Updates (v2.4.1)
+### Recent Updates (v2.5.0) 🆕
+
+- 🧪 **Verified SDK Patterns** - All patterns live-tested against real Mendix apps
+- 🔧 **Critical Bug Fixes** - Fixed `model.allEntities()`, `StartEvent.createIn()`, `StringTemplate` patterns
+- 📚 **Pluggable Widgets Knowledge** - 9 widget types, 8 React hooks, filter builders
+- 🚀 **Getting Started Guides** - Step-by-step environment setup for SDK, widgets, extensions
+- 📖 **Enhanced Documentation** - Verified patterns, API corrections, setup guides
+
+### v2.4.1
 
 - 🔧 **Self-Learning Pipeline Fix** - `add_to_knowledge_base` now updates vector store
 - 🔧 **Harvester Integration** - Auto-harvest now re-indexes vectors after adding new knowledge

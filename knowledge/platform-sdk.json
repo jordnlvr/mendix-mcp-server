@@ -28,53 +28,26 @@
     {
       "concept": "App (Project)",
       "description": "Mendix application/project in the platform",
-      "properties": [
-        "name",
-        "appId",
-        "projectId",
-        "repositoryType",
-        "teamServer"
-      ],
-      "operations": [
-        "Create",
-        "Delete",
-        "List",
-        "Get details"
-      ]
+      "properties": ["name", "appId", "projectId", "repositoryType", "teamServer"],
+      "operations": ["Create", "Delete", "List", "Get details"]
     },
     {
       "concept": "Team Server",
       "description": "SVN-based version control for Mendix projects",
-      "features": [
-        "Branches",
-        "Revisions",
-        "Commits",
-        "Merge operations"
-      ],
+      "features": ["Branches", "Revisions", "Commits", "Merge operations"],
       "integration": "Integrated with Studio Pro, accessible via Platform SDK"
     },
     {
       "concept": "Working Copy",
       "description": "Temporary cloud-hosted copy of app for SDK manipulation",
-      "types": [
-        "Online working copy (for Model SDK)",
-        "Offline working copy (.mpk download)"
-      ],
+      "types": ["Online working copy (for Model SDK)", "Offline working copy (.mpk download)"],
       "limitations": "One online working copy per app at a time"
     },
     {
       "concept": "Deployment",
       "description": "Deploy app to Mendix Cloud or Private Cloud environments",
-      "environments": [
-        "Development",
-        "Acceptance",
-        "Production"
-      ],
-      "methods": [
-        "Direct deploy",
-        "Deploy via Build API",
-        "CI/CD pipeline integration"
-      ]
+      "environments": ["Development", "Acceptance", "Production"],
+      "methods": ["Direct deploy", "Deploy via Build API", "CI/CD pipeline integration"]
     }
   ],
   "key_apis": {
@@ -85,11 +58,7 @@
           "method": "Personal Access Token (PAT)",
           "code": "const client = new MendixPlatformClient({ mendixToken: process.env.MENDIX_TOKEN });",
           "generation": "Developer Portal → Settings → Personal Access Tokens → Generate",
-          "scopes": [
-            "Read projects",
-            "Write projects",
-            "Deploy apps"
-          ],
+          "scopes": ["Read projects", "Write projects", "Deploy apps"],
           "best_practice": "Store in environment variables, never hardcode"
         }
       ],
@@ -579,11 +548,7 @@
           "step3": "Add roles to microflow.allowedModuleRoles",
           "code": "// Get module security\\nconst moduleSecurity = module.moduleSecurity;\\nconst adminRole = moduleSecurity.moduleRoles.find(r => r.name === 'Administrator');\\n// Add to microflow\\nmicroflow.allowedModuleRoles.push(adminRole);"
         },
-        "common_roles": [
-          "Administrator",
-          "User",
-          "Anonymous"
-        ],
+        "common_roles": ["Administrator", "User", "Anonymous"],
         "best_practice": "Add at least Administrator role to all microflows, add other roles based on who should access",
         "verified_in": "SmartHub SDK scripts - December 2025",
         "source": "Platform SDK documentation workflow - Kelly Seale",
@@ -801,7 +766,7 @@
           "create_activity": "const activity = microflows.ActionActivity.createIn(mf.objectCollection);\nactivity.relativeMiddlePoint = { x: 300, y: 100 };",
           "create_sequence_flow": "const flow = microflows.SequenceFlow.createIn(mf);\nflow.origin = startEvent;\nflow.destination = activity;\nflow.originConnectionIndex = 0;\nflow.destinationConnectionIndex = 0;",
           "aggregate_list_action": "const aggregate = microflows.AggregateListAction.create(model);\naggregate.aggregateFunction = microflows.AggregateFunctionEnum.Count;\naggregate.inputListVariableName = 'MyList';\naggregate.outputVariableName = 'Count';\nactivity.action = aggregate;",
-          "log_action": "const logAction = microflows.LogMessageAction.create(model);\nlogAction.node = '@ModuleName.LogNode\\n';\nlogAction.level = microflows.LogLevel.Info;\nlogAction.messageTemplate = microflows.StringTemplate.create(model);\nlogAction.messageTemplate.text = 'Log message here';",
+          "log_action": "// VERIFIED PATTERN - LogMessageAction requires specific createIn method\nconst activity = microflows.ActionActivity.createIn(mf.objectCollection);\nactivity.relativeMiddlePoint = { x: 300, y: 100 };\nconst logAction = microflows.LogMessageAction.createIn(activity);\nlogAction.level = microflows.LogLevel.Info;\nlogAction.node = '@ModuleName.LogNode\\n';\nconst template = microflows.StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction);\ntemplate.text = 'Log message here';",
           "loop_pattern": "const loop = microflows.LoopedActivity.createIn(mf.objectCollection);\nloop.loopSource = microflows.IterableList.create(model);\nloop.loopSource.listVariableName = 'MyList';\nloop.iteratedListVariableName = 'CurrentItem';"
         },
         "documentation_patterns": {
@@ -852,6 +817,32 @@
             "total": 0
           },
           "quality_score": 0.95
+        }
+      },
+      {
+        "title": "VERIFIED Complete Microflow Creation Pattern (Tested Dec 2025)",
+        "description": "Complete working pattern for creating a microflow with LogMessageAction - tested against real Mendix 11.5 app",
+        "tested_against": "CompanionTestApp3 (Mendix 11.5.0)",
+        "test_date": "2025-12-08",
+        "status": "VERIFIED_WORKING",
+        "complete_working_code": "const { MendixPlatformClient } = require('mendixplatformsdk');\nconst { microflows } = require('mendixmodelsdk');\n\nasync function createMicroflowWithLog(appId, moduleName, mfName, logMessage) {\n    const client = new MendixPlatformClient();\n    const app = client.getApp(appId);\n    const workingCopy = await app.createTemporaryWorkingCopy('main');\n    const model = await workingCopy.openModel();\n    \n    const module = model.allModules().find(m => m.name === moduleName);\n    \n    // Create microflow\n    const mf = microflows.Microflow.createIn(module);\n    mf.name = mfName;\n    \n    // CRITICAL: Use mf.objectCollection for events and activities\n    const start = microflows.StartEvent.createIn(mf.objectCollection);\n    start.relativeMiddlePoint = { x: 100, y: 100 };\n    \n    const activity = microflows.ActionActivity.createIn(mf.objectCollection);\n    activity.relativeMiddlePoint = { x: 300, y: 100 };\n    \n    const logAction = microflows.LogMessageAction.createIn(activity);\n    logAction.level = microflows.LogLevel.Info;\n    logAction.node = `@${moduleName}.Log\\n`;\n    \n    // CRITICAL: Use specific createIn method for StringTemplate\n    const template = microflows.StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction);\n    template.text = logMessage;\n    \n    const end = microflows.EndEvent.createIn(mf.objectCollection);\n    end.relativeMiddlePoint = { x: 500, y: 100 };\n    \n    // Flows go on mf directly, not objectCollection\n    const flow1 = microflows.SequenceFlow.createIn(mf);\n    flow1.origin = start;\n    flow1.destination = activity;\n    \n    const flow2 = microflows.SequenceFlow.createIn(mf);\n    flow2.origin = activity;\n    flow2.destination = end;\n    \n    await model.flushChanges();\n    await workingCopy.commitToRepository('main', {\n        commitMessage: `Created ${mfName} via SDK`\n    });\n}",
+        "critical_learnings": [
+          "StartEvent.createIn(mf) FAILS - must use createIn(mf.objectCollection)",
+          "EndEvent.createIn(mf) FAILS - must use createIn(mf.objectCollection)",
+          "ActionActivity.createIn(mf) FAILS - must use createIn(mf.objectCollection)",
+          "StringTemplate.create(model) FAILS for LogMessageAction - use createInLogMessageActionUnderMessageTemplate()",
+          "SequenceFlow.createIn(mf) WORKS - flows go on microflow directly, NOT objectCollection",
+          "LogMessageAction.createIn(activity) WORKS - pass ActionActivity, not microflow"
+        ],
+        "_metadata": {
+          "id": "verified-microflow-2025-12-08",
+          "added_at": "2025-12-08T18:45:00.000Z",
+          "source": "Live testing against CompanionTestApp3 via SDK",
+          "added_by": "pattern-verification-process",
+          "version": 1,
+          "verified": true,
+          "mendix_version": "11.5.0",
+          "quality_score": 1.0
         }
       }
     ]

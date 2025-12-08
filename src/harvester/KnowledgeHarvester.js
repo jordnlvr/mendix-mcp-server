@@ -73,29 +73,92 @@ const MENDIX_SOURCES = {
 
 // Topics we specifically want to harvest (knowledge gaps)
 const PRIORITY_TOPICS = [
-  // Studio Pro 11+ features
+  // Studio Pro 11+ features - CRITICAL
   { query: 'page variables', minVersion: '10.0', category: 'new_features' },
   { query: 'workflows 2.0', minVersion: '10.0', category: 'new_features' },
-  { query: 'maia ai assistant', minVersion: '10.12', category: 'ai' },
-  { query: 'mendix assist', minVersion: '9.0', category: 'ai' },
+  { query: 'workflow activities', minVersion: '10.0', category: 'new_features' },
+  { query: 'multi user task', minVersion: '10.0', category: 'new_features' },
+  { query: 'external entity', category: 'new_features' },
 
-  // Theming & Design
+  // Maia AI Assistant - HOT TOPIC
+  { query: 'maia ai assistant', minVersion: '10.12', category: 'ai' },
+  { query: 'maia logic recommendations', minVersion: '10.12', category: 'ai' },
+  { query: 'maia microflow generation', minVersion: '10.12', category: 'ai' },
+  { query: 'maia page generation', minVersion: '10.12', category: 'ai' },
+  { query: 'mendix assist', minVersion: '9.0', category: 'ai' },
+  { query: 'ai bot', category: 'ai' },
+
+  // Theming & Design - Design Tokens!
   { query: 'atlas ui 3', category: 'theming' },
   { query: 'design tokens', category: 'theming' },
+  { query: 'design tokens css variables', category: 'theming' },
   { query: 'custom themes sass', category: 'theming' },
   { query: 'design system', category: 'theming' },
+  { query: 'atlas core', category: 'theming' },
+  { query: 'styling modeler', category: 'theming' },
+  { query: 'brand customization', category: 'theming' },
 
-  // Development patterns
+  // Native Mobile
+  { query: 'native mobile', category: 'mobile' },
+  { query: 'make it native app', category: 'mobile' },
+  { query: 'native navigation', category: 'mobile' },
+  { query: 'native widgets', category: 'mobile' },
+  { query: 'offline first', category: 'mobile' },
+  { query: 'react native', category: 'mobile' },
+  { query: 'native styling', category: 'mobile' },
+
+  // Progressive Web App
+  { query: 'progressive web app pwa', category: 'pwa' },
+  { query: 'installable web app', category: 'pwa' },
+  { query: 'service worker', category: 'pwa' },
+  { query: 'offline web', category: 'pwa' },
+
+  // Widget Development
   { query: 'pluggable widgets api', category: 'widgets' },
   { query: 'widget development', category: 'widgets' },
+  { query: 'react widgets', category: 'widgets' },
+  { query: 'widget properties', category: 'widgets' },
+  { query: 'widget actions', category: 'widgets' },
+  { query: 'widget events', category: 'widgets' },
+
+  // Extensions & SDK
   { query: 'studio pro extensions', category: 'extensions' },
+  { query: 'extension points', category: 'extensions' },
   { query: 'platform sdk', category: 'sdk' },
   { query: 'model sdk', category: 'sdk' },
+  { query: 'mendixmodelsdk', category: 'sdk' },
+  { query: 'mendixplatformsdk', category: 'sdk' },
+  { query: 'sdk typescript', category: 'sdk' },
 
-  // Best practices
+  // Integration Patterns
+  { query: 'rest api published', category: 'integration' },
+  { query: 'rest api consumed', category: 'integration' },
+  { query: 'odata services', category: 'integration' },
+  { query: 'graphql', category: 'integration' },
+  { query: 'message queue', category: 'integration' },
+  { query: 'kafka', category: 'integration' },
+  { query: 'event broker', category: 'integration' },
+
+  // Best Practices
   { query: 'performance best practices', category: 'best_practices' },
   { query: 'security best practices', category: 'best_practices' },
   { query: 'microflow best practices', category: 'best_practices' },
+  { query: 'domain model best practices', category: 'best_practices' },
+  { query: 'testing best practices', category: 'best_practices' },
+  { query: 'deployment best practices', category: 'best_practices' },
+
+  // Data Hub & Catalog
+  { query: 'data hub', category: 'data' },
+  { query: 'data catalog', category: 'data' },
+  { query: 'external data', category: 'data' },
+
+  // Security
+  { query: 'user roles', category: 'security' },
+  { query: 'access rules', category: 'security' },
+  { query: 'xpath constraints', category: 'security' },
+  { query: 'module roles', category: 'security' },
+  { query: 'authentication sso', category: 'security' },
+  { query: 'saml oidc', category: 'security' },
 ];
 
 class KnowledgeHarvester {

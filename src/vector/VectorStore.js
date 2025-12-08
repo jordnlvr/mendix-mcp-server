@@ -1,10 +1,11 @@
 /**
  * VectorStore - Pinecone-based semantic search for Mendix knowledge
  *
- * Uses TF-IDF based dense vectors for semantic search without external APIs.
- * Can be upgraded to use OpenAI embeddings later for better quality.
+ * Supports two embedding modes:
+ * 1. OpenAI text-embedding-3-small (1536 dims) - Best quality, requires API key
+ * 2. Local TF-IDF (384 dims) - Free fallback, decent quality
  *
- * @version 2.3.0
+ * @version 2.4.0
  */
 
 import { Pinecone } from '@pinecone-database/pinecone';
@@ -14,8 +15,63 @@ import Logger from '../utils/logger.js';
 const logger = new Logger('VectorStore');
 
 /**
- * Simple but effective local embedding using weighted term vectors
- * This avoids needing an external embedding API
+ * OpenAI Embeddings - High quality semantic embeddings
+ */
+class OpenAIEmbedder {
+  constructor() {
+    this.dimension = 1536; // text-embedding-3-small dimension
+    this.model = 'text-embedding-3-small';
+    this.apiKey = process.env.OPENAI_API_KEY;
+    this.batchSize = 100; // OpenAI allows up to 2048 inputs per request
+  }
+
+  isAvailable() {
+    return !!this.apiKey;
+  }
+
+  /**
+   * Generate embeddings for a batch of texts
+   */
+  async embedBatch(texts) {
+    if (!this.apiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    const response = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${this.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: this.model,
+        input: texts,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`OpenAI API error: ${error}`);
+    }
+
+    const data = await response.json();
+    return data.data.map(item => item.embedding);
+  }
+
+  /**
+   * Generate embedding for single text
+   */
+  async embed(text) {
+    const embeddings = await this.embedBatch([text]);
+    return embeddings[0];
+  }
+
+  // No vocabulary building needed for OpenAI
+  buildVocabulary() {}
+}
+
+/**
+ * Local TF-IDF Embeddings - Free fallback
  */
 class LocalEmbedder {
   constructor() {
@@ -119,13 +175,28 @@ export default class VectorStore {
   constructor(options = {}) {
     this.indexName = options.indexName || 'mendix-knowledge';
     this.namespace = options.namespace || 'default';
-    this.dimension = 384;
-    this.embedder = new LocalEmbedder();
+    
+    // Try OpenAI first (better quality), fall back to local
+    this.openaiEmbedder = new OpenAIEmbedder();
+    this.localEmbedder = new LocalEmbedder();
+    
+    if (this.openaiEmbedder.isAvailable()) {
+      this.embedder = this.openaiEmbedder;
+      this.dimension = 1536;
+      this.embeddingMode = 'openai';
+      logger.info('Using OpenAI embeddings (high quality)');
+    } else {
+      this.embedder = this.localEmbedder;
+      this.dimension = 384;
+      this.embeddingMode = 'local';
+      logger.info('Using local TF-IDF embeddings (no OpenAI key found)');
+    }
+    
     this.pinecone = null;
     this.index = null;
     this.initialized = false;
 
-    logger.info('VectorStore created', { indexName: this.indexName });
+    logger.info('VectorStore created', { indexName: this.indexName, embeddingMode: this.embeddingMode });
   }
 
   /**
@@ -211,19 +282,53 @@ export default class VectorStore {
       }
     }
 
-    // Build vocabulary from all documents
+    // Build vocabulary for local embedder (no-op for OpenAI)
     this.embedder.buildVocabulary(documents);
 
-    // Prepare vectors for upsert, filtering out empty vectors
-    const vectors = documents
-      .map((doc) => {
-        const embedding = this.embedder.embed(doc.content || doc.text || doc.title);
-        // Check if vector has any non-zero values
-        const hasContent = embedding.some(v => v !== 0);
-        if (!hasContent) {
-          return null; // Skip empty vectors
+    // Filter documents with content
+    const validDocs = documents.filter(doc => {
+      const content = doc.content || doc.text || doc.title || '';
+      return content.trim().length > 10; // Need at least 10 chars
+    });
+
+    logger.info('Processing documents', { 
+      total: documents.length, 
+      withContent: validDocs.length,
+      mode: this.embeddingMode 
+    });
+
+    // Prepare vectors - handle async for OpenAI
+    const vectors = [];
+    const batchSize = this.embeddingMode === 'openai' ? 50 : 100;
+    
+    for (let i = 0; i < validDocs.length; i += batchSize) {
+      const batch = validDocs.slice(i, i + batchSize);
+      const texts = batch.map(doc => doc.content || doc.text || doc.title);
+      
+      let embeddings;
+      if (this.embeddingMode === 'openai') {
+        // Batch embedding for OpenAI (faster)
+        try {
+          embeddings = await this.openaiEmbedder.embedBatch(texts);
+        } catch (error) {
+          logger.error('OpenAI embedding failed, falling back to local', { error: error.message });
+          // Fall back to local for this batch
+          embeddings = texts.map(t => this.localEmbedder.embed(t));
         }
-        return {
+      } else {
+        // Local embeddings (synchronous)
+        embeddings = texts.map(t => this.localEmbedder.embed(t));
+      }
+      
+      for (let j = 0; j < batch.length; j++) {
+        const doc = batch[j];
+        const embedding = embeddings[j];
+        
+        // Check if vector has any non-zero values
+        const hasContent = embedding.some((v) => v !== 0);
+        if (!hasContent) continue;
+        
+        vectors.push({
           id: this.generateId(doc),
           values: embedding,
           metadata: {
@@ -233,29 +338,39 @@ export default class VectorStore {
             version: doc.version || 'unknown',
             preview: (doc.content || doc.text || '').slice(0, 200),
           },
-        };
-      })
-      .filter(v => v !== null); // Remove null entries
+        });
+      }
+      
+      logger.info('Embedded batch', { 
+        batch: Math.floor(i / batchSize) + 1, 
+        total: Math.ceil(validDocs.length / batchSize),
+        vectors: vectors.length
+      });
+    }
 
-    logger.info('Vectors prepared', { total: documents.length, valid: vectors.length, skipped: documents.length - vectors.length });
+    logger.info('Vectors prepared', {
+      total: documents.length,
+      valid: vectors.length,
+      skipped: documents.length - vectors.length,
+    });
 
     // Upsert in batches of 100
-    const batchSize = 100;
     let indexed = 0;
+    const upsertBatchSize = 100;
 
-    for (let i = 0; i < vectors.length; i += batchSize) {
-      const batch = vectors.slice(i, i + batchSize);
+    for (let i = 0; i < vectors.length; i += upsertBatchSize) {
+      const batch = vectors.slice(i, i + upsertBatchSize);
       await this.index.namespace(this.namespace).upsert(batch);
       indexed += batch.length;
 
       logger.info('Indexed batch', {
-        batch: Math.floor(i / batchSize) + 1,
-        total: Math.ceil(vectors.length / batchSize),
+        batch: Math.floor(i / upsertBatchSize) + 1,
+        total: Math.ceil(vectors.length / upsertBatchSize),
       });
     }
 
-    logger.info('Indexing complete', { indexed });
-    return { indexed, skipped: 0 };
+    logger.info('Indexing complete', { indexed, mode: this.embeddingMode });
+    return { indexed, skipped: documents.length - indexed, mode: this.embeddingMode };
   }
 
   /**
@@ -271,7 +386,18 @@ export default class VectorStore {
       }
     }
 
-    const queryVector = this.embedder.embed(query);
+    // Get query embedding (async for OpenAI, sync for local)
+    let queryVector;
+    if (this.embeddingMode === 'openai') {
+      try {
+        queryVector = await this.openaiEmbedder.embed(query);
+      } catch (error) {
+        logger.warn('OpenAI query embedding failed, using local', { error: error.message });
+        queryVector = this.localEmbedder.embed(query);
+      }
+    } else {
+      queryVector = this.localEmbedder.embed(query);
+    }
 
     try {
       const queryOptions = {
@@ -279,7 +405,7 @@ export default class VectorStore {
         topK,
         includeMetadata: true,
       };
-      
+
       // Only add filter if it has keys (Pinecone requires non-empty filter)
       if (filter && Object.keys(filter).length > 0) {
         queryOptions.filter = filter;

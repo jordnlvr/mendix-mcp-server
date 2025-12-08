@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mendix Expert MCP Server - User Guide v2.7.3</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            --primary: #0078d4;
+            --primary-dark: #005a9e;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
+            --gray-900: #212529;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.45;
+            color: var(--gray-900);
+            background: white;
+            max-width: 8.5in;
+            margin: 0 auto;
+            padding: 0.5in;
+        }
+        
+        @media print {
+            body {
+                padding: 0.4in;
+                font-size: 9pt;
+            }
+            .page-break { page-break-before: always; }
+            h2 { page-break-after: avoid; }
+            table, pre { page-break-inside: avoid; }
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 22pt;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 3px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header .subtitle {
+            font-size: 11pt;
+            color: var(--gray-600);
+            font-weight: 400;
+        }
+        
+        .header .version {
+            font-size: 9pt;
+            color: var(--gray-600);
+            margin-top: 5px;
+        }
+        
+        /* TOC */
+        .toc {
+            background: var(--gray-100);
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            columns: 2;
+            column-gap: 20px;
+        }
+        
+        .toc h3 {
+            font-size: 10pt;
+            margin-bottom: 8px;
+            color: var(--primary);
+            column-span: all;
+        }
+        
+        .toc ol {
+            list-style: none;
+            font-size: 8.5pt;
+        }
+        
+        .toc li {
+            margin: 3px 0;
+            break-inside: avoid;
+        }
+        
+        .toc a {
+            color: var(--gray-800);
+            text-decoration: none;
+        }
+        
+        .toc a:hover {
+            color: var(--primary);
+        }
+        
+        /* Section Headers */
+        h2 {
+            font-size: 13pt;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 18px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        h3 {
+            font-size: 10.5pt;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin: 12px 0 6px 0;
+        }
+        
+        h4 {
+            font-size: 9.5pt;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin: 8px 0 4px 0;
+        }
+        
+        /* Paragraphs */
+        p {
+            margin: 6px 0;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 8.5pt;
+        }
+        
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 500;
+            text-align: left;
+            padding: 6px 8px;
+        }
+        
+        td {
+            border: 1px solid var(--gray-300);
+            padding: 5px 8px;
+            vertical-align: top;
+        }
+        
+        tr:nth-child(even) {
+            background: var(--gray-100);
+        }
+        
+        /* Code */
+        code {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 8pt;
+            background: var(--gray-100);
+            padding: 1px 4px;
+            border-radius: 3px;
+            color: var(--primary-dark);
+        }
+        
+        pre {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 8pt;
+            background: var(--gray-900);
+            color: #e9ecef;
+            padding: 10px 12px;
+            border-radius: 5px;
+            margin: 8px 0;
+            overflow-x: auto;
+            line-height: 1.4;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        
+        /* Callouts */
+        .callout {
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 8px 0;
+            font-size: 8.5pt;
+        }
+        
+        .callout-info {
+            background: #e7f3ff;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .callout-warning {
+            background: #fff3cd;
+            border-left: 4px solid var(--warning);
+        }
+        
+        .callout-danger {
+            background: #f8d7da;
+            border-left: 4px solid var(--danger);
+        }
+        
+        .callout-success {
+            background: #d4edda;
+            border-left: 4px solid var(--success);
+        }
+        
+        /* Lists */
+        ul, ol {
+            margin: 6px 0 6px 18px;
+        }
+        
+        li {
+            margin: 2px 0;
+        }
+        
+        /* Two columns */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        /* Quick ref card */
+        .quick-ref {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .quick-ref h3 {
+            color: white;
+            margin-bottom: 8px;
+            font-size: 10pt;
+        }
+        
+        .quick-ref table {
+            font-size: 8pt;
+        }
+        
+        .quick-ref th {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .quick-ref td {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .quick-ref code {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 25px;
+            padding-top: 10px;
+            border-top: 1px solid var(--gray-300);
+            text-align: center;
+            font-size: 8pt;
+            color: var(--gray-600);
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 7.5pt;
+            font-weight: 500;
+        }
+        
+        .badge-success { background: var(--success); color: white; }
+        .badge-warning { background: var(--warning); color: var(--gray-900); }
+        .badge-danger { background: var(--danger); color: white; }
+        .badge-primary { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🧠 Mendix Expert MCP Server</h1>
+    <div class="subtitle">Complete User & Integration Guide</div>
+    <div class="version">Version 2.7.3 | December 2025</div>
+</div>
+
+<div class="toc">
+    <h3>📑 Contents</h3>
+    <ol>
+        <li><a href="#what">1. What Is This?</a></li>
+        <li><a href="#quickstart">2. Quick Start</a></li>
+        <li><a href="#config">3. Configuration Guide</a></li>
+        <li><a href="#tools">4. Available Tools</a></li>
+        <li><a href="#commands">5. Power User Commands</a></li>
+        <li><a href="#beast">6. Beast Mode</a></li>
+        <li><a href="#integration">7. Integration Options</a></li>
+        <li><a href="#warnings">8. Watch Out For</a></li>
+        <li><a href="#maintenance">9. Maintenance</a></li>
+        <li><a href="#troubleshooting">10. Troubleshooting</a></li>
+    </ol>
+</div>
+
+<h2 id="what">1. What Is This?</h2>
+
+<p><strong>Mendix Expert</strong> is a self-learning AI assistant built on the Model Context Protocol (MCP). It plugs directly into VS Code Copilot, Claude Desktop, Cursor, or any MCP-compatible AI tool.</p>
+
+<table>
+    <tr><th>Feature</th><th>Description</th></tr>
+    <tr><td><strong>700KB+ Knowledge</strong></td><td>Verified Mendix patterns, SDK code, best practices from official docs</td></tr>
+    <tr><td><strong>Semantic Search</strong></td><td>Understands meaning via Pinecone + Azure OpenAI embeddings</td></tr>
+    <tr><td><strong>Self-Learning</strong></td><td>Automatically harvests new Mendix documentation weekly</td></tr>
+    <tr><td><strong>Project Analysis</strong></td><td>Analyzes your actual <code>.mpr</code> files and themes</td></tr>
+    <tr><td><strong>Beast Mode</strong></td><td>Exhaustive multi-step research on demand</td></tr>
+</table>
+
+<h2 id="quickstart">2. Quick Start</h2>
+
+<div class="two-col">
+<div>
+<h4>Option A: npm (Recommended)</h4>
+<pre><code>npm install -g @jordnlvr/mendix-mcp-server
+mendix-mcp-server --help</code></pre>
+</div>
+<div>
+<h4>Option B: Clone Repository</h4>
+<pre><code>git clone https://github.com/jordnlvr/mendix-mcp-server.git
+cd mendix-mcp-server && npm install
+node src/index.js</code></pre>
+</div>
+</div>
+
+<h2 id="config">3. Configuration Guide</h2>
+
+<h3>VS Code (GitHub Copilot Chat)</h3>
+<p><strong>File:</strong> <code>%APPDATA%\Code\User\settings.json</code></p>
+<pre><code>{
+  "chat.mcp.servers": {
+    "mendix-expert": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["D:/path/to/mendix-mcp-server/src/index.js"]
+    }
+  }
+}</code></pre>
+<p><strong>Usage:</strong> Type <code>@mendix-expert</code> in Copilot Chat, then your question.</p>
+
+<h3>Claude Desktop</h3>
+<p><strong>File:</strong> <code>%APPDATA%\Claude\claude_desktop_config.json</code></p>
+<pre><code>{
+  "mcpServers": {
+    "mendix-expert": {
+      "command": "node",
+      "args": ["D:/path/to/mendix-mcp-server/src/index.js"]
+    }
+  }
+}</code></pre>
+
+<h3>Environment Variables (Optional - enables semantic search)</h3>
+<pre><code>PINECONE_API_KEY=your_key
+AZURE_OPENAI_API_KEY=your_key
+AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002</code></pre>
+
+<div class="page-break"></div>
+
+<h2 id="tools">4. Available Tools</h2>
+
+<h3>Knowledge & Search</h3>
+<table>
+    <tr><th>Tool</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td><code>query_mendix_knowledge</code></td><td>Search knowledge base</td><td><code>"How do I create a microflow?"</code></td></tr>
+    <tr><td><code>search_mendix</code></td><td>Hybrid keyword + semantic</td><td><code>"nanoflow vs microflow performance"</code></td></tr>
+    <tr><td><code>get_best_practice</code></td><td>Get recommendations</td><td><code>"security for REST APIs"</code></td></tr>
+</table>
+
+<h3>Analysis</h3>
+<table>
+    <tr><th>Tool</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td><code>analyze_project</code></td><td>Analyze .mpr file</td><td><code>path="D:/MyApp/MyApp.mpr"</code></td></tr>
+    <tr><td><code>analyze_theme</code></td><td>Deep SCSS analysis</td><td><code>path="D:/MyApp" format="detailed"</code></td></tr>
+</table>
+
+<h3>System</h3>
+<table>
+    <tr><th>Tool</th><th>Purpose</th></tr>
+    <tr><td><code>hello</code></td><td>Health check, version, stats</td></tr>
+    <tr><td><code>harvest</code></td><td>Fetch fresh Mendix docs</td></tr>
+    <tr><td><code>get_usage_analytics</code></td><td>See search patterns</td></tr>
+</table>
+
+<h2 id="commands">5. Power User Commands</h2>
+
+<div class="two-col">
+<div>
+<h4>General Questions</h4>
+<pre><code>@mendix-expert How do I create a REST 
+service that returns JSON?
+
+@mendix-expert Best practice for error 
+handling in microflows?</code></pre>
+</div>
+<div>
+<h4>SDK Development</h4>
+<pre><code>@mendix-expert Verified Platform SDK 
+code to create a microflow with loop
+
+@mendix-expert StringTemplate pattern 
+for LogMessageAction</code></pre>
+</div>
+</div>
+
+<div class="two-col">
+<div>
+<h4>Theme & Styling</h4>
+<pre><code>@mendix-expert Analyze my 
+design-properties.json for issues
+
+@mendix-expert How to set up local 
+fonts instead of Google Fonts?</code></pre>
+</div>
+<div>
+<h4>Troubleshooting</h4>
+<pre><code>@mendix-expert Why might my REST 
+service return 403?
+
+@mendix-expert Common causes of 
+"Object is not retrievable" error</code></pre>
+</div>
+</div>
+
+<h2 id="beast">6. Beast Mode</h2>
+
+<p>Beast Mode triggers exhaustive, multi-step research instead of quick answers.</p>
+
+<h4>How to Activate</h4>
+<pre><code>@mendix-expert [BEAST MODE] Tell me everything about workflow best practices
+
+@mendix-expert Do deep research on pluggable widget development
+
+@mendix-expert Give me a comprehensive guide to Mendix security</code></pre>
+
+<div class="callout callout-info">
+<strong>Trigger words:</strong> <code>deep</code>, <code>comprehensive</code>, <code>exhaustive</code>, <code>everything about</code>, <code>complete guide</code>, <code>[BEAST MODE]</code>
+</div>
+
+<table>
+    <tr><th>✅ Good For</th><th>❌ Overkill For</th></tr>
+    <tr><td>Learning new Mendix features thoroughly</td><td>Quick syntax questions</td></tr>
+    <tr><td>Preparing documentation/training</td><td>Simple "how do I..." queries</td></tr>
+    <tr><td>Debugging complex issues</td><td>Yes/no questions</td></tr>
+    <tr><td>SDK development with verified patterns</td><td>Basic configuration lookups</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<h2 id="integration">7. Integration Options</h2>
+
+<table>
+    <tr><th>Option</th><th>Best For</th><th>Setup</th></tr>
+    <tr>
+        <td><span class="badge badge-primary">A</span> <strong>Direct MCP</strong></td>
+        <td>Daily development, full features</td>
+        <td>VS Code/Claude/Cursor config</td>
+    </tr>
+    <tr>
+        <td><span class="badge badge-success">B</span> <strong>REST + ChatGPT</strong></td>
+        <td>Team sharing, browser access</td>
+        <td><code>npm run rest</code> + ngrok + Actions</td>
+    </tr>
+    <tr>
+        <td><span class="badge badge-warning">C</span> <strong>Smithery Cloud</strong></td>
+        <td>Zero setup, quick eval</td>
+        <td>Install from smithery.ai</td>
+    </tr>
+</table>
+
+<h2 id="warnings">8. Things to Watch Out For</h2>
+
+<div class="callout callout-warning">
+<strong>⚠️ SDK Pattern Warnings</strong><br>
+Always test SDK code in a scratch app first! Known gotchas:
+<ul style="margin-top:5px">
+<li><code>model.allEntities()</code> does NOT exist (use <code>domainModel.load().entities</code>)</li>
+<li><code>StringTemplate.createIn()</code> does NOT exist (use <code>createInLogMessageActionUnderMessageTemplate</code>)</li>
+<li>Always delete flows BEFORE activities when modifying microflows</li>
+</ul>
+</div>
+
+<table>
+    <tr><th>Issue</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td>Server not found</td><td>Wrong path</td><td>Use absolute paths with <code>/</code></td></tr>
+    <tr><td>Stale answers</td><td>Old knowledge</td><td><code>npm run harvest</code></td></tr>
+    <tr><td>No semantic search</td><td>Missing API keys</td><td>Add to <code>.env</code></td></tr>
+</table>
+
+<h2 id="maintenance">9. Maintenance & Operations</h2>
+
+<table>
+    <tr><th>Command</th><th>Purpose</th></tr>
+    <tr><td><code>npm start</code></td><td>Run MCP server (stdio)</td></tr>
+    <tr><td><code>npm run rest</code></td><td>Run REST API (port 5050)</td></tr>
+    <tr><td><code>npm run reindex</code></td><td>Reindex vectors</td></tr>
+    <tr><td><code>npm run reindex:force</code></td><td>Full vector rebuild</td></tr>
+    <tr><td><code>npm run harvest</code></td><td>Fetch latest docs</td></tr>
+    <tr><td><code>npm run maintenance</code></td><td>Full maintenance cycle</td></tr>
+    <tr><td><code>npm test</code></td><td>Run tests</td></tr>
+</table>
+
+<h2 id="troubleshooting">10. Troubleshooting</h2>
+
+<div class="two-col">
+<div>
+<h4>Server Won't Start</h4>
+<pre><code>node --version  # Need 18+
+rm -rf node_modules
+npm install
+node --check src/index.js</code></pre>
+</div>
+<div>
+<h4>REST API Errors</h4>
+<pre><code>netstat -ano | findstr :5050
+taskkill /PID &lt;pid&gt; /F
+npm run rest</code></pre>
+</div>
+</div>
+
+<div class="quick-ref">
+    <h3>⚡ Quick Reference Card</h3>
+    <table>
+        <tr><th style="width:40%">I want to...</th><th>Command</th></tr>
+        <tr><td>Ask a question</td><td><code>@mendix-expert &lt;question&gt;</code></td></tr>
+        <tr><td>Analyze my project</td><td><code>@mendix-expert analyze project at D:/path</code></td></tr>
+        <tr><td>Get best practices</td><td><code>@mendix-expert best practice for &lt;topic&gt;</code></td></tr>
+        <tr><td>Deep research</td><td><code>@mendix-expert [BEAST MODE] &lt;topic&gt;</code></td></tr>
+        <tr><td>Check status</td><td><code>@mendix-expert hello</code></td></tr>
+        <tr><td>Update knowledge</td><td><code>npm run harvest && npm run reindex</code></td></tr>
+    </table>
+</div>
+
+<div class="footer">
+    <strong>Resources:</strong> 
+    <a href="https://github.com/jordnlvr/mendix-mcp-server">GitHub</a> · 
+    <a href="https://npmjs.com/package/@jordnlvr/mendix-mcp-server">npm</a> · 
+    <a href="https://jordnlvr.github.io/mendix-mcp-server/">Docs</a> · 
+    <a href="https://smithery.ai/server/@jordnlvr/mendix-mcp-server">Smithery</a>
+    <br><br>
+    Built with ❤️ for the Mendix community | @jordnlvr/mendix-mcp-server v2.7.3
+</div>
+
+</body>
+</html>

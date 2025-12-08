@@ -257,7 +257,6 @@ server.tool(
             },
           ],
         };
-
       }
 
       // Format results

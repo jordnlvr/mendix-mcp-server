@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 9, 2025  
-**Version:** 3.1.1  
+**Version:** 3.2.0  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -18,6 +18,7 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 - **Semantic search** via Pinecone (built-in shared index - no user setup!)
 - **Multiple embedding providers** - Azure OpenAI, OpenAI, or local TF-IDF
 - **Project & theme analysis** for actual .mpr files (web-focused, best practices based)
+- **Studio Pro Extensions** - Complete C# extension development guide for Studio Pro 11+
 - **Self-learning** - harvests docs, remembers solutions
 - **Beast Mode** - exhaustive multi-step research on demand (MCP + REST)
 - **Automated weekly harvesting** via GitHub Actions (Monday 3AM UTC)
@@ -57,6 +58,7 @@ mendix-mcp-server/
 │       ├── MaintenanceScheduler.js
 │       └── Analytics.js
 ├── knowledge/                 # JSON knowledge base (~700KB)
+│   ├── studio-pro-extensions-complete.json  # 🆕 Studio Pro extension guide
 │   ├── theme-analysis.json   # v1.4.0 - fonts, design-properties, scaffold
 │   ├── platform-sdk.json     # Verified SDK patterns
 │   ├── best-practices.json
@@ -65,7 +67,7 @@ mendix-mcp-server/
 ├── data/
 │   └── embedding-cache.json  # Persistent embedding cache (NEW in v3.1.0)
 ├── scripts/
-│   └── reindex-vectors.js    # Vector reindex utility
+│   └── reindex-vectors.js    # Vector reindex utility (fixed in v3.2.0)
 ├── docs/                      # Jekyll site for GitHub Pages
 │   ├── MENDIX-EXPERT-GUIDE.html  # PDF-ready user guide
 │   └── ...
@@ -95,18 +97,21 @@ mendix-mcp-server/
 **One-click:** Double-click `START-SERVER.cmd` (or `START-SERVER.vbs` if .cmd opens in Notepad)
 
 **Manual:**
+
 ```bash
 cd mendix-mcp-server
 node src/rest-proxy.js
 ```
 
 **Important Notes:**
+
 - Server takes ~10 seconds to initialize (embedding 354 documents)
 - Keep the terminal window open - closing it stops the server
 - Dashboard: http://localhost:5050/dashboard
 - Health check: http://localhost:5050/health
 
 **For ChatGPT Integration:**
+
 1. Start server with `START-SERVER.cmd`
 2. Run `start-ngrok-tunnel.bat` to create public URL
 3. Copy ngrok's HTTPS URL into ChatGPT custom GPT action config
@@ -310,14 +315,14 @@ Without embedding keys, server uses local TF-IDF search (still good!).
 
 ### Version History (Recent)
 
-| Version | Date   | Highlights                                                      |
-| ------- | ------ | --------------------------------------------------------------- |
-| 3.1.1   | Dec 9  | Expanded Beast Mode (5-tier research), mandatory doc-update rule|
-| 3.1.0   | Dec 9  | Weekly auto-harvest GitHub Action, disk-cached embeddings       |
-| 3.0.1   | Dec 9  | Analytics dashboard, harvest status endpoint                    |
-| 2.8.0   | Dec 8  | Built-in Pinecone, OpenAI+Azure support, ThemeAnalyzer verdicts |
-| 2.7.3   | Dec 8  | Font config, design system workflow enhancements                |
-| 2.7.2   | Dec 8  | Comprehensive design-properties.json documentation              |
+| Version | Date  | Highlights                                                       |
+| ------- | ----- | ---------------------------------------------------------------- |
+| 3.1.1   | Dec 9 | Expanded Beast Mode (5-tier research), mandatory doc-update rule |
+| 3.1.0   | Dec 9 | Weekly auto-harvest GitHub Action, disk-cached embeddings        |
+| 3.0.1   | Dec 9 | Analytics dashboard, harvest status endpoint                     |
+| 2.8.0   | Dec 8 | Built-in Pinecone, OpenAI+Azure support, ThemeAnalyzer verdicts  |
+| 2.7.3   | Dec 8 | Font config, design system workflow enhancements                 |
+| 2.7.2   | Dec 8 | Comprehensive design-properties.json documentation               |
 
 ### What's Working Well
 

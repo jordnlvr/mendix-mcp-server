@@ -26,6 +26,77 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, '..');
 
+// Strip JSON comments properly without corrupting strings
+// Handles line and block comments outside of quoted strings
+function stripJsonComments(jsonString) {
+  let result = '';
+  let inString = false;
+  let inSingleLineComment = false;
+  let inMultiLineComment = false;
+  let i = 0;
+
+  while (i < jsonString.length) {
+    const char = jsonString[i];
+    const nextChar = jsonString[i + 1];
+
+    // Handle string boundaries (respecting escape sequences)
+    if (!inSingleLineComment && !inMultiLineComment) {
+      if (char === '"' && (i === 0 || jsonString[i - 1] !== '\\')) {
+        inString = !inString;
+        result += char;
+        i++;
+        continue;
+      }
+    }
+
+    // Inside a string - pass through everything
+    if (inString) {
+      result += char;
+      i++;
+      continue;
+    }
+
+    // Check for comment starts
+    if (!inSingleLineComment && !inMultiLineComment) {
+      if (char === '/' && nextChar === '/') {
+        inSingleLineComment = true;
+        i += 2;
+        continue;
+      }
+      if (char === '/' && nextChar === '*') {
+        inMultiLineComment = true;
+        i += 2;
+        continue;
+      }
+    }
+
+    // Check for comment ends
+    if (inSingleLineComment && (char === '\n' || char === '\r')) {
+      inSingleLineComment = false;
+      result += char; // Keep the newline
+      i++;
+      continue;
+    }
+    if (inMultiLineComment && char === '*' && nextChar === '/') {
+      inMultiLineComment = false;
+      i += 2;
+      continue;
+    }
+
+    // Skip characters inside comments
+    if (inSingleLineComment || inMultiLineComment) {
+      i++;
+      continue;
+    }
+
+    // Regular character - add to result
+    result += char;
+    i++;
+  }
+
+  return result;
+}
+
 // Parse command line args
 const args = process.argv.slice(2);
 const flags = {
@@ -124,8 +195,8 @@ async function main() {
   for (const file of files) {
     try {
       const content = await fs.readFile(path.join(knowledgePath, file), 'utf8');
-      // Remove comments for JSON parsing
-      const cleanContent = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+      // Use JSON5 or strip-json-comments approach - handle JSONC properly
+      const cleanContent = stripJsonComments(content);
       const data = JSON.parse(cleanContent);
 
       const entryCount = countEntries(data);
@@ -170,7 +241,7 @@ async function main() {
     console.log(`   Processing ${file}...`);
     try {
       const content = await fs.readFile(path.join(knowledgePath, file), 'utf8');
-      const cleanContent = content.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+      const cleanContent = stripJsonComments(content);
       const data = JSON.parse(cleanContent);
 
       // Extract indexable entries
@@ -178,7 +249,7 @@ async function main() {
 
       // Batch upsert to Pinecone
       if (entries.length > 0) {
-        await vectorStore.indexKnowledge(entries);
+        await vectorStore.indexDocuments(entries);
         console.log(`   ✅ Indexed ${entries.length} entries from ${file}`);
       }
     } catch (err) {

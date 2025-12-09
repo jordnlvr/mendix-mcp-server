@@ -1018,7 +1018,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 1,
+          "usage_count": 2,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -1026,7 +1026,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-07T23:51:15.409Z"
+          "last_used_at": "2025-12-09T18:25:18.627Z"
         }
       }
     ],
@@ -1449,14 +1449,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.67
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-09T18:25:18.626Z"
         }
       }
     ],
@@ -2258,7 +2259,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 1,
+          "usage_count": 2,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -2266,7 +2267,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-07T23:51:15.409Z"
+          "last_used_at": "2025-12-09T18:25:18.626Z"
         }
       }
     ],
@@ -2455,7 +2456,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 1,
+          "usage_count": 2,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -2463,7 +2464,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T23:32:23.727Z"
+          "last_used_at": "2025-12-09T18:25:18.627Z"
         }
       }
     ],
@@ -2557,7 +2558,9 @@
           "version": 1,
           "verified": true,
           "mendix_version": "11.x",
-          "quality_score": 0.95
+          "quality_score": 0.95,
+          "usage_count": 1,
+          "last_used_at": "2025-12-09T18:25:18.620Z"
         }
       }
     ]

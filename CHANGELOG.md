@@ -24,6 +24,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.2.0] - 2025-12-09
+
+### Added
+
+- **🧩 Studio Pro Extensions Complete Guide**
+  - New knowledge file: `studio-pro-extensions-complete.json` with 300+ lines of verified patterns
+  - Quick start guide: Create a working extension in 10 minutes
+  - Verified manifest format: `{ "mx_extensions": ["Name.dll"] }` - NOT schema-based
+  - Extension types: MenuExtension, DockablePaneExtension, ContextMenuExtension, WebServerExtension
+  - HTTP bridge pattern for MCP server integration
+  - Common troubleshooting with verified solutions
+  - API reference for IModel, IProject, IModule, IEntity, services
+
+### Fixed
+
+- **🔧 Vector Reindex Script**
+  - Fixed JSON comment stripping - proper character-by-character parser respects string boundaries
+  - Fixed method call: `indexKnowledge` → `indexDocuments` to match VectorStore API
+  - Script now parses all knowledge files correctly
+
+### Changed
+
+- **📖 README & Feature Tables**
+  - Added Studio Pro Extensions to features list
+  - Updated features table with new entry
+
+---
+
 ## [3.1.1] - 2025-12-09
 
 ### Added

@@ -64,6 +64,7 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 5. **Project & Theme Analysis** - Analyze `.mpr` files AND custom themes with grades (A+ to F)
 6. **Beast Mode** - Exhaustive 5-tier research protocol when answers aren't in the knowledge base
 7. **Analytics Dashboard** - Visual dashboard showing usage patterns and popular topics
+8. **Studio Pro Extensions** - Complete guide for building C# extensions for Studio Pro 11+
 
 **Think of it as giving your AI assistant a Mendix expert's brain that keeps getting smarter.**
 
@@ -71,18 +72,19 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 
 ## ✨ Key Features
 
-| Feature                    | Description                                                                |
-| -------------------------- | -------------------------------------------------------------------------- |
-| 🔍 **Intelligent Search**  | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow" |
-| 🔮 **Vector Search**       | Semantic search using Pinecone - find concepts, not just keywords          |
-| 🎯 **Hybrid Search**       | Combined keyword + semantic search for best of both worlds                 |
-| 🧠 **Self-Learning**       | Automatically grows smarter as you add knowledge                           |
-| 🔬 **Beast Mode**          | 5-tier research protocol - docs, GitHub, npm, forums, archives             |
-| 📊 **Analytics Dashboard** | Visual HTML dashboard at `/dashboard` endpoint                             |
-| 🎨 **Theme Analyzer v2.0** | Web-focused, follows @imports, CSS custom properties, letter grades        |
-| 🔧 **Auto-Maintenance**    | Scheduled harvesting, validation, staleness detection, cache cleanup       |
-| 📁 **Project Analysis**    | Analyze any `.mpr` file - discover modules, entities, microflows           |
-| 🔄 **Zero Config**         | Built-in Pinecone key - works out of the box, no API keys required!        |
+| Feature                      | Description                                                                |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| 🔍 **Intelligent Search**    | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow" |
+| 🔮 **Vector Search**         | Semantic search using Pinecone - find concepts, not just keywords          |
+| 🎯 **Hybrid Search**         | Combined keyword + semantic search for best of both worlds                 |
+| 🧠 **Self-Learning**         | Automatically grows smarter as you add knowledge                           |
+| 🔬 **Beast Mode**            | 5-tier research protocol - docs, GitHub, npm, forums, archives             |
+| 📊 **Analytics Dashboard**   | Visual HTML dashboard at `/dashboard` endpoint                             |
+| 🎨 **Theme Analyzer v2.0**   | Web-focused, follows @imports, CSS custom properties, letter grades        |
+| 🔧 **Auto-Maintenance**      | Scheduled harvesting, validation, staleness detection, cache cleanup       |
+| 📁 **Project Analysis**      | Analyze any `.mpr` file - discover modules, entities, microflows           |
+| 🧩 **Studio Pro Extensions** | Build C# extensions for Studio Pro 11+ with verified patterns              |
+| 🔄 **Zero Config**           | Built-in Pinecone key - works out of the box, no API keys required!        |
 
 ---
 

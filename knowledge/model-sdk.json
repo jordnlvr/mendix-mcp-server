@@ -652,14 +652,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.95
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-09T16:37:11.113Z"
         }
       }
     ],
@@ -689,14 +690,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.95
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-09T18:25:18.628Z"
         }
       }
     ],
@@ -946,7 +948,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 1,
+          "usage_count": 2,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -954,7 +956,7 @@
             "total": 0
           },
           "quality_score": 0.95,
-          "last_used_at": "2025-12-08T19:10:15.197Z"
+          "last_used_at": "2025-12-09T16:37:11.105Z"
         }
       }
     ],
@@ -1004,7 +1006,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 2,
+          "usage_count": 3,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -1012,7 +1014,7 @@
             "total": 0
           },
           "quality_score": 0.7,
-          "last_used_at": "2025-12-08T19:10:15.191Z"
+          "last_used_at": "2025-12-09T18:25:18.626Z"
         }
       }
     ],
@@ -1041,7 +1043,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 1,
+          "usage_count": 2,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -1049,7 +1051,7 @@
             "total": 0
           },
           "quality_score": 0.7,
-          "last_used_at": "2025-12-09T13:05:07.919Z"
+          "last_used_at": "2025-12-09T18:25:18.628Z"
         }
       }
     ],
@@ -1163,14 +1165,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.95
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-09T16:37:11.113Z"
         }
       }
     ]

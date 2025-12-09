@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Automated vector reindexing on knowledge updates
 - Weekly harvest of Mendix release notes
+- Design Properties Gap Analysis - suggest where design properties would benefit widgets
+
+---
+
+## [2.9.0] - 2025-12-08
+
+### Changed
+
+- **ThemeAnalyzer v2.0 - Complete Rewrite** - Focused on actionable, Mendix-best-practices analysis!
+
+  - **Removed** irrelevant checks:
+    - Native theme analysis (not useful for web-focused teams)
+    - Atlas_Core existence check (it's always in every project)
+    - design-properties.json existence (always exists by default)
+  
+  - **Added** meaningful analysis categories:
+    - **Structure Compliance**: Required files (custom-variables.scss, main.scss, exclusion-variables.scss, settings.json)
+    - **Variable Usage Quality**: Hardcoded values vs SCSS tokens, brand/spacing/font variable usage
+    - **Organization Assessment**: File separation, import structure, naming conventions, comments
+    - **Modularity Analysis**: Theme module separation, UI resource module usage
+    - **Performance Checks**: Selector complexity, nesting depth, CSS bundle size estimates
+    - **Best Practices Audit**: Mendix theming standards, custom-variables usage, exclusion patterns
+
+  - **Explicit PASS/FAIL/WARN verdicts** with actionable explanations
+  - **Web-only focus** with clear disclaimer about native (skipped intentionally)
+  - **Scoring** based on actual Mendix documentation standards
+
+### Fixed
+
+- ThemeAnalyzer no longer produces superficial "pseudo-arbitrary" verdicts
+- AI agents now receive clear, actionable guidance from theme analysis
 
 ---
 

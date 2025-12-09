@@ -1,16 +1,28 @@
 /**
- * Mendix Theme Analyzer
+ * Mendix Theme Analyzer v2.0
  *
- * Deep analysis of Mendix custom themes against best practices.
- * Analyzes both web (SCSS) and native (JS) themes for:
- * - Structure compliance
- * - Variable usage and organization
- * - Design system patterns
- * - Performance considerations
- * - Maintainability
- * - Version compatibility
+ * Focused analysis of Mendix web app themes against documented best practices.
+ * Based on official Mendix documentation: https://docs.mendix.com/howto/front-end/customize-styling-new/
  *
- * @version 1.0.0
+ * SCOPE: Web apps only (SCSS-based themes)
+ * NOTE: Native mobile theme analysis is NOT included. This analyzer focuses on
+ *       progressive/web applications which represent the majority use case.
+ *
+ * WHAT THIS ANALYZES:
+ * 1. Custom Theme Structure - Does it follow Mendix's recommended folder structure?
+ * 2. SCSS Quality - Variables, organization, imports, hardcoded values
+ * 3. Color Scheme - Consistency, brand colors, accessibility considerations
+ * 4. Override Patterns - Are Atlas styles being overridden correctly?
+ * 5. Performance - Selector efficiency, nesting depth, file size
+ * 6. Maintainability - Comments, organization, naming conventions
+ *
+ * WHAT THIS DOES NOT ANALYZE:
+ * - Native mobile themes (JS-based) - out of scope
+ * - Marketplace modules - they're third-party, not user code
+ * - Atlas_Core internals - it's always present, always required
+ *
+ * @version 2.0.0
+ * @author Kelly Seale / Mendix Expert MCP Server
  */
 
 import { promises as fs } from 'fs';
@@ -18,1457 +30,829 @@ import path from 'path';
 
 class ThemeAnalyzer {
   constructor() {
-    // Best practices rules and scoring weights
-    this.rules = {
-      structure: {
-        weight: 25,
-        checks: [
-          'hasThemeFolder',
-          'hasThemesourceFolder',
-          'hasCustomVariables',
-          'hasMainFile',
-          'hasExclusionVariables',
-          'hasSettingsJson',
-          'hasProperFolderStructure',
-        ],
+    // Expected files per Mendix documentation
+    this.expectedFiles = {
+      'theme/web/custom-variables.scss': {
+        required: true,
+        purpose: 'Theme settings (colors, fonts, spacing)',
+        docRef: 'https://docs.mendix.com/howto/front-end/customize-styling-new/#file-and-folder',
       },
-      variables: {
-        weight: 20,
-        checks: [
-          'usesDesignTokens',
-          'hasColorVariables',
-          'hasFontVariables',
-          'hasSpacingVariables',
-          'avoidsMagicNumbers',
-          'variablesAreOrganized',
-        ],
+      'theme/web/main.scss': {
+        required: true,
+        purpose: 'Entry point for custom styling',
+        docRef: 'https://docs.mendix.com/howto/front-end/customize-styling-new/#file-and-folder',
       },
-      organization: {
-        weight: 20,
-        checks: [
-          'filesSeparatedByPurpose',
-          'importsAreOrganized',
-          'hasComments',
-          'followsNamingConventions',
-          'noDeadCode',
-        ],
-      },
-      modularity: {
-        weight: 15,
-        checks: [
-          'usesThemeModule',
-          'isUIResourceModule',
-          'moduleOrderConfigured',
-          'designPropertiesUsed',
-        ],
-      },
-      performance: {
-        weight: 10,
-        checks: [
-          'noDeepNesting',
-          'noOverlySpecificSelectors',
-          'usesAtlasExclusions',
-          'efficientSelectors',
-        ],
-      },
-      compatibility: {
-        weight: 10,
-        checks: [
-          'compatibleWithStudioProVersion',
-          'usesCurrentAtlasPatterns',
-          'noDeprecatedPatterns',
-        ],
-      },
-    };
-
-    // Pattern definitions for analysis
-    this.patterns = {
-      // SCSS patterns
-      magicNumber: /:\s*\d+px|:\s*\d+em|:\s*\d+rem|#[0-9a-fA-F]{3,6}/g,
-      deepNesting: /^\s{12,}/gm, // 4+ levels of nesting
-      designToken: /\$[\w-]+/g,
-      importStatement: /@import\s+["'][^"']+["']/g,
-      colorHex: /#[0-9a-fA-F]{3,8}/g,
-
-      // Variable patterns
-      brandVariables: /\$brand-(primary|secondary|success|warning|danger|info|default)/g,
-      spacingVariables: /\$spacing-(tiny|small|medium|large|huge)/g,
-      fontVariables: /\$font-(family|size|weight)/g,
-
-      // Native JS patterns
-      exportConst: /export\s+const\s+\w+/g,
-      jsColorHex: /["']#[0-9a-fA-F]{3,8}["']/g,
-    };
-
-    // Mendix version compatibility info
-    this.versionInfo = {
-      10: {
-        atlasVersion: '3.x',
-        patterns: ['design-properties.json', 'exclusion-variables.scss'],
-        deprecated: [],
-      },
-      11: {
-        atlasVersion: '4.x',
-        patterns: ['design-properties.json', 'exclusion-variables.scss', 'React Client support'],
-        deprecated: ['old dijit widgets'],
-      },
-    };
-  }
-
-  /**
-   * Analyze a Mendix project's theme
-   * @param {string} projectPath - Path to .mpr file or project directory
-   * @param {object} options - Analysis options
-   * @returns {object} Analysis results with score and recommendations
-   */
-  async analyze(projectPath, options = {}) {
-    const startTime = Date.now();
-
-    // Determine project directory
-    const projectDir = projectPath.endsWith('.mpr') ? path.dirname(projectPath) : projectPath;
-
-    // Gather project info
-    const projectInfo = await this.getProjectInfo(projectDir);
-
-    // Analyze theme structure
-    const structureAnalysis = await this.analyzeStructure(projectDir);
-
-    // Analyze web theme (SCSS)
-    const webAnalysis = await this.analyzeWebTheme(projectDir);
-
-    // Analyze native theme (JS) if present
-    const nativeAnalysis = await this.analyzeNativeTheme(projectDir);
-
-    // Analyze themesource modules
-    const moduleAnalysis = await this.analyzeThemeModules(projectDir);
-
-    // Analyze font configuration
-    const fontAnalysis = await this.analyzeFontConfiguration(projectDir);
-
-    // Calculate overall score
-    const scores = this.calculateScores({
-      structure: structureAnalysis,
-      web: webAnalysis,
-      native: nativeAnalysis,
-      modules: moduleAnalysis,
-    });
-
-    // Generate recommendations
-    const recommendations = this.generateRecommendations({
-      structure: structureAnalysis,
-      web: webAnalysis,
-      native: nativeAnalysis,
-      modules: moduleAnalysis,
-      fonts: fontAnalysis,
-      projectInfo,
-    });
-
-    // Add font issues and recommendations
-    if (fontAnalysis.issues) {
-      recommendations.push(
-        ...fontAnalysis.issues.map((i) => ({
-          ...i,
-          category: 'fonts',
-        }))
-      );
-    }
-    if (fontAnalysis.recommendations) {
-      recommendations.push(
-        ...fontAnalysis.recommendations.map((r) => ({
-          ...r,
-          category: 'fonts',
-        }))
-      );
-    }
-
-    // Determine grade
-    const grade = this.calculateGrade(scores.overall);
-
-    // Generate explicit PASS/FAIL verdicts for AI interpretation
-    const verdicts = this.generateVerdicts({
-      structure: structureAnalysis,
-      web: webAnalysis,
-      native: nativeAnalysis,
-      modules: moduleAnalysis,
-      fonts: fontAnalysis,
-      projectInfo,
-      scores,
-    });
-
-    return {
-      projectPath: projectDir,
-      projectInfo,
-      analyzedAt: new Date().toISOString(),
-      analysisTimeMs: Date.now() - startTime,
-
-      scores: {
-        overall: scores.overall,
-        grade,
-        breakdown: scores.breakdown,
-      },
-
-      // EXPLICIT VERDICTS - Clear PASS/FAIL for AI interpretation
-      // AI assistants should use these verdicts as authoritative assessments
-      verdicts,
-
-      analysis: {
-        structure: structureAnalysis,
-        webTheme: webAnalysis,
-        nativeTheme: nativeAnalysis,
-        modules: moduleAnalysis,
-        fontConfiguration: fontAnalysis,
-      },
-
-      recommendations: {
-        critical: recommendations.filter((r) => r.severity === 'critical'),
-        important: recommendations.filter((r) => r.severity === 'important'),
-        suggestions: recommendations.filter((r) => r.severity === 'suggestion'),
-      },
-
-      summary: this.generateSummary(scores, recommendations, grade, verdicts),
-    };
-  }
-
-  /**
-   * Get basic project information
-   */
-  async getProjectInfo(projectDir) {
-    const info = {
-      directory: projectDir,
-      hasTheme: false,
-      hasThemesource: false,
-      studioProVersion: 'unknown',
-      atlasVersion: 'unknown',
-    };
-
-    try {
-      // Check for theme folder
-      const themePath = path.join(projectDir, 'theme');
-      info.hasTheme = await this.pathExists(themePath);
-
-      // Check for themesource folder
-      const themesourcePath = path.join(projectDir, 'themesource');
-      info.hasThemesource = await this.pathExists(themesourcePath);
-
-      // Try to detect Studio Pro version from .mpr or project files
-      const mprFiles = await this.findFiles(projectDir, '*.mpr');
-      if (mprFiles.length > 0) {
-        info.mprFile = mprFiles[0];
-      }
-
-      // Check for Atlas_Core to determine Atlas version
-      const atlasCorePath = path.join(themesourcePath, 'Atlas_Core');
-      if (await this.pathExists(atlasCorePath)) {
-        info.hasAtlasCore = true;
-        // Could parse version from module if available
-      }
-    } catch (error) {
-      info.error = error.message;
-    }
-
-    return info;
-  }
-
-  /**
-   * Analyze theme folder structure
-   */
-  async analyzeStructure(projectDir) {
-    const results = {
-      score: 0,
-      maxScore: 100,
-      issues: [],
-      findings: [],
-    };
-
-    const checks = {
-      // Theme folder structure
-      'theme/web': { required: true, description: 'Web theme folder' },
-      'theme/web/custom-variables.scss': { required: true, description: 'Custom variables file' },
-      'theme/web/main.scss': { required: true, description: 'Main SCSS file' },
       'theme/web/exclusion-variables.scss': {
         required: false,
-        description: 'Atlas exclusion variables',
+        purpose: 'Disable default Atlas styling for specific widgets',
+        docRef: 'https://docs.mendix.com/howto/front-end/customize-styling-new/#disable-default-styling',
       },
-      'theme/web/settings.json': { required: true, description: 'Theme settings' },
-      'theme/native': { required: false, description: 'Native theme folder' },
-      'theme/native/custom-variables.js': {
-        required: false,
-        description: 'Native custom variables',
+      'theme/web/settings.json': {
+        required: true,
+        purpose: 'CSS file loading configuration',
+        docRef: 'https://docs.mendix.com/howto/front-end/customize-styling-new/#importing-css',
       },
-      'theme/native/main.js': { required: false, description: 'Native main file' },
-      themesource: { required: true, description: 'Theme source modules folder' },
-      'themesource/Atlas_Core': { required: true, description: 'Atlas Core module' },
     };
 
-    let passedChecks = 0;
-    let totalRequired = 0;
+    // SCSS patterns to detect
+    this.patterns = {
+      // Hardcoded values that should be variables
+      hardcodedColor: /#[0-9a-fA-F]{3,8}(?!\s*;?\s*\/\/\s*var)/g,
+      hardcodedPx: /:\s*\d+px(?!\s*;?\s*\/\/\s*var)/g,
+      hardcodedEm: /:\s*\d+(\.\d+)?em(?!\s*;?\s*\/\/\s*var)/g,
+      hardcodedRem: /:\s*\d+(\.\d+)?rem(?!\s*;?\s*\/\/\s*var)/g,
 
-    for (const [relativePath, config] of Object.entries(checks)) {
+      // Good patterns
+      scssVariable: /\$[\w-]+/g,
+      cssVariable: /var\(--[\w-]+\)/g,
+
+      // Import patterns
+      importStatement: /@import\s+["']([^"']+)["']/g,
+      atlasImport: /@import\s+["'][^"']*Atlas_Core[^"']*["']/g,
+
+      // Nesting depth (4+ levels is problematic)
+      deepNesting: /^(\s{8}|\t{4})\s*[.#\w&]/gm,
+
+      // Duplicate selectors (potential issue)
+      classSelector: /^\s*\.[\w-]+\s*\{/gm,
+
+      // Comments
+      blockComment: /\/\*[\s\S]*?\*\//g,
+      lineComment: /\/\/.*/g,
+    };
+
+    // Brand color variable names from Atlas
+    this.brandColors = [
+      '$brand-primary',
+      '$brand-secondary',
+      '$brand-success',
+      '$brand-warning',
+      '$brand-danger',
+      '$brand-info',
+      '$brand-default',
+    ];
+  }
+
+  /**
+   * Main analysis entry point
+   * @param {string} projectPath - Path to .mpr file or project directory
+   * @returns {object} Complete analysis results
+   */
+  async analyze(projectPath) {
+    const startTime = Date.now();
+    const projectDir = projectPath.endsWith('.mpr') ? path.dirname(projectPath) : projectPath;
+
+    // Initialize results structure
+    const results = {
+      projectPath: projectDir,
+      analyzedAt: new Date().toISOString(),
+      scope: 'Web themes only (SCSS). Native mobile themes are not analyzed.',
+
+      // High-level verdicts (the important stuff)
+      verdicts: [],
+
+      // Detailed analysis sections
+      structure: await this.analyzeStructure(projectDir),
+      scssQuality: await this.analyzeScssQuality(projectDir),
+      colorScheme: await this.analyzeColorScheme(projectDir),
+      overridePatterns: await this.analyzeOverridePatterns(projectDir),
+      performance: await this.analyzePerformance(projectDir),
+      maintainability: await this.analyzeMaintainability(projectDir),
+
+      // Module inventory (informational only)
+      modules: await this.inventoryModules(projectDir),
+
+      // Actionable recommendations
+      recommendations: [],
+
+      // Timing
+      analysisTimeMs: 0,
+    };
+
+    // Generate verdicts from analysis
+    results.verdicts = this.generateVerdicts(results);
+
+    // Generate prioritized recommendations
+    results.recommendations = this.generateRecommendations(results);
+
+    // Calculate overall score and grade
+    const { score, grade } = this.calculateScore(results);
+    results.score = score;
+    results.grade = grade;
+
+    // Generate summary
+    results.summary = this.generateSummary(results);
+
+    results.analysisTimeMs = Date.now() - startTime;
+    return results;
+  }
+
+  // ========================================
+  // STRUCTURE ANALYSIS
+  // ========================================
+
+  async analyzeStructure(projectDir) {
+    const structure = {
+      hasThemeFolder: false,
+      hasThemesourceFolder: false,
+      files: {},
+      issues: [],
+      score: 0,
+    };
+
+    // Check theme folder
+    const themePath = path.join(projectDir, 'theme', 'web');
+    structure.hasThemeFolder = await this.pathExists(themePath);
+
+    // Check themesource folder
+    const themesourcePath = path.join(projectDir, 'themesource');
+    structure.hasThemesourceFolder = await this.pathExists(themesourcePath);
+
+    if (!structure.hasThemeFolder) {
+      structure.issues.push({
+        severity: 'critical',
+        message: 'Missing theme/web folder',
+        fix: 'Create theme/web folder with custom-variables.scss and main.scss',
+      });
+      return structure;
+    }
+
+    // Check each expected file
+    let foundCount = 0;
+    let requiredCount = 0;
+
+    for (const [relativePath, info] of Object.entries(this.expectedFiles)) {
       const fullPath = path.join(projectDir, relativePath);
       const exists = await this.pathExists(fullPath);
 
-      if (config.required) {
-        totalRequired++;
-        if (exists) {
-          passedChecks++;
-          results.findings.push({
-            check: config.description,
-            status: 'pass',
-            path: relativePath,
-          });
-        } else {
-          results.issues.push({
-            severity: 'critical',
-            message: `Missing required: ${config.description}`,
-            path: relativePath,
-            fix: `Create ${relativePath}`,
-          });
-        }
-      } else if (exists) {
-        results.findings.push({
-          check: config.description,
-          status: 'present',
-          path: relativePath,
-        });
-      }
-    }
-
-    results.score = Math.round((passedChecks / totalRequired) * 100);
-
-    // Check for Scaffold Pattern compliance
-    const scaffoldAnalysis = await this.analyzeScaffoldPattern(projectDir);
-    results.scaffoldPattern = scaffoldAnalysis;
-
-    // Adjust score based on scaffold pattern
-    if (scaffoldAnalysis.mirrorsAtlasStructure) {
-      results.score = Math.min(100, results.score + 10);
-      results.findings.push({
-        check: 'Scaffold Pattern',
-        status: 'pass',
-        details: 'Theme mirrors Atlas_Core folder structure for easy overrides',
-      });
-    } else if (scaffoldAnalysis.issues.length > 0) {
-      // Add scaffold pattern issues to main issues
-      results.issues.push(...scaffoldAnalysis.issues);
-    }
-
-    return results;
-  }
-
-  /**
-   * Analyze if theme follows the Scaffold Pattern (mirrors Atlas_Core structure)
-   * Best Practice: Create stubbed files mirroring Atlas structure for predictable overrides
-   */
-  async analyzeScaffoldPattern(projectDir) {
-    const results = {
-      mirrorsAtlasStructure: false,
-      atlasStructureFound: [],
-      recommendedFolders: [],
-      stubbedFilesCount: 0,
-      populatedFilesCount: 0,
-      issues: [],
-      recommendations: [],
-    };
-
-    const atlasCorePath = path.join(projectDir, 'themesource', 'Atlas_Core', 'web');
-    const customThemePath = path.join(projectDir, 'theme', 'web');
-
-    if (!(await this.pathExists(atlasCorePath))) {
-      results.issues.push({
-        severity: 'warning',
-        message: 'Atlas_Core not found - cannot verify scaffold pattern',
-        fix: 'Ensure Atlas_Core module is present in themesource/',
-      });
-      return results;
-    }
-
-    if (!(await this.pathExists(customThemePath))) {
-      return results;
-    }
-
-    // Define expected Atlas folder structure that should be mirrored
-    const expectedAtlasFolders = [
-      '_base',
-      '_helpers',
-      '_widgets',
-      '_widgets/_core',
-      '_widgets/_pluggable',
-      '_layouts',
-      '_building-blocks',
-    ];
-
-    // Check which Atlas folders exist
-    for (const folder of expectedAtlasFolders) {
-      const atlasPath = path.join(atlasCorePath, folder);
-      if (await this.pathExists(atlasPath)) {
-        results.atlasStructureFound.push(folder);
-      }
-    }
-
-    // Check if custom theme mirrors the structure
-    let mirroredCount = 0;
-    for (const folder of results.atlasStructureFound) {
-      const customPath = path.join(customThemePath, folder);
-      if (await this.pathExists(customPath)) {
-        mirroredCount++;
-      } else {
-        results.recommendedFolders.push(folder);
-      }
-    }
-
-    // Calculate scaffold compliance
-    const complianceRatio =
-      results.atlasStructureFound.length > 0
-        ? mirroredCount / results.atlasStructureFound.length
-        : 0;
-
-    results.mirrorsAtlasStructure = complianceRatio >= 0.7; // 70% threshold
-
-    // Analyze file stubs vs populated files
-    try {
-      const scssFiles = await this.findFilesRecursive(customThemePath, '.scss');
-      for (const file of scssFiles) {
-        const content = await fs.readFile(file, 'utf-8');
-        const strippedContent = content.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
-
-        if (strippedContent.length < 50) {
-          results.stubbedFilesCount++;
-        } else {
-          results.populatedFilesCount++;
-        }
-      }
-    } catch (error) {
-      // Ignore file read errors
-    }
-
-    // Generate recommendations
-    if (!results.mirrorsAtlasStructure && results.recommendedFolders.length > 0) {
-      results.issues.push({
-        severity: 'suggestion',
-        message: 'Custom theme does not fully mirror Atlas_Core structure',
-        details: `Missing folders: ${results.recommendedFolders.join(', ')}`,
-        fix: 'Create matching folder structure with stubbed (empty) SCSS files for future overrides',
-      });
-
-      results.recommendations.push({
-        title: 'Implement Scaffold Pattern',
-        description:
-          'Mirror the Atlas_Core folder structure in your custom theme. Create empty stubbed files that serve as placeholders for future customizations.',
-        benefit:
-          'Makes it immediately clear where to add overrides, prevents duplication, follows cascade correctly',
-        folders: results.recommendedFolders,
-        example: `// In ${
-          results.recommendedFolders[0] || '_widgets'
-        }/_buttons.scss:\n// Custom button overrides - leave empty if no customizations needed\n// Override Atlas_Core styles here\n`,
-      });
-    }
-
-    // Check for potential duplication issues
-    const mainScssPath = path.join(customThemePath, 'main.scss');
-    if (await this.pathExists(mainScssPath)) {
-      try {
-        const mainContent = await fs.readFile(mainScssPath, 'utf-8');
-
-        // Check for imports of Atlas files (potential duplication)
-        if (
-          mainContent.includes('themesource/Atlas_Core') ||
-          mainContent.includes('../themesource/Atlas_Core')
-        ) {
-          results.issues.push({
-            severity: 'critical',
-            message: 'main.scss imports from Atlas_Core - this causes CSS duplication!',
-            fix: 'Remove Atlas_Core imports from main.scss. Only import YOUR custom override files. Atlas is automatically compiled by Mendix.',
-          });
-        }
-
-        // Check for full Atlas import
-        if (mainContent.includes('@import') && mainContent.toLowerCase().includes('atlas')) {
-          const atlasImportMatch = mainContent.match(/@import\s+['"][^'"]*atlas[^'"]*['"]/gi);
-          if (atlasImportMatch) {
-            results.issues.push({
-              severity: 'warning',
-              message: `Potential Atlas import detected: ${atlasImportMatch[0]}`,
-              fix: 'Verify this import is necessary. Atlas styles are automatically included by Mendix.',
-            });
-          }
-        }
-      } catch (error) {
-        // Ignore read errors
-      }
-    }
-
-    return results;
-  }
-
-  /**
-   * Find files recursively with a specific extension
-   */
-  async findFilesRecursive(dir, extension) {
-    const files = [];
-
-    try {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-
-        if (entry.isDirectory()) {
-          const subFiles = await this.findFilesRecursive(fullPath, extension);
-          files.push(...subFiles);
-        } else if (entry.name.endsWith(extension)) {
-          files.push(fullPath);
-        }
-      }
-    } catch (error) {
-      // Ignore errors (permission issues, etc.)
-    }
-
-    return files;
-  }
-
-  /**
-   * Analyze web theme (SCSS files)
-   */
-  async analyzeWebTheme(projectDir) {
-    const results = {
-      score: 0,
-      maxScore: 100,
-      issues: [],
-      findings: [],
-      stats: {
-        totalFiles: 0,
-        totalLines: 0,
-        variablesCount: 0,
-        importsCount: 0,
-        magicNumbersCount: 0,
-        deepNestingCount: 0,
-      },
-    };
-
-    const webThemePath = path.join(projectDir, 'theme', 'web');
-
-    if (!(await this.pathExists(webThemePath))) {
-      results.issues.push({
-        severity: 'critical',
-        message: 'Web theme folder not found',
-        fix: 'Create theme/web folder with required files',
-      });
-      return results;
-    }
-
-    // Analyze custom-variables.scss
-    const customVarsPath = path.join(webThemePath, 'custom-variables.scss');
-    if (await this.pathExists(customVarsPath)) {
-      const varsAnalysis = await this.analyzeScssFile(customVarsPath, 'custom-variables');
-      results.customVariables = varsAnalysis;
-
-      // Check for proper variable organization
-      if (!varsAnalysis.hasColorSection) {
-        results.issues.push({
-          severity: 'important',
-          message: 'Color variables should be grouped together',
-          file: 'custom-variables.scss',
-          fix: 'Organize color variables in a dedicated section with comments',
-        });
-      }
-
-      if (varsAnalysis.magicNumbers > 0) {
-        results.issues.push({
-          severity: 'important',
-          message: `Found ${varsAnalysis.magicNumbers} hardcoded values - use variables instead`,
-          file: 'custom-variables.scss',
-          fix: 'Replace hardcoded colors/sizes with SCSS variables',
-        });
-      }
-    }
-
-    // Analyze main.scss
-    const mainPath = path.join(webThemePath, 'main.scss');
-    if (await this.pathExists(mainPath)) {
-      const mainAnalysis = await this.analyzeScssFile(mainPath, 'main');
-      results.mainFile = mainAnalysis;
-
-      if (mainAnalysis.deepNesting > 0) {
-        results.issues.push({
-          severity: 'important',
-          message: `Found ${mainAnalysis.deepNesting} instances of deep nesting (4+ levels)`,
-          file: 'main.scss',
-          fix: 'Flatten selectors - deep nesting hurts performance and maintainability',
-        });
-      }
-    }
-
-    // Find and analyze all SCSS files
-    const scssFiles = await this.findFiles(webThemePath, '**/*.scss');
-    results.stats.totalFiles = scssFiles.length;
-
-    for (const file of scssFiles) {
-      const content = await fs.readFile(file, 'utf8');
-      results.stats.totalLines += content.split('\n').length;
-      results.stats.variablesCount += (content.match(this.patterns.designToken) || []).length;
-      results.stats.importsCount += (content.match(this.patterns.importStatement) || []).length;
-      results.stats.magicNumbersCount += this.countMagicNumbers(content);
-      results.stats.deepNestingCount += (content.match(this.patterns.deepNesting) || []).length;
-    }
-
-    // Calculate score based on findings
-    let deductions = 0;
-    deductions += Math.min(30, results.stats.magicNumbersCount * 2); // Max 30 points off for magic numbers
-    deductions += Math.min(20, results.stats.deepNestingCount * 5); // Max 20 points off for deep nesting
-    deductions += results.issues.filter((i) => i.severity === 'critical').length * 15;
-    deductions += results.issues.filter((i) => i.severity === 'important').length * 5;
-
-    results.score = Math.max(0, 100 - deductions);
-    return results;
-  }
-
-  /**
-   * Analyze a single SCSS file
-   */
-  async analyzeScssFile(filePath, fileType) {
-    const content = await fs.readFile(filePath, 'utf8');
-    const lines = content.split('\n');
-
-    return {
-      path: filePath,
-      lineCount: lines.length,
-      hasComments: content.includes('//') || content.includes('/*'),
-      hasColorSection: content.toLowerCase().includes('color') && content.includes('$'),
-      hasFontSection: content.toLowerCase().includes('font'),
-      hasSpacingSection: content.toLowerCase().includes('spacing'),
-      variableCount: (content.match(this.patterns.designToken) || []).length,
-      importCount: (content.match(this.patterns.importStatement) || []).length,
-      magicNumbers: this.countMagicNumbers(content),
-      deepNesting: (content.match(this.patterns.deepNesting) || []).length,
-      usesAtlasVariables:
-        this.patterns.brandVariables.test(content) || this.patterns.spacingVariables.test(content),
-    };
-  }
-
-  /**
-   * Count magic numbers (hardcoded values that should be variables)
-   */
-  countMagicNumbers(content) {
-    let count = 0;
-
-    // Count hardcoded hex colors not in variable definitions
-    const hexColors = content.match(this.patterns.colorHex) || [];
-    const inVariables = content.match(/\$[\w-]+:\s*#[0-9a-fA-F]+/g) || [];
-    count += Math.max(0, hexColors.length - inVariables.length);
-
-    // Count hardcoded pixel values not in variable definitions
-    const pixelValues = content.match(/:\s*\d+px/g) || [];
-    count += pixelValues.length;
-
-    return count;
-  }
-
-  /**
-   * Analyze native theme (JS files)
-   */
-  async analyzeNativeTheme(projectDir) {
-    const results = {
-      score: 0,
-      maxScore: 100,
-      issues: [],
-      findings: [],
-      present: false,
-    };
-
-    const nativeThemePath = path.join(projectDir, 'theme', 'native');
-
-    if (!(await this.pathExists(nativeThemePath))) {
-      results.findings.push({
-        check: 'Native theme',
-        status: 'not-present',
-        note: 'Native theme not required for web-only apps',
-      });
-      results.score = 100; // Not applicable, so no penalty
-      return results;
-    }
-
-    results.present = true;
-
-    // Analyze custom-variables.js
-    const customVarsPath = path.join(nativeThemePath, 'custom-variables.js');
-    if (await this.pathExists(customVarsPath)) {
-      const content = await fs.readFile(customVarsPath, 'utf8');
-
-      results.customVariables = {
-        lineCount: content.split('\n').length,
-        exportCount: (content.match(this.patterns.exportConst) || []).length,
-        hardcodedColors: (content.match(this.patterns.jsColorHex) || []).length,
+      structure.files[relativePath] = {
+        exists,
+        required: info.required,
+        purpose: info.purpose,
       };
 
-      if (results.customVariables.hardcodedColors > 10) {
-        results.issues.push({
-          severity: 'important',
-          message: 'Many hardcoded colors in native variables',
-          file: 'custom-variables.js',
-          fix: 'Consider using a centralized color palette object',
-        });
-      }
-    }
-
-    results.score = Math.max(0, 100 - results.issues.length * 10);
-    return results;
-  }
-
-  /**
-   * Analyze themesource modules
-   */
-  async analyzeThemeModules(projectDir) {
-    const results = {
-      score: 0,
-      maxScore: 100,
-      modules: [],
-      issues: [],
-      findings: [],
-    };
-
-    const themesourcePath = path.join(projectDir, 'themesource');
-
-    if (!(await this.pathExists(themesourcePath))) {
-      results.issues.push({
-        severity: 'critical',
-        message: 'themesource folder not found',
-        fix: 'Ensure project has themesource folder with Atlas_Core',
-      });
-      return results;
-    }
-
-    try {
-      const entries = await fs.readdir(themesourcePath, { withFileTypes: true });
-      const moduleDirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
-
-      for (const moduleName of moduleDirs) {
-        const modulePath = path.join(themesourcePath, moduleName);
-        const moduleAnalysis = await this.analyzeModule(modulePath, moduleName);
-        results.modules.push(moduleAnalysis);
-      }
-
-      // Check for Atlas_Core
-      const hasAtlasCore = moduleDirs.includes('Atlas_Core');
-      if (!hasAtlasCore) {
-        results.issues.push({
-          severity: 'critical',
-          message: 'Atlas_Core module not found',
-          fix: 'Import Atlas_Core from the Mendix Marketplace',
-        });
-      }
-
-      // Check for custom theme modules
-      const customModules = moduleDirs.filter(
-        (m) => m !== 'Atlas_Core' && m !== 'Atlas_Web_Content' && m !== 'Atlas_NativeMobile_Content'
-      );
-
-      if (customModules.length > 0) {
-        results.findings.push({
-          check: 'Custom theme modules',
-          status: 'present',
-          modules: customModules,
-        });
-      }
-    } catch (error) {
-      results.issues.push({
-        severity: 'critical',
-        message: `Error analyzing themesource: ${error.message}`,
-      });
-    }
-
-    results.score = Math.max(
-      0,
-      100 - results.issues.filter((i) => i.severity === 'critical').length * 25
-    );
-    return results;
-  }
-
-  /**
-   * Analyze a single themesource module
-   */
-  async analyzeModule(modulePath, moduleName) {
-    const analysis = {
-      name: moduleName,
-      hasWebStyling: await this.pathExists(path.join(modulePath, 'web')),
-      hasNativeStyling: await this.pathExists(path.join(modulePath, 'native')),
-      hasDesignProperties:
-        (await this.pathExists(path.join(modulePath, 'web', 'design-properties.json'))) ||
-        (await this.pathExists(path.join(modulePath, 'native', 'design-properties.json'))),
-      hasPublicFolder: await this.pathExists(path.join(modulePath, 'public')),
-    };
-
-    // Count SCSS files in web folder
-    if (analysis.hasWebStyling) {
-      const webFiles = await this.findFiles(path.join(modulePath, 'web'), '**/*.scss');
-      analysis.webFileCount = webFiles.length;
-    }
-
-    // Detailed design properties analysis
-    if (analysis.hasDesignProperties) {
-      analysis.designPropertiesAnalysis = await this.analyzeDesignProperties(modulePath);
-    }
-
-    return analysis;
-  }
-
-  /**
-   * Analyze design-properties.json for a module
-   * Validates CSS classes exist in SCSS and checks for proper structure
-   * Enhanced with comprehensive checks for common pitfalls
-   */
-  async analyzeDesignProperties(modulePath) {
-    const results = {
-      valid: true,
-      propertyCount: 0,
-      propertyTypes: {},
-      widgetTypes: [],
-      missingClasses: [],
-      cssVariables: [],
-      issues: [],
-      recommendations: [],
-      criticalWarnings: [],
-    };
-
-    // Valid property types in Mendix design-properties.json
-    const validPropertyTypes = [
-      'Toggle',
-      'Dropdown',
-      'Colorpicker',
-      'ToggleButtonGroup',
-      'Spacing',
-    ];
-
-    // Valid core widget types (from Model SDK)
-    const validCoreWidgets = [
-      'DivContainer',
-      'Text',
-      'ActionButton',
-      'LinkButton',
-      'Image',
-      'StaticImage',
-      'DynamicImage',
-      'Label',
-      'Title',
-      'PageTitle',
-      'TextBox',
-      'TextArea',
-      'ReferenceSelector',
-      'InputReferenceSetSelector',
-      'DatePicker',
-      'DropDown',
-      'CheckBox',
-      'RadioButtons',
-      'DataGrid2',
-      'ListView',
-      'TabContainer',
-      'GroupBox',
-      'ScrollContainer',
-      'LayoutGrid',
-      'Table',
-      'Snippet',
-      'DataView',
-      'NavigationTree',
-      'MenuBar',
-      'Header',
-      'Footer',
-      'All',
-    ];
-
-    // Check both web and native
-    for (const platform of ['web', 'native']) {
-      const dpPath = path.join(modulePath, platform, 'design-properties.json');
-
-      if (!(await this.pathExists(dpPath))) {
-        continue;
-      }
-
-      try {
-        const content = await fs.readFile(dpPath, 'utf-8');
-        const designProps = JSON.parse(content);
-
-        // Analyze the structure
-        if (Array.isArray(designProps)) {
-          for (const widgetGroup of designProps) {
-            // Collect widget types
-            if (widgetGroup.widgetTypes && Array.isArray(widgetGroup.widgetTypes)) {
-              for (const wt of widgetGroup.widgetTypes) {
-                if (!results.widgetTypes.includes(wt)) {
-                  results.widgetTypes.push(wt);
-                }
-                // Validate widget type (allow pluggable widget IDs like com.mendix.*)
-                if (!validCoreWidgets.includes(wt) && !wt.includes('.')) {
-                  results.issues.push({
-                    severity: 'warning',
-                    message: `Unknown widget type: "${wt}"`,
-                    fix: 'Verify widget type name matches Model SDK documentation or use fully qualified pluggable widget ID',
-                  });
-                }
-              }
-            }
-
-            if (widgetGroup.properties) {
-              for (const prop of widgetGroup.properties) {
-                results.propertyCount++;
-
-                // Validate property type
-                const propType = prop.type || 'unknown';
-                results.propertyTypes[propType] = (results.propertyTypes[propType] || 0) + 1;
-
-                if (!validPropertyTypes.includes(propType)) {
-                  results.issues.push({
-                    severity: 'critical',
-                    message: `Invalid property type: "${propType}"`,
-                    fix: `Use one of: ${validPropertyTypes.join(', ')}`,
-                  });
-                }
-
-                // CRITICAL CHECK: Category cannot be "Common"
-                if (prop.category && prop.category.toLowerCase() === 'common') {
-                  results.criticalWarnings.push({
-                    severity: 'critical',
-                    message: `Property "${prop.name}" uses reserved category "Common"`,
-                    fix: 'Change category to a different name like "Appearance" or "Layout". "Common" is reserved by Mendix.',
-                  });
-                  results.valid = false;
-                }
-
-                // Validate required fields based on property type
-                this.validatePropertyFields(prop, results);
-
-                // Collect CSS classes that need validation
-                if (prop.class) {
-                  // Toggle type - single class
-                  await this.validateCssClass(modulePath, platform, prop.class, results);
-                }
-
-                // Track CSS variables from Colorpicker and Spacing types
-                if (prop.property) {
-                  results.cssVariables.push({
-                    name: prop.property,
-                    type: propType,
-                    propertyName: prop.name,
-                  });
-                }
-
-                if (prop.options && Array.isArray(prop.options)) {
-                  // Check for duplicate classes in options
-                  const optionClasses = prop.options.filter((o) => o.class).map((o) => o.class);
-                  const duplicates = optionClasses.filter(
-                    (item, index) => optionClasses.indexOf(item) !== index && item !== ''
-                  );
-                  if (duplicates.length > 0) {
-                    results.issues.push({
-                      severity: 'warning',
-                      message: `Property "${prop.name}" has duplicate option classes: ${[
-                        ...new Set(duplicates),
-                      ].join(', ')}`,
-                      fix: 'Ensure each option has a unique class name',
-                    });
-                  }
-
-                  // Dropdown/ToggleButtonGroup - validate each option's class
-                  for (const option of prop.options) {
-                    if (option.class) {
-                      await this.validateCssClass(modulePath, platform, option.class, results);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        results.platforms = results.platforms || [];
-        results.platforms.push(platform);
-      } catch (error) {
-        results.valid = false;
-        results.issues.push({
-          severity: 'critical',
-          message: `Invalid JSON in ${platform}/design-properties.json: ${error.message}`,
-          fix: 'Validate JSON syntax in design-properties.json',
-        });
-      }
-    }
-
-    // Add recommendations if missing classes found
-    if (results.missingClasses.length > 0) {
-      results.issues.push({
-        severity: 'important',
-        message: `${results.missingClasses.length} CSS class(es) in design-properties.json not found in SCSS`,
-        details:
-          results.missingClasses.slice(0, 5).join(', ') +
-          (results.missingClasses.length > 5
-            ? ` ...and ${results.missingClasses.length - 5} more`
-            : ''),
-        fix: 'Ensure all CSS classes referenced in design-properties.json exist in your SCSS files',
-      });
-    }
-
-    // Add recommendation about CSS variables
-    if (results.cssVariables.length > 0) {
-      results.recommendations.push({
-        title: 'CSS Variables in Design Properties',
-        description: `Found ${results.cssVariables.length} CSS variable(s) used. Ensure each is defined with a fallback value in your SCSS.`,
-        example: 'background-color: var(--my-color, #ffffff);',
-        variables: results.cssVariables.slice(0, 5),
-      });
-    }
-
-    // Add critical migration warning if this is a custom module
-    const moduleName = path.basename(modulePath);
-    if (!['Atlas_Core', 'Atlas_Web_Content', 'Atlas_NativeMobile_Content'].includes(moduleName)) {
-      results.recommendations.push({
-        title: 'Migration Warning',
-        severity: 'critical',
-        description:
-          'When moving or changing themes, you MUST copy design-properties.json to the new theme module. Forgetting this file will cause all custom styling options to disappear in Studio Pro!',
-        checklist: [
-          'Copy design-properties.json to new theme module',
-          'Verify all CSS classes exist in new theme SCSS',
-          'Test in Studio Pro that design options appear correctly',
-        ],
-      });
-    }
-
-    return results;
-  }
-
-  /**
-   * Validate that required fields are present for each property type
-   */
-  validatePropertyFields(prop, results) {
-    const requiredFields = {
-      Toggle: ['type', 'name', 'class'],
-      Dropdown: ['type', 'name', 'options'],
-      Colorpicker: ['type', 'name', 'property'],
-      ToggleButtonGroup: ['type', 'name', 'options'],
-      Spacing: ['type', 'name', 'property'],
-    };
-
-    const required = requiredFields[prop.type];
-    if (required) {
-      for (const field of required) {
-        if (!prop[field]) {
-          results.issues.push({
-            severity: 'warning',
-            message: `Property "${prop.name || 'unnamed'}" (${
-              prop.type
-            }) missing required field: ${field}`,
-            fix: `Add the "${field}" field to this design property`,
+      if (info.required) {
+        requiredCount++;
+        if (exists) foundCount++;
+        else {
+          structure.issues.push({
+            severity: 'important',
+            message: `Missing required file: ${relativePath}`,
+            purpose: info.purpose,
+            fix: `Create ${relativePath} - ${info.purpose}`,
+            docRef: info.docRef,
           });
         }
       }
     }
+
+    // Check for custom SCSS files in theme/web
+    structure.customFiles = await this.findScssFiles(themePath);
+    structure.customFileCount = structure.customFiles.length;
+
+    structure.score = requiredCount > 0 ? Math.round((foundCount / requiredCount) * 100) : 100;
+    return structure;
   }
 
-  /**
-   * Validate that a CSS class exists in SCSS files
-   */
-  async validateCssClass(modulePath, platform, className, results) {
-    if (!className) return;
+  // ========================================
+  // SCSS QUALITY ANALYSIS
+  // ========================================
 
-    const platformPath = path.join(modulePath, platform);
-    try {
-      const scssFiles = await this.findFilesRecursive(platformPath, '.scss');
+  async analyzeScssQuality(projectDir) {
+    const quality = {
+      variableUsage: { count: 0, files: [] },
+      hardcodedValues: { count: 0, examples: [], files: [] },
+      importStructure: { valid: true, issues: [] },
+      score: 100,
+      issues: [],
+    };
 
-      let classFound = false;
-      const classPattern = new RegExp(`\\.${className.replace(/[-]/g, '[-]')}\\b`);
+    const themePath = path.join(projectDir, 'theme', 'web');
+    if (!(await this.pathExists(themePath))) return quality;
 
-      for (const file of scssFiles) {
-        const content = await fs.readFile(file, 'utf-8');
-        if (classPattern.test(content)) {
-          classFound = true;
-          break;
+    const scssFiles = await this.findScssFiles(themePath);
+    let totalHardcoded = 0;
+    let totalVariables = 0;
+
+    for (const file of scssFiles) {
+      const content = await this.safeReadFile(file);
+      if (!content) continue;
+
+      const fileName = path.basename(file);
+
+      // Count variable usage (good)
+      const scssVars = content.match(this.patterns.scssVariable) || [];
+      const cssVars = content.match(this.patterns.cssVariable) || [];
+      totalVariables += scssVars.length + cssVars.length;
+
+      // Find hardcoded values (bad) - exclude custom-variables.scss where they're defined
+      if (!fileName.includes('custom-variables')) {
+        const hardcodedColors = content.match(this.patterns.hardcodedColor) || [];
+        const hardcodedPx = content.match(this.patterns.hardcodedPx) || [];
+
+        const hardcodedInFile = hardcodedColors.length + hardcodedPx.length;
+        if (hardcodedInFile > 0) {
+          totalHardcoded += hardcodedInFile;
+          quality.hardcodedValues.files.push({
+            file: fileName,
+            colors: hardcodedColors.slice(0, 5),
+            pixels: hardcodedPx.slice(0, 5),
+            count: hardcodedInFile,
+          });
         }
       }
 
-      if (!classFound) {
-        results.missingClasses.push(className);
+      // Check for problematic Atlas imports in main.scss
+      if (fileName === 'main.scss') {
+        const atlasImports = content.match(this.patterns.atlasImport);
+        if (atlasImports) {
+          quality.importStructure.valid = false;
+          quality.importStructure.issues.push({
+            severity: 'critical',
+            message: 'main.scss imports Atlas_Core directly - causes CSS duplication!',
+            fix: 'Remove Atlas imports. Atlas is compiled automatically by Mendix.',
+            found: atlasImports,
+          });
+        }
       }
-    } catch (error) {
-      // Ignore validation errors
     }
+
+    quality.variableUsage.count = totalVariables;
+    quality.hardcodedValues.count = totalHardcoded;
+
+    // Score calculation
+    if (totalHardcoded > 20) {
+      quality.score -= 30;
+      quality.issues.push({
+        severity: 'important',
+        message: `${totalHardcoded} hardcoded values found - use SCSS variables instead`,
+        fix: 'Define values in custom-variables.scss and reference them with $variable-name',
+      });
+    } else if (totalHardcoded > 5) {
+      quality.score -= 15;
+      quality.issues.push({
+        severity: 'suggestion',
+        message: `${totalHardcoded} hardcoded values found - consider using variables`,
+      });
+    }
+
+    if (!quality.importStructure.valid) {
+      quality.score -= 40;
+    }
+
+    quality.score = Math.max(0, quality.score);
+    return quality;
   }
 
-  /**
-   * Analyze font configuration in the theme
-   */
-  async analyzeFontConfiguration(projectDir) {
-    const results = {
-      fontStrategy: 'unknown',
-      fontImportVariable: null,
-      issues: [],
-      recommendations: [],
-      gdprCompliant: null,
+  // ========================================
+  // COLOR SCHEME ANALYSIS
+  // ========================================
+
+  async analyzeColorScheme(projectDir) {
+    const colorScheme = {
+      brandColorsConfigured: false,
+      customColors: [],
+      colorConsistency: 'unknown',
+      potentialIssues: [],
+      score: 100,
     };
 
     const customVarsPath = path.join(projectDir, 'theme', 'web', 'custom-variables.scss');
+    const content = await this.safeReadFile(customVarsPath);
 
-    if (!(await this.pathExists(customVarsPath))) {
-      return results;
+    if (!content) {
+      colorScheme.score = 50;
+      colorScheme.potentialIssues.push({
+        severity: 'important',
+        message: 'custom-variables.scss not found or empty',
+        fix: 'Create custom-variables.scss with brand color definitions',
+      });
+      return colorScheme;
     }
 
-    try {
-      const content = await fs.readFile(customVarsPath, 'utf-8');
-
-      // Check for $font-family-import variable
-      const fontImportMatch = content.match(/\$font-family-import\s*:\s*["']([^"']+)["']/);
-
-      if (fontImportMatch) {
-        results.fontImportVariable = fontImportMatch[1];
-
-        if (fontImportMatch[1].includes('fonts.googleapis.com')) {
-          results.fontStrategy = 'google-cdn';
-          results.gdprCompliant = false;
-          results.recommendations.push({
-            severity: 'suggestion',
-            message: 'Using Google Fonts CDN - consider local fonts for GDPR compliance',
-            fix: 'Download fonts from github.com/mendix/open-sans, place in theme/web/fonts/, update $font-family-import to "./fonts/open-sans.css"',
-            impact:
-              'Google Fonts may track users via IP address, which requires consent under GDPR',
-          });
-        } else if (fontImportMatch[1].startsWith('./') || fontImportMatch[1].startsWith('../')) {
-          results.fontStrategy = 'local';
-          results.gdprCompliant = true;
-
-          // Verify the local font file exists
-          const fontPath = path.join(
-            projectDir,
-            'theme',
-            'web',
-            fontImportMatch[1].replace('./', '')
-          );
-          if (!(await this.pathExists(fontPath))) {
-            results.issues.push({
-              severity: 'important',
-              message: `Local font file not found: ${fontImportMatch[1]}`,
-              fix: 'Ensure font CSS file exists at the specified path',
-            });
-          }
-        } else {
-          results.fontStrategy = 'external';
-        }
-      } else {
-        // No custom font import - using Atlas defaults
-        results.fontStrategy = 'atlas-default';
-        results.recommendations.push({
-          severity: 'suggestion',
-          message:
-            'Using Atlas default fonts (Google Fonts CDN) - consider configuring for your brand',
-          fix: 'Add $font-family-import variable in custom-variables.scss to configure fonts',
-        });
+    // Check for brand color definitions
+    const definedBrandColors = [];
+    for (const brandColor of this.brandColors) {
+      const regex = new RegExp(`\\${brandColor}\\s*:`, 'g');
+      if (regex.test(content)) {
+        definedBrandColors.push(brandColor);
       }
+    }
 
-      // Check for font family variables
-      const hasFontFamily = /\$font-family-(base|headings)/.test(content);
-      if (!hasFontFamily) {
-        results.recommendations.push({
-          severity: 'suggestion',
-          message: 'No custom font family variables defined',
-          fix: 'Define $font-family-base and $font-family-headings for consistent typography',
-        });
-      }
+    colorScheme.brandColorsConfigured = definedBrandColors.length >= 3;
+    colorScheme.definedBrandColors = definedBrandColors;
 
-      // Check for font fallback stack
-      const fontFamilyMatch = content.match(/\$font-family-base\s*:\s*([^;]+)/);
-      if (fontFamilyMatch && !fontFamilyMatch[1].includes(',')) {
-        results.issues.push({
-          severity: 'suggestion',
-          message: 'Font family has no fallback fonts',
-          fix: "Add fallback fonts: $font-family-base: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;",
-        });
+    // Extract all color definitions
+    const colorDefinitions = content.match(/\$[\w-]+:\s*#[0-9a-fA-F]{3,8}/g) || [];
+    colorScheme.customColors = colorDefinitions.slice(0, 20); // First 20
+
+    // Check for color consistency (same color defined multiple times with different names)
+    const colorValues = {};
+    for (const def of colorDefinitions) {
+      const match = def.match(/(#[0-9a-fA-F]{3,8})/);
+      if (match) {
+        const color = match[1].toLowerCase();
+        if (!colorValues[color]) colorValues[color] = [];
+        colorValues[color].push(def.split(':')[0].trim());
       }
-    } catch (error) {
-      results.issues.push({
-        severity: 'warning',
-        message: `Could not analyze font configuration: ${error.message}`,
+    }
+
+    // Find duplicates
+    const duplicates = Object.entries(colorValues).filter(([, vars]) => vars.length > 1);
+    if (duplicates.length > 0) {
+      colorScheme.colorConsistency = 'has-duplicates';
+      colorScheme.potentialIssues.push({
+        severity: 'suggestion',
+        message: 'Same color value defined with multiple variable names',
+        examples: duplicates.slice(0, 3).map(([color, vars]) => `${color}: ${vars.join(', ')}`),
+        fix: 'Consider consolidating duplicate color definitions',
+      });
+      colorScheme.score -= 10;
+    } else {
+      colorScheme.colorConsistency = 'good';
+    }
+
+    if (!colorScheme.brandColorsConfigured) {
+      colorScheme.score -= 20;
+      colorScheme.potentialIssues.push({
+        severity: 'important',
+        message: 'Brand colors not fully configured',
+        fix: 'Define $brand-primary, $brand-success, $brand-warning, $brand-danger at minimum',
       });
     }
 
-    return results;
+    colorScheme.score = Math.max(0, colorScheme.score);
+    return colorScheme;
   }
 
-  /**
-   * Calculate scores from analysis results
-   */
-  calculateScores(analyses) {
-    const breakdown = {
-      structure: analyses.structure.score,
-      webTheme: analyses.web.score,
-      nativeTheme: analyses.native.score,
-      modules: analyses.modules.score,
+  // ========================================
+  // OVERRIDE PATTERNS ANALYSIS
+  // ========================================
+
+  async analyzeOverridePatterns(projectDir) {
+    const overrides = {
+      usesExclusionVariables: false,
+      exclusionsConfigured: [],
+      overrideApproach: 'unknown',
+      issues: [],
+      score: 100,
     };
 
-    // Weighted average
-    const weights = {
-      structure: 0.25,
-      webTheme: 0.4,
-      nativeTheme: 0.15,
-      modules: 0.2,
+    // Check exclusion-variables.scss
+    const exclusionPath = path.join(projectDir, 'theme', 'web', 'exclusion-variables.scss');
+    const exclusionContent = await this.safeReadFile(exclusionPath);
+
+    if (exclusionContent) {
+      overrides.usesExclusionVariables = true;
+
+      // Find enabled exclusions
+      const enabledExclusions = exclusionContent.match(/\$exclude-[\w-]+:\s*true/g) || [];
+      overrides.exclusionsConfigured = enabledExclusions.map((e) => e.split(':')[0].trim());
+
+      if (enabledExclusions.length > 0) {
+        overrides.overrideApproach = 'exclusion-based';
+      }
+    }
+
+    // Check main.scss for override patterns
+    const mainPath = path.join(projectDir, 'theme', 'web', 'main.scss');
+    const mainContent = await this.safeReadFile(mainPath);
+
+    if (mainContent) {
+      // Check import count
+      const imports = mainContent.match(this.patterns.importStatement) || [];
+      overrides.importCount = imports.length;
+
+      // Good: imports are organized
+      if (imports.length > 0 && !overrides.overrideApproach) {
+        overrides.overrideApproach = 'import-based';
+      }
+
+      // Check for direct style rules in main.scss (not ideal for large apps)
+      const styleRules = mainContent.match(/^\s*[.#][\w-]+\s*\{/gm) || [];
+      if (styleRules.length > 10) {
+        overrides.issues.push({
+          severity: 'suggestion',
+          message: `main.scss has ${styleRules.length} direct style rules`,
+          fix: 'Consider organizing styles into separate files and importing them',
+        });
+        overrides.score -= 10;
+      }
+    }
+
+    return overrides;
+  }
+
+  // ========================================
+  // PERFORMANCE ANALYSIS
+  // ========================================
+
+  async analyzePerformance(projectDir) {
+    const performance = {
+      deepNesting: { count: 0, files: [] },
+      totalScssSize: 0,
+      fileCount: 0,
+      issues: [],
+      score: 100,
     };
 
-    const overall = Math.round(
-      breakdown.structure * weights.structure +
-        breakdown.webTheme * weights.webTheme +
-        breakdown.nativeTheme * weights.nativeTheme +
-        breakdown.modules * weights.modules
+    const themePath = path.join(projectDir, 'theme', 'web');
+    if (!(await this.pathExists(themePath))) return performance;
+
+    const scssFiles = await this.findScssFiles(themePath);
+    performance.fileCount = scssFiles.length;
+
+    for (const file of scssFiles) {
+      const content = await this.safeReadFile(file);
+      if (!content) continue;
+
+      performance.totalScssSize += content.length;
+
+      // Check for deep nesting (4+ levels)
+      const deepNested = content.match(this.patterns.deepNesting) || [];
+      if (deepNested.length > 0) {
+        performance.deepNesting.count += deepNested.length;
+        performance.deepNesting.files.push(path.basename(file));
+      }
+    }
+
+    // Score adjustments
+    if (performance.deepNesting.count > 10) {
+      performance.score -= 20;
+      performance.issues.push({
+        severity: 'important',
+        message: `${performance.deepNesting.count} instances of deep nesting (4+ levels)`,
+        fix: 'Flatten nested selectors for better CSS performance',
+        files: performance.deepNesting.files,
+      });
+    } else if (performance.deepNesting.count > 0) {
+      performance.score -= 5;
+      performance.issues.push({
+        severity: 'suggestion',
+        message: `${performance.deepNesting.count} instances of deep nesting`,
+        fix: 'Consider flattening deeply nested selectors',
+      });
+    }
+
+    // Large theme warning
+    if (performance.totalScssSize > 100000) {
+      // 100KB
+      performance.issues.push({
+        severity: 'suggestion',
+        message: `Theme SCSS is ${Math.round(performance.totalScssSize / 1024)}KB - consider optimization`,
+        fix: 'Review for unused styles, consider code splitting',
+      });
+      performance.score -= 10;
+    }
+
+    performance.score = Math.max(0, performance.score);
+    return performance;
+  }
+
+  // ========================================
+  // MAINTAINABILITY ANALYSIS
+  // ========================================
+
+  async analyzeMaintainability(projectDir) {
+    const maintainability = {
+      hasComments: false,
+      commentRatio: 0,
+      fileOrganization: 'unknown',
+      namingConventions: 'unknown',
+      issues: [],
+      score: 100,
+    };
+
+    const themePath = path.join(projectDir, 'theme', 'web');
+    if (!(await this.pathExists(themePath))) return maintainability;
+
+    const scssFiles = await this.findScssFiles(themePath);
+    let totalLines = 0;
+    let commentLines = 0;
+    let filesWithComments = 0;
+
+    for (const file of scssFiles) {
+      const content = await this.safeReadFile(file);
+      if (!content) continue;
+
+      const lines = content.split('\n');
+      totalLines += lines.length;
+
+      // Count comment lines
+      const blockComments = content.match(this.patterns.blockComment) || [];
+      const lineComments = content.match(this.patterns.lineComment) || [];
+      const fileCommentCount = blockComments.length + lineComments.length;
+
+      if (fileCommentCount > 0) filesWithComments++;
+      commentLines += fileCommentCount;
+    }
+
+    maintainability.hasComments = commentLines > 0;
+    maintainability.commentRatio =
+      totalLines > 0 ? Math.round((commentLines / totalLines) * 100) : 0;
+
+    // File organization check
+    const customFiles = scssFiles.filter(
+      (f) => !path.basename(f).startsWith('custom-variables') && path.basename(f) !== 'main.scss'
     );
 
-    return { overall, breakdown };
-  }
+    if (customFiles.length === 0) {
+      maintainability.fileOrganization = 'minimal';
+    } else if (customFiles.length < 5) {
+      maintainability.fileOrganization = 'basic';
+    } else {
+      maintainability.fileOrganization = 'well-organized';
+    }
 
-  /**
-   * Calculate letter grade from score
-   */
-  calculateGrade(score) {
-    if (score >= 97) return 'A+';
-    if (score >= 93) return 'A';
-    if (score >= 90) return 'A-';
-    if (score >= 87) return 'B+';
-    if (score >= 83) return 'B';
-    if (score >= 80) return 'B-';
-    if (score >= 77) return 'C+';
-    if (score >= 73) return 'C';
-    if (score >= 70) return 'C-';
-    if (score >= 67) return 'D+';
-    if (score >= 63) return 'D';
-    if (score >= 60) return 'D-';
-    return 'F';
-  }
-
-  /**
-   * Generate recommendations based on analysis
-   */
-  generateRecommendations(analyses) {
-    const recommendations = [];
-
-    // Collect all issues
-    const allIssues = [
-      ...(analyses.structure.issues || []),
-      ...(analyses.web.issues || []),
-      ...(analyses.native.issues || []),
-      ...(analyses.modules.issues || []),
-    ];
-
-    // Convert issues to recommendations
-    for (const issue of allIssues) {
-      recommendations.push({
-        severity: issue.severity,
-        category: this.categorizeIssue(issue),
-        message: issue.message,
-        file: issue.file || issue.path,
-        fix: issue.fix,
-        impact: this.getImpactDescription(issue.severity),
+    // Scoring
+    if (maintainability.commentRatio < 2) {
+      maintainability.score -= 15;
+      maintainability.issues.push({
+        severity: 'suggestion',
+        message: 'Low comment ratio - consider adding documentation',
+        fix: 'Add comments explaining purpose of custom styles',
       });
     }
 
-    // Add scaffold pattern recommendations if present
-    if (analyses.structure.scaffoldPattern) {
-      const scaffold = analyses.structure.scaffoldPattern;
-
-      if (scaffold.recommendations && scaffold.recommendations.length > 0) {
-        for (const rec of scaffold.recommendations) {
-          recommendations.push({
-            severity: 'important',
-            category: 'scaffold-pattern',
-            message: rec.title,
-            fix: rec.description,
-            impact: rec.benefit,
-            details: rec.folders ? `Create these folders: ${rec.folders.join(', ')}` : null,
-          });
-        }
-      }
-
-      // Warn if populated files without scaffold structure
-      if (scaffold.populatedFilesCount > 3 && !scaffold.mirrorsAtlasStructure) {
-        recommendations.push({
-          severity: 'important',
-          category: 'scaffold-pattern',
-          message: 'Custom theme has styles but does not mirror Atlas structure',
-          fix: 'Reorganize styles to match Atlas_Core folder structure. Create corresponding folders and move styles to matching locations.',
-          impact:
-            'Makes maintenance easier, prevents developer confusion about where to add overrides',
-        });
-      }
+    if (filesWithComments < scssFiles.length / 2 && scssFiles.length > 2) {
+      maintainability.score -= 10;
+      maintainability.issues.push({
+        severity: 'suggestion',
+        message: `Only ${filesWithComments}/${scssFiles.length} SCSS files have comments`,
+      });
     }
 
-    // Add best practice suggestions based on stats
-    if (analyses.web.stats) {
-      if (analyses.web.stats.totalFiles < 3) {
-        recommendations.push({
-          severity: 'suggestion',
-          category: 'organization',
-          message: 'Consider splitting styles into separate files by component/purpose',
-          fix: 'Create separate files like _buttons.scss, _forms.scss, _layout.scss',
-          impact: 'Improves maintainability and team collaboration',
-        });
-      }
+    maintainability.score = Math.max(0, maintainability.score);
+    return maintainability;
+  }
 
-      if (analyses.web.stats.variablesCount < 10) {
-        recommendations.push({
-          severity: 'suggestion',
-          category: 'design-tokens',
-          message: 'Low use of SCSS variables - consider using more design tokens',
-          fix: 'Define variables for colors, spacing, fonts, and reuse them throughout',
-          impact: 'Ensures consistency and makes global changes easy',
-        });
-      }
-    }
+  // ========================================
+  // MODULE INVENTORY (Informational Only)
+  // ========================================
 
-    // Add module-based suggestions
-    if (analyses.modules.modules) {
-      const hasCustomModule = analyses.modules.modules.some(
-        (m) => !['Atlas_Core', 'Atlas_Web_Content', 'Atlas_NativeMobile_Content'].includes(m.name)
-      );
+  async inventoryModules(projectDir) {
+    const inventory = {
+      marketplace: [],
+      project: [],
+      uiResourceModules: [],
+      note: 'Marketplace modules are third-party and not analyzed in detail.',
+    };
 
-      if (!hasCustomModule) {
-        recommendations.push({
-          severity: 'suggestion',
-          category: 'modularity',
-          message: 'Consider creating a custom theme module for reusability',
-          fix: 'Create a module marked as UI Resources to share styling across apps',
-          impact: 'Enables consistent branding across multiple Mendix apps',
-        });
-      }
+    const themesourcePath = path.join(projectDir, 'themesource');
+    if (!(await this.pathExists(themesourcePath))) return inventory;
 
-      // Check for design properties in custom modules
-      for (const mod of analyses.modules.modules) {
-        if (mod.hasDesignProperties && mod.designPropertiesAnalysis) {
-          const dpAnalysis = mod.designPropertiesAnalysis;
+    try {
+      const entries = await fs.readdir(themesourcePath, { withFileTypes: true });
+      const modules = entries.filter((e) => e.isDirectory()).map((e) => e.name);
 
-          // Add missing CSS class issues
-          if (dpAnalysis.issues) {
-            for (const issue of dpAnalysis.issues) {
-              recommendations.push({
-                ...issue,
-                category: 'design-properties',
-                module: mod.name,
-              });
-            }
+      // Known marketplace modules (common ones)
+      const knownMarketplace = [
+        'Atlas_Core',
+        'Atlas_Web_Content',
+        'Atlas_NativeMobile_Content',
+        'Administration',
+        'MxModelReflection',
+        'Encryption',
+        'CommunityCommons',
+        'Nanoflow_Commons',
+        'Web_Actions',
+        'Data_Widgets',
+        'Charts',
+        'Calendar',
+        'AnyChart',
+        'Maps',
+      ];
+
+      for (const mod of modules) {
+        const isMarketplace = knownMarketplace.some(
+          (m) => mod.toLowerCase() === m.toLowerCase() || mod.startsWith('com.mendix')
+        );
+
+        const modInfo = {
+          name: mod,
+          hasWebTheme: await this.pathExists(path.join(themesourcePath, mod, 'web')),
+          hasDesignProperties: await this.pathExists(
+            path.join(themesourcePath, mod, 'web', 'design-properties.json')
+          ),
+        };
+
+        if (isMarketplace) {
+          inventory.marketplace.push(modInfo);
+        } else {
+          inventory.project.push(modInfo);
+
+          // Check if it's marked as UI resource (has styling)
+          if (modInfo.hasWebTheme) {
+            inventory.uiResourceModules.push(mod);
           }
         }
       }
+    } catch (error) {
+      // Ignore errors
+    }
 
-      // Add design-properties.json migration reminder for custom modules
-      const customModulesWithDesignProps = analyses.modules.modules.filter(
-        (m) =>
-          m.hasDesignProperties &&
-          !['Atlas_Core', 'Atlas_Web_Content', 'Atlas_NativeMobile_Content'].includes(m.name)
-      );
+    return inventory;
+  }
 
-      if (customModulesWithDesignProps.length > 0) {
-        recommendations.push({
-          severity: 'important',
-          category: 'design-properties',
-          message: '⚠️ Remember: When migrating themes, ALWAYS copy design-properties.json!',
-          fix: 'If you copy/migrate to a new theme, ensure design-properties.json is also copied to preserve Studio Pro design options',
-          impact: 'Without this file, widgets lose their custom styling options in Studio Pro',
-          modules: customModulesWithDesignProps.map((m) => m.name),
-        });
-      }
+  // ========================================
+  // VERDICT GENERATION
+  // ========================================
+
+  generateVerdicts(results) {
+    const verdicts = [];
+
+    // Verdict 1: Theme Structure
+    verdicts.push({
+      check: 'Theme Structure',
+      status: results.structure.score >= 75 ? 'PASS' : results.structure.score >= 50 ? 'WARN' : 'FAIL',
+      score: results.structure.score,
+      detail:
+        results.structure.score >= 75
+          ? 'Theme folder structure follows Mendix best practices'
+          : `Missing required files: ${Object.entries(results.structure.files)
+              .filter(([, f]) => f.required && !f.exists)
+              .map(([p]) => path.basename(p))
+              .join(', ') || 'Check structure'}`,
+    });
+
+    // Verdict 2: SCSS Variable Usage
+    const varRatio =
+      results.scssQuality.variableUsage.count > 0 && results.scssQuality.hardcodedValues.count > 0
+        ? results.scssQuality.variableUsage.count /
+          (results.scssQuality.variableUsage.count + results.scssQuality.hardcodedValues.count)
+        : 1;
+
+    verdicts.push({
+      check: 'SCSS Variable Usage',
+      status: varRatio >= 0.8 ? 'PASS' : varRatio >= 0.5 ? 'WARN' : 'FAIL',
+      score: Math.round(varRatio * 100),
+      detail:
+        varRatio >= 0.8
+          ? `Good use of SCSS variables (${results.scssQuality.variableUsage.count} variables found)`
+          : `${results.scssQuality.hardcodedValues.count} hardcoded values should be variables`,
+    });
+
+    // Verdict 3: Import Structure (critical check)
+    verdicts.push({
+      check: 'Import Structure',
+      status: results.scssQuality.importStructure.valid ? 'PASS' : 'FAIL',
+      score: results.scssQuality.importStructure.valid ? 100 : 0,
+      detail: results.scssQuality.importStructure.valid
+        ? 'No problematic Atlas imports detected'
+        : 'CRITICAL: main.scss imports Atlas_Core directly - causes CSS duplication!',
+    });
+
+    // Verdict 4: Color Scheme
+    verdicts.push({
+      check: 'Color Scheme Configuration',
+      status: results.colorScheme.brandColorsConfigured ? 'PASS' : 'WARN',
+      score: results.colorScheme.score,
+      detail: results.colorScheme.brandColorsConfigured
+        ? `Brand colors configured: ${results.colorScheme.definedBrandColors?.join(', ') || 'Yes'}`
+        : 'Brand colors not fully configured - customize your color palette',
+    });
+
+    // Verdict 5: Performance
+    verdicts.push({
+      check: 'CSS Performance',
+      status:
+        results.performance.deepNesting.count === 0
+          ? 'PASS'
+          : results.performance.deepNesting.count < 5
+            ? 'WARN'
+            : 'FAIL',
+      score: results.performance.score,
+      detail:
+        results.performance.deepNesting.count === 0
+          ? 'No deep selector nesting detected'
+          : `${results.performance.deepNesting.count} instances of deep nesting (affects performance)`,
+    });
+
+    // Verdict 6: Maintainability
+    verdicts.push({
+      check: 'Code Maintainability',
+      status:
+        results.maintainability.hasComments && results.maintainability.fileOrganization !== 'minimal'
+          ? 'PASS'
+          : 'WARN',
+      score: results.maintainability.score,
+      detail: results.maintainability.hasComments
+        ? `${results.maintainability.commentRatio}% comment ratio, ${results.maintainability.fileOrganization} file organization`
+        : 'Add comments to improve maintainability',
+    });
+
+    return verdicts;
+  }
+
+  // ========================================
+  // RECOMMENDATIONS
+  // ========================================
+
+  generateRecommendations(results) {
+    const recommendations = [];
+
+    // Collect all issues from all sections
+    const allIssues = [
+      ...(results.structure.issues || []),
+      ...(results.scssQuality.issues || []),
+      ...(results.scssQuality.importStructure?.issues || []),
+      ...(results.colorScheme.potentialIssues || []),
+      ...(results.overridePatterns.issues || []),
+      ...(results.performance.issues || []),
+      ...(results.maintainability.issues || []),
+    ];
+
+    // Sort by severity
+    const severityOrder = { critical: 0, important: 1, suggestion: 2 };
+    allIssues.sort((a, b) => (severityOrder[a.severity] || 99) - (severityOrder[b.severity] || 99));
+
+    // Convert to recommendations
+    for (const issue of allIssues) {
+      recommendations.push({
+        priority: issue.severity === 'critical' ? 'HIGH' : issue.severity === 'important' ? 'MEDIUM' : 'LOW',
+        issue: issue.message,
+        recommendation: issue.fix || 'Review and address this issue',
+        docRef: issue.docRef,
+      });
     }
 
     return recommendations;
   }
 
-  /**
-   * Categorize an issue
-   */
-  categorizeIssue(issue) {
-    const message = issue.message.toLowerCase();
-    if (
-      message.includes('scaffold') ||
-      message.includes('mirror') ||
-      message.includes('atlas structure')
-    ) {
-      return 'scaffold-pattern';
-    }
-    if (message.includes('duplication') || message.includes('imports from atlas')) {
-      return 'scaffold-pattern';
-    }
-    if (message.includes('design-properties') || message.includes('css class')) {
-      return 'design-properties';
-    }
-    if (message.includes('font') || message.includes('gdpr') || message.includes('typography')) {
-      return 'fonts';
-    }
-    if (message.includes('variable') || message.includes('color') || message.includes('token')) {
-      return 'design-tokens';
-    }
-    if (
-      message.includes('folder') ||
-      message.includes('structure') ||
-      message.includes('missing')
-    ) {
-      return 'structure';
-    }
-    if (message.includes('nesting') || message.includes('selector')) {
-      return 'performance';
-    }
-    if (message.includes('module')) {
-      return 'modularity';
-    }
-    return 'general';
-  }
+  // ========================================
+  // SCORING
+  // ========================================
 
-  /**
-   * Get impact description for severity
-   */
-  getImpactDescription(severity) {
-    const impacts = {
-      critical: 'Blocking issue - must fix for proper theme functionality',
-      important: 'Significant impact on maintainability or performance',
-      suggestion: 'Nice to have - improves code quality',
+  calculateScore(results) {
+    // Weight the different areas
+    const weights = {
+      structure: 0.2,
+      scssQuality: 0.25,
+      colorScheme: 0.15,
+      overridePatterns: 0.1,
+      performance: 0.15,
+      maintainability: 0.15,
     };
-    return impacts[severity] || 'Unknown impact';
+
+    let weightedSum = 0;
+
+    weightedSum += (results.structure.score || 0) * weights.structure;
+    weightedSum += (results.scssQuality.score || 0) * weights.scssQuality;
+    weightedSum += (results.colorScheme.score || 0) * weights.colorScheme;
+    weightedSum += (results.overridePatterns.score || 0) * weights.overridePatterns;
+    weightedSum += (results.performance.score || 0) * weights.performance;
+    weightedSum += (results.maintainability.score || 0) * weights.maintainability;
+
+    const score = Math.round(weightedSum);
+
+    // Grade assignment
+    let grade;
+    if (score >= 90) grade = 'A';
+    else if (score >= 80) grade = 'B';
+    else if (score >= 70) grade = 'C';
+    else if (score >= 60) grade = 'D';
+    else grade = 'F';
+
+    return { score, grade };
   }
 
-  /**
-   * Generate human-readable summary with explicit verdicts
-   */
-  generateSummary(scores, recommendations, grade, verdicts = null) {
-    const criticalCount = recommendations.filter((r) => r.severity === 'critical').length;
-    const importantCount = recommendations.filter((r) => r.severity === 'important').length;
+  // ========================================
+  // SUMMARY GENERATION
+  // ========================================
 
+  generateSummary(results) {
     let summary = `## Theme Analysis Summary\n\n`;
-    summary += `**Overall Grade: ${grade}** (Score: ${scores.overall}/100)\n\n`;
+    summary += `**Overall Grade: ${results.grade}** (Score: ${results.score}/100)\n\n`;
+    summary += `_Scope: Web app themes only. Native mobile themes not analyzed._\n\n`;
 
-    // Add explicit verdicts section for clear AI interpretation
-    if (verdicts) {
-      summary += `### Quick Verdicts (PASS/FAIL)\n`;
-      for (const verdict of verdicts) {
-        const icon = verdict.status === 'PASS' ? '✅' : verdict.status === 'FAIL' ? '❌' : '⚠️';
-        summary += `${icon} **${verdict.status}**: ${verdict.check} - ${verdict.detail}\n`;
+    // Verdicts section
+    summary += `### Verdicts\n\n`;
+    for (const verdict of results.verdicts) {
+      const icon = verdict.status === 'PASS' ? '✅' : verdict.status === 'FAIL' ? '❌' : '⚠️';
+      summary += `${icon} **${verdict.check}**: ${verdict.status} - ${verdict.detail}\n`;
+    }
+
+    // Quick stats
+    summary += `\n### Statistics\n`;
+    summary += `- Custom SCSS files: ${results.structure.customFileCount || 0}\n`;
+    summary += `- SCSS variables used: ${results.scssQuality.variableUsage?.count || 0}\n`;
+    summary += `- Hardcoded values: ${results.scssQuality.hardcodedValues?.count || 0}\n`;
+    summary += `- Project modules with themes: ${results.modules.uiResourceModules?.length || 0}\n`;
+
+    // Top recommendations
+    const highPriority = results.recommendations.filter((r) => r.priority === 'HIGH');
+    if (highPriority.length > 0) {
+      summary += `\n### ⚠️ High Priority Issues\n`;
+      for (const rec of highPriority.slice(0, 3)) {
+        summary += `- ${rec.issue}\n`;
       }
-      summary += `\n`;
     }
-
-    summary += `### Score Breakdown\n`;
-    summary += `- Structure: ${scores.breakdown.structure}/100\n`;
-    summary += `- Web Theme: ${scores.breakdown.webTheme}/100\n`;
-    summary += `- Native Theme: ${scores.breakdown.nativeTheme}/100\n`;
-    summary += `- Theme Modules: ${scores.breakdown.modules}/100\n\n`;
-
-    if (criticalCount > 0) {
-      summary += `⚠️ **${criticalCount} critical issue(s)** that need immediate attention\n`;
-    }
-    if (importantCount > 0) {
-      summary += `📋 **${importantCount} important recommendation(s)** to improve your theme\n`;
-    }
-
-    summary += `\n### Next Steps\n`;
-    if (criticalCount > 0) {
-      summary += `1. Fix critical issues first (missing files, broken structure)\n`;
-    }
-    summary += `2. Replace hardcoded values with SCSS variables\n`;
-    summary += `3. Organize styles into logical sections with comments\n`;
-    summary += `4. Consider creating a reusable theme module\n`;
 
     return summary;
   }
 
   // ========================================
-  // Utility Methods
+  // UTILITY METHODS
   // ========================================
 
   async pathExists(filePath) {
@@ -1480,129 +864,30 @@ class ThemeAnalyzer {
     }
   }
 
-  async findFiles(dir, pattern) {
-    const files = [];
+  async safeReadFile(filePath) {
     try {
-      const { glob } = await import('glob');
-      const matches = await glob(pattern, { cwd: dir, absolute: true });
-      return matches;
+      return await fs.readFile(filePath, 'utf-8');
     } catch {
-      // Fallback to simple file listing
-      return files;
+      return null;
     }
   }
 
-  /**
-   * Generate explicit PASS/FAIL verdicts for clear AI interpretation
-   * This prevents AI from misinterpreting raw data
-   */
-  generateVerdicts({ structure, web, native, modules, fonts, projectInfo, scores }) {
-    const verdicts = [];
-
-    // 1. Theme Folder Exists
-    verdicts.push({
-      check: 'Custom Theme Folder',
-      status: projectInfo.hasTheme ? 'PASS' : 'FAIL',
-      detail: projectInfo.hasTheme
-        ? 'Custom theme folder exists at /theme'
-        : 'No custom theme folder found - create /theme/web for custom styles',
-    });
-
-    // 2. Atlas_Core Location (should be in themesource, NOT marketplace)
-    const atlasInThemesource = projectInfo.hasAtlasCore;
-    verdicts.push({
-      check: 'Atlas_Core Location',
-      status: atlasInThemesource ? 'PASS' : 'WARN',
-      detail: atlasInThemesource
-        ? 'Atlas_Core is correctly located in /themesource (NOT in marketplace modules)'
-        : 'Atlas_Core not found in themesource - may be using marketplace version',
-    });
-
-    // 3. Theme Structure Compliance
-    const structureScore = scores.breakdown?.structure || 0;
-    verdicts.push({
-      check: 'Theme Structure',
-      status: structureScore >= 70 ? 'PASS' : structureScore >= 50 ? 'WARN' : 'FAIL',
-      detail:
-        structureScore >= 70
-          ? `Good structure (${structureScore}/100) - follows Mendix conventions`
-          : `Structure needs improvement (${structureScore}/100)`,
-    });
-
-    // 4. Scaffold Pattern (mirrors Atlas_Core)
-    const scaffoldResult = structure?.scaffoldPattern;
-    if (scaffoldResult) {
-      verdicts.push({
-        check: 'Scaffold Pattern (mirrors Atlas_Core)',
-        status: scaffoldResult.mirrorsAtlasStructure ? 'PASS' : 'WARN',
-        detail: scaffoldResult.mirrorsAtlasStructure
-          ? 'Custom theme mirrors Atlas_Core folder structure for easy overrides'
-          : `Theme does not fully mirror Atlas_Core. Missing: ${
-              scaffoldResult.recommendedFolders?.join(', ') || 'unknown'
-            }`,
-      });
+  async findScssFiles(dir) {
+    const files = [];
+    try {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          files.push(...(await this.findScssFiles(fullPath)));
+        } else if (entry.name.endsWith('.scss')) {
+          files.push(fullPath);
+        }
+      }
+    } catch {
+      // Ignore errors
     }
-
-    // 5. design-properties.json
-    const hasDesignProps = structure?.designPropertiesFound;
-    verdicts.push({
-      check: 'design-properties.json',
-      status: hasDesignProps ? 'PASS' : 'INFO',
-      detail: hasDesignProps
-        ? 'design-properties.json found - Studio Pro design mode enabled'
-        : 'No design-properties.json - optional, only needed for Studio design mode',
-    });
-
-    // 6. Web Theme Quality
-    const webScore = scores.breakdown?.webTheme || 0;
-    verdicts.push({
-      check: 'Web Theme (SCSS)',
-      status: webScore >= 70 ? 'PASS' : webScore >= 50 ? 'WARN' : 'FAIL',
-      detail:
-        webScore >= 70
-          ? `Good web theme quality (${webScore}/100)`
-          : `Web theme needs work (${webScore}/100) - check for hardcoded values`,
-    });
-
-    // 7. Native Theme (only relevant if it exists)
-    if (native?.hasNativeTheme) {
-      const nativeScore = scores.breakdown?.nativeTheme || 0;
-      verdicts.push({
-        check: 'Native Theme (React Native)',
-        status: nativeScore >= 70 ? 'PASS' : nativeScore >= 50 ? 'WARN' : 'FAIL',
-        detail:
-          nativeScore >= 70
-            ? `Native theme quality good (${nativeScore}/100)`
-            : `Native theme needs work (${nativeScore}/100)`,
-      });
-    }
-
-    // 8. UI Resources Module Configuration
-    if (modules?.uiResourcesModule) {
-      verdicts.push({
-        check: 'UI Resources Module',
-        status: modules.uiResourcesModule.isConfigured ? 'PASS' : 'INFO',
-        detail: modules.uiResourcesModule.isConfigured
-          ? 'Custom theme registered as UI Resources module'
-          : 'Theme not registered as UI Resources module - optional but recommended',
-      });
-    }
-
-    // 9. Overall Health
-    const overallScore = scores.overall || 0;
-    let overallStatus = 'PASS';
-    if (overallScore < 50) overallStatus = 'FAIL';
-    else if (overallScore < 70) overallStatus = 'WARN';
-
-    verdicts.push({
-      check: 'Overall Theme Health',
-      status: overallStatus,
-      detail: `Overall score: ${overallScore}/100 (Grade: ${
-        scores.grade || this.calculateGrade(overallScore)
-      })`,
-    });
-
-    return verdicts;
+    return files;
   }
 }
 

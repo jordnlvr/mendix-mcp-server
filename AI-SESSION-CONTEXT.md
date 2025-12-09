@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 8, 2025  
-**Version:** 2.8.0  
+**Version:** 2.9.0  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -17,7 +17,7 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 - **700KB+ verified Mendix knowledge** across 20+ JSON files
 - **Semantic search** via Pinecone (built-in shared index - no user setup!)
 - **Multiple embedding providers** - Azure OpenAI, OpenAI, or local TF-IDF
-- **Project & theme analysis** for actual .mpr files
+- **Project & theme analysis** for actual .mpr files (web-focused, best practices based)
 - **Self-learning** - harvests docs, remembers solutions
 - **Beast Mode** - exhaustive multi-step research on demand
 
@@ -46,9 +46,10 @@ mendix-mcp-server/
 │   │   ├── KnowledgeManager.js
 │   │   └── ...
 │   ├── analyzers/
-│   │   └── ThemeAnalyzer.js  # Deep SCSS/theme analysis (50KB)
+│   │   ├── ThemeAnalyzer.js  # v2.0 Web-focused best practices analysis
+│   │   └── ThemeAnalyzer.v1.js.bak  # Old version backup
 │   ├── vector/
-│   │   ├── VectorStore.js    # Pinecone integration
+│   │   ├── VectorStore.js    # Pinecone integration (built-in key)
 │   │   └── HybridSearch.js   # Keyword + semantic fusion
 │   └── utils/
 │       ├── MaintenanceScheduler.js

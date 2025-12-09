@@ -1,12 +1,18 @@
 {
   "topic": "Studio Pro Extensions - Complete Guide",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "last_updated": "2024-12-09",
   "verified_working": true,
   "tested_on": "Studio Pro 11.5.0",
   "description": "Complete, verified guide for creating Studio Pro extensions - LOCAL model access without Platform SDK cloud requirements",
 
   "entries": [
+    {
+      "id": "complete-working-extension",
+      "title": "COMPLETE WORKING EXTENSION - Copy This Exactly",
+      "category": "templates",
+      "description": "VERIFIED WORKING extension for Studio Pro 11.5. Three files needed: 1) MyExtension.csproj 2) MyMenuExtension.cs 3) manifest.json. CSPROJ: <Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net8.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup><ItemGroup><PackageReference Include=\"Mendix.StudioPro.ExtensionsAPI\" Version=\"11.5.0\" /><PackageReference Include=\"System.ComponentModel.Composition\" Version=\"8.0.0\" /></ItemGroup></Project>. CS FILE: using System.ComponentModel.Composition; using Mendix.StudioPro.ExtensionsAPI.UI.Menu; using Mendix.StudioPro.ExtensionsAPI.UI.Services; namespace MyExtension; [Export(typeof(MenuExtension))] public class MyMenuExtension : MenuExtension { private readonly IMessageBoxService _messageBox; [ImportingConstructor] public MyMenuExtension(IMessageBoxService messageBox) { _messageBox = messageBox; } public override IEnumerable<MenuViewModel> GetMenus() { yield return new MenuViewModel(\"Hello World\", () => _messageBox.ShowInformation(\"Hello from extension!\")); yield return new MenuViewModel(\"Show Module Count\", () => { if (CurrentApp == null) { _messageBox.ShowWarning(\"No app open\"); return; } var count = CurrentApp.Root.GetModules().Count(); _messageBox.ShowInformation($\"This app has {count} modules\"); }); } }. MANIFEST: {\"mx_extensions\":[\"MyExtension.dll\"]}. BUILD: dotnet build -c Release. DEPLOY: Copy MyExtension.dll, MyExtension.deps.json, manifest.json to {YourApp}/extensions/MyExtension/ folder (UNPACKED, not zip)."
+    },
     {
       "id": "quick-start-overview",
       "title": "Studio Pro Extension Quick Start",

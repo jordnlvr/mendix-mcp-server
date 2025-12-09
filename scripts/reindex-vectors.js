@@ -195,7 +195,7 @@ async function main() {
   for (const file of files) {
     try {
       const content = await fs.readFile(path.join(knowledgePath, file), 'utf8');
-      
+
       // Try parsing directly first, only strip comments if needed
       let data;
       try {
@@ -247,7 +247,7 @@ async function main() {
     console.log(`   Processing ${file}...`);
     try {
       const content = await fs.readFile(path.join(knowledgePath, file), 'utf8');
-      
+
       // Try parsing directly first, only strip comments if needed
       let data;
       try {

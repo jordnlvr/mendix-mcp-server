@@ -91,15 +91,18 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 **This is the magic.** When the knowledge base doesn't have an answer, the AI is instructed to search through **5 tiers exhaustively**:
 
 ### 📚 Tier 1: Official Sources
+
 - docs.mendix.com, API references, Academy, Marketplace
 - Release notes (version-specific changes)
 
-### 💻 Tier 2: Code Repositories  
+### 💻 Tier 2: Code Repositories
+
 - **GitHub mendix org** - sdk-demo (GOLDMINE!), widgets-resources, docs repo
 - **GitHub Code Search** - Find real implementations across ALL repos
 - **npm packages** - Search `mendixmodelsdk`, `mendixplatformsdk`, `@mendix/*`
 
 ### 💬 Tier 3: Community Sources
+
 - Mendix Forum (community.mendix.com)
 - Stack Overflow ([mendix] tag)
 - GitHub Issues & Discussions
@@ -107,23 +110,29 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 - Dev.to, Medium, LinkedIn articles
 
 ### 🗄️ Tier 4: Archives
+
 - **Wayback Machine** (web.archive.org) - Old/removed docs
 - **archive.today** (archive.ph) - Preserved pages
 - **Google Cache** - Recently cached versions
 
 ### 🎬 Tier 5: Video & Multimedia
+
 - YouTube (Mendix Official, Mendix World talks)
 - LinkedIn Learning courses
 
 ### ⚠️ Version Grading
+
 Results are graded by version compatibility:
+
 - 🟢 **Exact** - Same Mendix version
-- 🟡 **Close** - Same major version (10.x matches 10.y)  
+- 🟡 **Close** - Same major version (10.x matches 10.y)
 - 🟠 **Relevant** - Different major but concept applies
 - ⚪ **Legacy** - Old but useful for understanding
 
 ### 🧠 Self-Learning
+
 After finding ANY information:
+
 1. ✅ Automatically saves to knowledge base
 2. ✅ Re-indexes keyword search
 3. ✅ **Updates vector embeddings** for semantic search

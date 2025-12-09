@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **🚀 Desktop Launcher Scripts**
+  - `START-SERVER.cmd` - One-click launcher (main entry point)
+  - `Start-MendixServer.ps1` - PowerShell launcher with status feedback
+  - `START-SERVER.vbs` - VBScript fallback for systems where .cmd opens in Notepad
+  - `start-rest-server.bat` - Simple batch launcher
+  - `start-ngrok-tunnel.bat` - ngrok tunnel for ChatGPT integration
+  - `start-all.bat` - Combined server + ngrok launcher
+  - `check-server-status.bat` - Quick health check script
+
 ### Planned
 
 - Design Properties Gap Analysis - suggest where design properties would benefit widgets
@@ -19,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **📝 Mandatory Documentation Update Rule**
   - Explicit rule in copilot-instructions.md requiring ALL docs updated on ANY change
-  - Checklist: README, CHANGELOG, AI-SESSION-CONTEXT, openapi.json, docs/*
+  - Checklist: README, CHANGELOG, AI-SESSION-CONTEXT, openapi.json, docs/\*
   - Also added to AI-SESSION-CONTEXT.md for persistence
 
 ### Changed
@@ -28,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Community: Added Dev.to, Medium, LinkedIn to Tier 3
   - Archives: Added archive.today aliases (archive.is), Bing Cache to Tier 4
   - Clarified Reddit includes r/lowcode subreddit
-  
 - **📖 README Research Protocol Section Overhauled**
   - Now shows full 5-tier structure with detailed sources
   - Added version grading explanation (Exact/Close/Relevant/Legacy)

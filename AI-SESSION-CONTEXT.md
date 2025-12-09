@@ -76,10 +76,41 @@ mendix-mcp-server/
 │       ├── pages.yml
 │       ├── weekly-stats.yml
 │       └── weekly-harvest.yml  # Automated Monday 3AM UTC harvest (NEW)
+├── START-SERVER.cmd          # 🎯 ONE-CLICK LAUNCHER (double-click this!)
+├── Start-MendixServer.ps1    # PowerShell launcher script
+├── START-SERVER.vbs          # VBScript launcher (fallback)
+├── start-rest-server.bat     # Simple batch launcher
+├── start-ngrok-tunnel.bat    # ngrok for ChatGPT tunnel
+├── start-all.bat             # Server + ngrok combined
+├── check-server-status.bat   # Quick status check
 ├── CHANGELOG.md              # Version history
 ├── ARCHITECTURE.md           # Full system design
-└── package.json              # v3.1.0
+└── package.json              # v3.1.1
 ```
+
+---
+
+## 🚀 Starting the REST Server
+
+**One-click:** Double-click `START-SERVER.cmd` (or `START-SERVER.vbs` if .cmd opens in Notepad)
+
+**Manual:**
+```bash
+cd mendix-mcp-server
+node src/rest-proxy.js
+```
+
+**Important Notes:**
+- Server takes ~10 seconds to initialize (embedding 354 documents)
+- Keep the terminal window open - closing it stops the server
+- Dashboard: http://localhost:5050/dashboard
+- Health check: http://localhost:5050/health
+
+**For ChatGPT Integration:**
+1. Start server with `START-SERVER.cmd`
+2. Run `start-ngrok-tunnel.bat` to create public URL
+3. Copy ngrok's HTTPS URL into ChatGPT custom GPT action config
+4. ngrok URL changes each restart (unless paid ngrok account)
 
 ---
 
@@ -87,14 +118,14 @@ mendix-mcp-server/
 
 **When making ANY change to this project, you MUST update ALL of these:**
 
-| Document | What to Update |
-|----------|----------------|
-| **README.md** | Features, version, any visible changes |
-| **CHANGELOG.md** | New version section with all changes |
-| **AI-SESSION-CONTEXT.md** | Version, file structure, capabilities |
-| **openapi.json** | Version, any REST API changes |
-| **package.json** | Version number bump |
-| **docs/*.md** | Any affected documentation pages |
+| Document                  | What to Update                         |
+| ------------------------- | -------------------------------------- |
+| **README.md**             | Features, version, any visible changes |
+| **CHANGELOG.md**          | New version section with all changes   |
+| **AI-SESSION-CONTEXT.md** | Version, file structure, capabilities  |
+| **openapi.json**          | Version, any REST API changes          |
+| **package.json**          | Version number bump                    |
+| **docs/\*.md**            | Any affected documentation pages       |
 
 **This is non-negotiable.** Every functional change = documentation update.
 
@@ -279,30 +310,33 @@ Without embedding keys, server uses local TF-IDF search (still good!).
 
 ### Version History (Recent)
 
-| Version | Date  | Highlights                                                      |
-| ------- | ----- | --------------------------------------------------------------- |
-| 2.8.0   | Dec 8 | Built-in Pinecone, OpenAI+Azure support, ThemeAnalyzer verdicts |
-| 2.7.3   | Dec 8 | Font config, design system workflow enhancements                |
-| 2.7.2   | Dec 8 | Comprehensive design-properties.json documentation              |
-| 2.7.1   | Dec 8 | Scaffold pattern for custom themes                              |
-| 2.7.0   | Dec 8 | ThemeAnalyzer (50KB deep SCSS analysis)                         |
-| 2.6.0   | Dec 8 | Usage analytics, Mendix 10/11 knowledge                         |
+| Version | Date   | Highlights                                                      |
+| ------- | ------ | --------------------------------------------------------------- |
+| 3.1.1   | Dec 9  | Expanded Beast Mode (5-tier research), mandatory doc-update rule|
+| 3.1.0   | Dec 9  | Weekly auto-harvest GitHub Action, disk-cached embeddings       |
+| 3.0.1   | Dec 9  | Analytics dashboard, harvest status endpoint                    |
+| 2.8.0   | Dec 8  | Built-in Pinecone, OpenAI+Azure support, ThemeAnalyzer verdicts |
+| 2.7.3   | Dec 8  | Font config, design system workflow enhancements                |
+| 2.7.2   | Dec 8  | Comprehensive design-properties.json documentation              |
 
 ### What's Working Well
 
-- ✅ npm publishing automated
+- ✅ npm publishing automated (@jordnlvr/mendix-mcp-server v3.1.1)
 - ✅ GitHub Pages documentation site
-- ✅ CI/CD with 5 workflows
-- ✅ Vector search with Pinecone
+- ✅ CI/CD with 6 workflows (including weekly-harvest)
+- ✅ Vector search with Pinecone + disk-cached embeddings
 - ✅ Theme analysis with design-properties validation
-- ✅ REST API for ChatGPT integration
+- ✅ REST API for ChatGPT integration (15 endpoints)
+- ✅ Beast Mode 5-tier research protocol
 - ✅ Self-maintenance scheduling
+- ✅ Desktop launcher scripts for easy server start
 
 ### Known Limitations
 
 - Tests need expansion (basic coverage only)
 - Some SDK patterns marked "unverified"
 - Vector reindex required after knowledge updates
+- ngrok URL changes each restart (for ChatGPT integration)
 
 ---
 
@@ -314,7 +348,15 @@ Without embedding keys, server uses local TF-IDF search (still good!).
 4. **Check knowledge/theme-analysis.json** - Latest theme best practices
 5. **Use Beast Mode** - When in doubt, research thoroughly
 6. **Commit often** - Kelly prefers seeing progress
-7. **Update docs** - Keep CHANGELOG.md and guides current
+7. **Update docs** - MANDATORY: Update CHANGELOG.md, README.md, this file on ANY change
+
+### Critical Rules
+
+1. **NEVER skip documentation updates** - Every change = update CHANGELOG, README, AI-SESSION-CONTEXT
+2. **Research before implementing** - Your knowledge may be outdated, fetch web docs
+3. **Auto-learn** - Save discoveries to knowledge base via `add_to_knowledge_base`
+4. **Test the server** - It takes ~10 seconds to initialize (embedding 354 docs)
+5. **Version bumps** - package.json version must match what you're releasing
 
 ### Quick Verification
 
@@ -327,6 +369,11 @@ npm view @jordnlvr/mendix-mcp-server version
 
 # Check knowledge base loads
 node -e "import('./src/core/KnowledgeManager.js').then(m => new m.default().load().then(() => console.log('OK')))"
+
+# Test REST server
+node src/rest-proxy.js
+# Wait 10 seconds, then:
+curl http://localhost:5050/health
 ```
 
 ---

@@ -1,0 +1,137 @@
+name: Weekly Knowledge Harvest
+
+on:
+  schedule:
+    # Run every Monday at 3 AM UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      sources:
+        description: 'Harvest sources (comma-separated)'
+        required: false
+        default: 'releaseNotes,studioProGuide,refGuide'
+      dry_run:
+        description: 'Dry run (no changes saved)'
+        required: false
+        default: 'false'
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🌾 Run Knowledge Harvest
+        id: harvest
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          SOURCES: ${{ github.event.inputs.sources || 'releaseNotes,studioProGuide' }}
+        run: |
+          node -e "
+          import('./src/harvester/KnowledgeHarvester.js').then(async ({ default: Harvester }) => {
+            const harvester = new Harvester('./knowledge');
+            const sources = process.env.SOURCES.split(',').map(s => s.trim());
+            const dryRun = process.env.DRY_RUN === 'true';
+            
+            console.log('🌾 Starting harvest...');
+            console.log('   Sources:', sources);
+            console.log('   Dry run:', dryRun);
+            
+            try {
+              const results = await harvester.harvest({ 
+                sources, 
+                dryRun,
+                verbose: true 
+              });
+              
+              console.log('\\n📊 Harvest Results:');
+              console.log('   New entries:', results.newEntries?.length || 0);
+              console.log('   Updated entries:', results.updatedEntries?.length || 0);
+              console.log('   Errors:', results.failed?.length || 0);
+              console.log('   Pages scanned:', harvester.stats.pagesScanned);
+              
+              // Output for GitHub Actions
+              const summary = {
+                newEntries: results.newEntries?.length || 0,
+                updatedEntries: results.updatedEntries?.length || 0,
+                errors: results.failed?.length || 0,
+                pagesScanned: harvester.stats.pagesScanned
+              };
+              
+              console.log('\\n::set-output name=summary::' + JSON.stringify(summary));
+              
+              if (summary.errors > 0) {
+                console.log('\\n⚠️ Some pages failed to harvest');
+                process.exit(1);
+              }
+            } catch (err) {
+              console.error('❌ Harvest failed:', err.message);
+              process.exit(1);
+            }
+          });
+          "
+
+      - name: 📝 Update harvest state
+        if: success() && github.event.inputs.dry_run != 'true'
+        run: |
+          # Update harvest-state.json with last run time
+          node -e "
+          const fs = require('fs');
+          const statePath = './knowledge/harvest-state.json';
+          let state = {};
+          try { state = JSON.parse(fs.readFileSync(statePath)); } catch {}
+          state.lastHarvest = new Date().toISOString();
+          state.totalHarvests = (state.totalHarvests || 0) + 1;
+          state.lastHarvestResults = JSON.parse(process.env.HARVEST_SUMMARY || '{}');
+          fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+          "
+        env:
+          HARVEST_SUMMARY: ${{ steps.harvest.outputs.summary }}
+
+      - name: 📤 Commit changes
+        if: success() && github.event.inputs.dry_run != 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add knowledge/
+          
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🌾 Weekly knowledge harvest - $(date +%Y-%m-%d)
+            
+            Automated harvest of Mendix documentation.
+            - New entries added to knowledge base
+            - Updated existing entries with latest info
+            
+            Triggered by: ${{ github.event_name }}"
+            git push
+          fi
+
+      - name: 📊 Create summary
+        if: always()
+        run: |
+          echo "## 🌾 Weekly Knowledge Harvest Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Date | $(date +%Y-%m-%d) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Trigger | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${{ job.status }} |" >> $GITHUB_STEP_SUMMARY

@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Mendix Expert API",
-    "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol.",
-    "version": "3.0.0"
+    "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol. Includes automated weekly harvesting and disk-cached embeddings for fast performance.",
+    "version": "3.1.0"
   },
   "servers": [
     {
@@ -463,6 +463,143 @@
                 "schema": {
                   "type": "string",
                   "description": "Full HTML page with embedded CSS and usage visualizations"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/harvest-status": {
+      "get": {
+        "operationId": "getHarvestStatus",
+        "summary": "Get Harvest Status",
+        "description": "Returns the current status of the automated knowledge harvesting system, including last run time, next scheduled run, and harvest statistics.",
+        "responses": {
+          "200": {
+            "description": "Harvest status information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "description": "Current harvest system status" },
+                    "enabled": { "type": "boolean" },
+                    "lastRun": { "type": "string", "format": "date-time" },
+                    "nextRun": { "type": "string", "format": "date-time" },
+                    "sources": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Available harvest sources"
+                    },
+                    "stats": {
+                      "type": "object",
+                      "description": "Harvest statistics"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/harvest": {
+      "post": {
+        "operationId": "triggerHarvest",
+        "summary": "Trigger Manual Harvest",
+        "description": "Manually triggers a knowledge harvest from Mendix documentation sources. Can specify which sources to harvest.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": ["releaseNotes", "refGuide", "howTo", "studioProGuide", "apidocs", "mxsdk"]
+                    },
+                    "description": "Specific sources to harvest. If omitted, harvests from all sources."
+                  },
+                  "dryRun": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, shows what would be harvested without saving"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Harvest triggered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "sources": { "type": "array", "items": { "type": "string" } },
+                    "dryRun": { "type": "boolean" },
+                    "results": { "type": "object", "description": "Harvest results per source" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge-gap": {
+      "post": {
+        "operationId": "reportKnowledgeGap",
+        "summary": "Report Missing Knowledge",
+        "description": "Report a topic or question that the knowledge base couldn't answer. These gaps are tracked and prioritized for future harvesting.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "The topic or question that wasn't covered"
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "Additional context about what the user was trying to accomplish"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                    "default": "medium",
+                    "description": "Priority level for this gap"
+                  }
+                },
+                "required": ["topic"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Knowledge gap recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "gapId": { "type": "string", "description": "Unique identifier for this knowledge gap" },
+                    "totalGaps": { "type": "integer", "description": "Total number of recorded gaps" }
+                  }
                 }
               }
             }

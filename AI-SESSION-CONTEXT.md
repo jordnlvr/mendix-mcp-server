@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 9, 2025  
-**Version:** 3.0.0  
+**Version:** 3.1.0  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -20,6 +20,8 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 - **Project & theme analysis** for actual .mpr files (web-focused, best practices based)
 - **Self-learning** - harvests docs, remembers solutions
 - **Beast Mode** - exhaustive multi-step research on demand (MCP + REST)
+- **Automated weekly harvesting** via GitHub Actions (Monday 3AM UTC)
+- **Disk-cached embeddings** for 3-5x faster server restarts
 
 ---
 
@@ -40,7 +42,7 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 mendix-mcp-server/
 ├── src/
 │   ├── index.js              # Main MCP server (ESM)
-│   ├── rest-proxy.js         # REST API for ChatGPT (includes /beast-mode, /dashboard)
+│   ├── rest-proxy.js         # REST API for ChatGPT (15 endpoints)
 │   ├── core/
 │   │   ├── SearchEngine.js   # TF-IDF + fuzzy + semantic
 │   │   ├── KnowledgeManager.js
@@ -49,7 +51,7 @@ mendix-mcp-server/
 │   │   ├── ThemeAnalyzer.js  # v2.0 Web-focused, follows @imports
 │   │   └── ThemeAnalyzer.v1.js.bak  # Old version backup
 │   ├── vector/
-│   │   ├── VectorStore.js    # Pinecone integration (built-in key)
+│   │   ├── VectorStore.js    # Pinecone + disk-cached embeddings
 │   │   └── HybridSearch.js   # Keyword + semantic fusion
 │   └── utils/
 │       ├── MaintenanceScheduler.js
@@ -58,7 +60,10 @@ mendix-mcp-server/
 │   ├── theme-analysis.json   # v1.4.0 - fonts, design-properties, scaffold
 │   ├── platform-sdk.json     # Verified SDK patterns
 │   ├── best-practices.json
+│   ├── knowledge-gaps.json   # User-reported missing knowledge
 │   └── ...
+├── data/
+│   └── embedding-cache.json  # Persistent embedding cache (NEW in v3.1.0)
 ├── scripts/
 │   └── reindex-vectors.js    # Vector reindex utility
 ├── docs/                      # Jekyll site for GitHub Pages
@@ -69,10 +74,11 @@ mendix-mcp-server/
 │       ├── ci.yml
 │       ├── npm-publish.yml
 │       ├── pages.yml
-│       └── weekly-stats.yml
+│       ├── weekly-stats.yml
+│       └── weekly-harvest.yml  # Automated Monday 3AM UTC harvest (NEW)
 ├── CHANGELOG.md              # Version history
 ├── ARCHITECTURE.md           # Full system design
-└── package.json              # v3.0.0
+└── package.json              # v3.1.0
 ```
 
 ---

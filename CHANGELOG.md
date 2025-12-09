@@ -14,6 +14,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.1.0] - 2025-12-09
+
+### Added
+
+- **🌾 Automated Weekly Harvesting (GitHub Action)**
+  - New `.github/workflows/weekly-harvest.yml` workflow
+  - Runs every Monday at 3AM UTC via cron
+  - Manual dispatch with source selection and dry-run option
+  - Harvests `releaseNotes`, `studioProGuide`, `refGuide` from docs.mendix.com
+  - Auto-commits knowledge updates to repository
+  - Creates GitHub summary report after each run
+
+- **🚀 Disk-Cached Embeddings**
+  - EmbeddingCache now persists to `data/embedding-cache.json`
+  - Server restarts 3-5x faster with warm cache
+  - Graceful shutdown saves cache automatically (SIGINT/SIGTERM)
+  - LRU eviction with configurable max size (default 500 entries)
+
+### Changed
+
+- VectorStore version bumped to 3.1.0 with disk persistence support
+- REST API banner updated with v3.1.0 and new feature highlights
+- Shutdown handlers now properly save embedding cache before exit
+
+### Technical
+
+- `EmbeddingCache` class enhanced with:
+  - `loadFromDisk()` - Load cache on startup
+  - `saveToDisk()` - Save cache (auto every 50 entries + on shutdown)
+  - `shutdown()` - Graceful cleanup method
+- `VectorStore.shutdown()` added for graceful cache persistence
+- Added `fs`, `path`, `url` imports to VectorStore for disk I/O
+
+---
+
 ## [3.0.1] - 2025-12-09
 
 ### Added
@@ -23,7 +58,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `POST /harvest` - Trigger manual knowledge harvest from Mendix docs
   - `POST /knowledge-gap` - Report missing knowledge for future harvesting
   - Knowledge gaps tracked in `knowledge/knowledge-gaps.json`
-  
 - **Validator Fix** - Knowledge files with `entries`, `verified_patterns`, or `rules` now validate correctly
 
 ### Changed

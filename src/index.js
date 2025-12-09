@@ -2083,6 +2083,7 @@ async function main() {
 process.on('SIGINT', async () => {
   logger.info('Shutting down gracefully...');
   maintenanceScheduler.stopAutoMaintenance();
+  vectorStore.shutdown(); // Save embedding cache to disk
   cacheManager.clear();
   projectLoader.clearAll();
   logger.info('Shutdown complete');
@@ -2091,6 +2092,7 @@ process.on('SIGINT', async () => {
 
 process.on('SIGTERM', async () => {
   logger.info('Received SIGTERM, shutting down...');
+  vectorStore.shutdown(); // Save embedding cache to disk
   process.exit(0);
 });
 

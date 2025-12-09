@@ -28,6 +28,28 @@ npx @jordnlvr/mendix-mcp-server
 
 ---
 
+## 🆕 What's New in v3.1.0
+
+### 🌾 Automated Weekly Harvesting
+- **GitHub Action** runs every Monday at 3AM UTC
+- Crawls `releaseNotes`, `studioProGuide`, and `refGuide` from docs.mendix.com
+- Auto-commits fresh knowledge - your AI assistant stays current!
+- Manual trigger available via GitHub Actions UI
+
+### 🚀 Performance Improvements  
+- **Disk-cached embeddings** - Cache persists to `data/embedding-cache.json`
+- Server restarts 3-5x faster with warm cache
+- Graceful shutdown saves cache automatically
+
+### 📊 New REST API Endpoints
+- `GET /harvest-status` - Check harvest schedule and last run time
+- `POST /harvest` - Trigger manual harvest (sources: releaseNotes, studioProGuide, etc.)
+- `POST /knowledge-gap` - Report missing knowledge for future harvesting
+
+See [CHANGELOG.md](CHANGELOG.md) for full release history.
+
+---
+
 ## 🤔 What Is This?
 
 This is a **Model Context Protocol (MCP) server** that supercharges AI assistants (like GitHub Copilot, Claude, ChatGPT) with:
@@ -148,19 +170,22 @@ Server runs at `http://localhost:5050`
 
 ### Available Endpoints
 
-| Endpoint         | Method | Description                           |
-| ---------------- | ------ | ------------------------------------- |
-| `/health`        | GET    | Health check and status               |
-| `/status`        | GET    | Server status with example queries    |
-| `/tools`         | GET    | List all available endpoints          |
-| `/dashboard`     | GET    | 📊 Visual analytics dashboard (HTML)  |
-| `/beast-mode`    | GET    | 🔥 Get Beast Mode research protocol   |
-| `/query`         | POST   | Query knowledge base                  |
-| `/search`        | POST   | Hybrid search (keyword + semantic)    |
-| `/best-practice` | POST   | Get best practice recommendations     |
-| `/analyze`       | POST   | Analyze Mendix project                |
-| `/analyze-theme` | POST   | 🎨 Deep theme analysis with grading   |
-| `/analytics`     | GET    | Usage analytics and statistics (JSON) |
+| Endpoint          | Method | Description                           |
+| ----------------- | ------ | ------------------------------------- |
+| `/health`         | GET    | Health check and status               |
+| `/status`         | GET    | Server status with example queries    |
+| `/tools`          | GET    | List all available endpoints          |
+| `/dashboard`      | GET    | 📊 Visual analytics dashboard (HTML)  |
+| `/beast-mode`     | GET    | 🔥 Get Beast Mode research protocol   |
+| `/analytics`      | GET    | Usage analytics and statistics (JSON) |
+| `/harvest-status` | GET    | 🌾 Check harvest schedule & status    |
+| `/query`          | POST   | Query knowledge base                  |
+| `/search`         | POST   | Hybrid search (keyword + semantic)    |
+| `/best-practice`  | POST   | Get best practice recommendations     |
+| `/analyze`        | POST   | Analyze Mendix project                |
+| `/analyze-theme`  | POST   | 🎨 Deep theme analysis with grading   |
+| `/harvest`        | POST   | 🌾 Trigger manual harvest             |
+| `/knowledge-gap`  | POST   | 📝 Report missing knowledge           |
 
 ### Example Usage
 

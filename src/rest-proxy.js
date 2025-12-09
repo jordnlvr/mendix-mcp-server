@@ -951,7 +951,7 @@ const server = app.listen(PORT, async () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║   🧠 Mendix Expert REST API v3.0.1                                ║
+║   🧠 Mendix Expert REST API v3.1.0                                ║
 ║                                                                   ║
 ║   Server running at: http://localhost:${PORT}                      ║
 ║                                                                   ║
@@ -970,6 +970,9 @@ const server = app.listen(PORT, async () => {
 ║     POST /best-practice   - Get recommendations                   ║
 ║     POST /harvest         - 🌾 Trigger manual harvest             ║
 ║     POST /knowledge-gap   - 📝 Report missing knowledge           ║
+║                                                                   ║
+║   NEW: Disk-cached embeddings for faster restarts 🚀              ║
+║   NEW: Weekly auto-harvest via GitHub Actions 🌾                  ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
   `);

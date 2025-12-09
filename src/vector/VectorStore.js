@@ -10,12 +10,18 @@
  * - Built-in API key for shared knowledge base (no user setup needed)
  * - User can override with PINECONE_API_KEY env var for custom index
  *
- * @version 2.8.0
+ * @version 3.1.0
  */
 
 import { Pinecone } from '@pinecone-database/pinecone';
 import { createHash } from 'crypto';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 import Logger from '../utils/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const logger = new Logger('VectorStore');
 
@@ -52,13 +58,82 @@ function getBuiltinPineconeKey() {
 /**
  * LRU Cache for query embeddings - avoids re-embedding repeated queries
  * Huge performance boost for common searches!
+ * 
+ * NEW in v3.1.0: Disk persistence for faster server restarts!
+ * Cache is saved to data/embedding-cache.json and loaded on startup.
  */
 class EmbeddingCache {
-  constructor(maxSize = 500) {
+  constructor(maxSize = 500, persistPath = null) {
     this.maxSize = maxSize;
     this.cache = new Map();
     this.hits = 0;
     this.misses = 0;
+    this.diskHits = 0;
+    
+    // Determine persistence path
+    if (persistPath) {
+      this.persistPath = persistPath;
+    } else {
+      // Default: data/embedding-cache.json relative to project root
+      const projectRoot = join(__dirname, '..', '..');
+      this.persistPath = join(projectRoot, 'data', 'embedding-cache.json');
+    }
+    
+    // Load from disk on startup
+    this.loadFromDisk();
+  }
+
+  /**
+   * Load cached embeddings from disk
+   */
+  loadFromDisk() {
+    try {
+      if (existsSync(this.persistPath)) {
+        const data = JSON.parse(readFileSync(this.persistPath, 'utf-8'));
+        if (data.entries && Array.isArray(data.entries)) {
+          // Load entries (already sorted by recency in save)
+          for (const [key, value] of data.entries) {
+            this.cache.set(key, value);
+          }
+          this.diskHits = data.entries.length;
+          logger.info('EmbeddingCache loaded from disk', { entries: data.entries.length });
+        }
+      }
+    } catch (err) {
+      logger.debug('Could not load embedding cache from disk', { error: err.message });
+    }
+  }
+
+  /**
+   * Save cached embeddings to disk
+   */
+  saveToDisk() {
+    try {
+      // Ensure data directory exists
+      const dataDir = dirname(this.persistPath);
+      if (!existsSync(dataDir)) {
+        mkdirSync(dataDir, { recursive: true });
+      }
+      
+      // Convert Map to array of entries (preserves insertion order = LRU order)
+      const entries = Array.from(this.cache.entries());
+      
+      const data = {
+        version: '3.1.0',
+        savedAt: new Date().toISOString(),
+        entries: entries,
+        stats: {
+          size: entries.length,
+          hits: this.hits,
+          misses: this.misses
+        }
+      };
+      
+      writeFileSync(this.persistPath, JSON.stringify(data, null, 2));
+      logger.debug('EmbeddingCache saved to disk', { entries: entries.length });
+    } catch (err) {
+      logger.warn('Could not save embedding cache to disk', { error: err.message });
+    }
   }
 
   get(key) {
@@ -81,6 +156,11 @@ class EmbeddingCache {
       this.cache.delete(firstKey);
     }
     this.cache.set(key, value);
+    
+    // Auto-save every 50 new entries
+    if (this.cache.size % 50 === 0) {
+      this.saveToDisk();
+    }
   }
 
   getStats() {
@@ -90,7 +170,9 @@ class EmbeddingCache {
       maxSize: this.maxSize,
       hits: this.hits,
       misses: this.misses,
+      diskHits: this.diskHits,
       hitRate: total > 0 ? ((this.hits / total) * 100).toFixed(1) + '%' : '0%',
+      persistPath: this.persistPath,
     };
   }
 
@@ -98,6 +180,22 @@ class EmbeddingCache {
     this.cache.clear();
     this.hits = 0;
     this.misses = 0;
+    this.diskHits = 0;
+    // Also clear disk cache
+    try {
+      if (existsSync(this.persistPath)) {
+        writeFileSync(this.persistPath, JSON.stringify({ entries: [], version: '3.1.0' }));
+      }
+    } catch (err) {
+      logger.debug('Could not clear disk cache', { error: err.message });
+    }
+  }
+  
+  /**
+   * Graceful shutdown - save cache to disk
+   */
+  shutdown() {
+    this.saveToDisk();
   }
 }
 
@@ -672,5 +770,14 @@ export default class VectorStore {
       logger.error('Failed to clear vector store', { error: error.message });
       return false;
     }
+  }
+
+  /**
+   * Graceful shutdown - save embedding cache to disk
+   * Call this before server shutdown to persist cache
+   */
+  shutdown() {
+    logger.info('VectorStore shutting down, saving embedding cache...');
+    this.queryCache.shutdown();
   }
 }

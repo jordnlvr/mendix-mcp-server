@@ -596,10 +596,26 @@ export default class VectorStore {
         try {
           embeddings = await this.embedder.embedBatch(texts);
         } catch (error) {
-          logger.error('Cloud embedding failed, falling back to local', { error: error.message });
-          // Fall back to local for this batch
-          this.localEmbedder.buildVocabulary(batch);
-          embeddings = texts.map((t) => this.localEmbedder.embed(t));
+          logger.error('Primary cloud embedding failed', { error: error.message });
+
+          // Try fallback to OpenAI if Azure failed and OpenAI is available
+          if (this.embeddingMode === 'azure-openai' && this.openaiEmbedder.isAvailable()) {
+            try {
+              logger.info('Attempting fallback to OpenAI embeddings');
+              embeddings = await this.openaiEmbedder.embedBatch(texts);
+            } catch (fallbackError) {
+              logger.error('OpenAI fallback also failed, using local', {
+                error: fallbackError.message,
+              });
+              this.localEmbedder.buildVocabulary(batch);
+              embeddings = texts.map((t) => this.localEmbedder.embed(t));
+            }
+          } else {
+            // Fall back to local for this batch
+            logger.warn('Falling back to local embeddings');
+            this.localEmbedder.buildVocabulary(batch);
+            embeddings = texts.map((t) => this.localEmbedder.embed(t));
+          }
         }
       } else {
         // Local embeddings (synchronous)
@@ -688,8 +704,22 @@ export default class VectorStore {
         try {
           queryVector = await this.embedder.embed(normalizedQuery);
         } catch (error) {
-          logger.warn('Cloud query embedding failed, using local', { error: error.message });
-          queryVector = this.localEmbedder.embed(normalizedQuery);
+          logger.warn('Primary cloud query embedding failed', { error: error.message });
+
+          // Try fallback to OpenAI if Azure failed and OpenAI is available
+          if (this.embeddingMode === 'azure-openai' && this.openaiEmbedder.isAvailable()) {
+            try {
+              logger.info('Attempting fallback to OpenAI for query embedding');
+              queryVector = await this.openaiEmbedder.embed(normalizedQuery);
+            } catch (fallbackError) {
+              logger.error('OpenAI fallback also failed, using local', {
+                error: fallbackError.message,
+              });
+              queryVector = this.localEmbedder.embed(normalizedQuery);
+            }
+          } else {
+            queryVector = this.localEmbedder.embed(normalizedQuery);
+          }
         }
       } else {
         queryVector = this.localEmbedder.embed(normalizedQuery);

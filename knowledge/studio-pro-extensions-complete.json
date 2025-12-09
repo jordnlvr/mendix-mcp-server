@@ -6,300 +6,168 @@
   "tested_on": "Studio Pro 11.5.0",
   "description": "Complete, verified guide for creating Studio Pro extensions - LOCAL model access without Platform SDK cloud requirements",
 
-  "quick_start": {
-    "summary": "Create a working Studio Pro extension in 10 minutes",
-    "prerequisites": [
-      ".NET 8.0 SDK installed",
-      "Studio Pro 11.0+ installed",
-      "Extension Development enabled in Studio Pro"
-    ],
-    "steps": [
-      {
-        "step": 1,
-        "title": "Enable Extension Development in Studio Pro",
-        "actions": [
-          "Open Studio Pro",
-          "Go to Edit → Preferences",
-          "Click Advanced tab",
-          "Enable 'Extension Development mode'",
-          "Click OK and restart Studio Pro"
-        ],
-        "note": "This only needs to be done once"
-      },
-      {
-        "step": 2,
-        "title": "Create the Project",
-        "command": "dotnet new classlib -n MyExtension -f net8.0-windows",
-        "then": "cd MyExtension"
-      },
-      {
-        "step": 3,
-        "title": "Add NuGet Packages",
-        "commands": [
-          "dotnet add package Mendix.StudioPro.ExtensionsAPI --version 11.5.0",
-          "dotnet add package System.ComponentModel.Composition --version 8.0.0"
-        ]
-      },
-      {
-        "step": 4,
-        "title": "Create Extension Class",
-        "filename": "MyMenuExtension.cs",
-        "code": "using System.ComponentModel.Composition;\nusing Mendix.StudioPro.ExtensionsAPI.UI.Menu;\nusing Mendix.StudioPro.ExtensionsAPI.UI.Services;\n\nnamespace MyExtension;\n\n[Export(typeof(MenuExtension))]\npublic class MyMenuExtension : MenuExtension\n{\n    private readonly IMessageBoxService _messageBox;\n\n    [ImportingConstructor]\n    public MyMenuExtension(IMessageBoxService messageBox)\n    {\n        _messageBox = messageBox;\n    }\n\n    public override IEnumerable<MenuViewModel> GetMenus()\n    {\n        yield return new MenuViewModel(\"Hello World\", () =>\n        {\n            _messageBox.ShowInformation(\"Hello from my extension!\");\n        });\n\n        yield return new MenuViewModel(\"Show Module Count\", () =>\n        {\n            if (CurrentApp == null)\n            {\n                _messageBox.ShowWarning(\"No app open\");\n                return;\n            }\n            var count = CurrentApp.Root.GetModules().Count();\n            _messageBox.ShowInformation($\"This app has {count} modules\");\n        });\n    }\n}"
-      },
-      {
-        "step": 5,
-        "title": "Create manifest.json",
-        "filename": "manifest.json",
-        "content": {
-          "mx_extensions": ["MyExtension.dll"]
-        },
-        "critical": "This is the ONLY format that works - NOT the schema-based JSON shown in some docs"
-      },
-      {
-        "step": 6,
-        "title": "Build the Extension",
-        "command": "dotnet build -c Release"
-      },
-      {
-        "step": 7,
-        "title": "Deploy to Mendix App",
-        "actions": [
-          "Create folder: {YourMendixApp}/extensions/MyExtension/",
-          "Copy these files from bin/Release/net8.0-windows/:",
-          "  - MyExtension.dll",
-          "  - MyExtension.deps.json",
-          "  - manifest.json (from project root)"
-        ],
-        "critical": "Must be an UNPACKED FOLDER, not a .mxext zip file"
-      },
-      {
-        "step": 8,
-        "title": "Test in Studio Pro",
-        "actions": [
-          "Open your Mendix app in Studio Pro",
-          "Look in Extensions menu → MyExtension submenu",
-          "Click 'Hello World' to test"
-        ]
-      }
-    ]
-  },
-
-  "project_templates": {
-    "csproj": {
-      "filename": "MyExtension.csproj",
-      "content": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <TargetFramework>net8.0-windows</TargetFramework>\n    <ImplicitUsings>enable</ImplicitUsings>\n    <Nullable>enable</Nullable>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageReference Include=\"Mendix.StudioPro.ExtensionsAPI\" Version=\"11.5.0\" />\n    <PackageReference Include=\"System.ComponentModel.Composition\" Version=\"8.0.0\" />\n  </ItemGroup>\n  <ItemGroup>\n    <None Update=\"manifest.json\">\n      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>\n    </None>\n  </ItemGroup>\n</Project>"
+  "entries": [
+    {
+      "id": "quick-start-overview",
+      "title": "Studio Pro Extension Quick Start",
+      "category": "getting-started",
+      "description": "Create a working Studio Pro extension in 10 minutes. Prerequisites: .NET 8.0 SDK installed, Studio Pro 11.0+ installed, Extension Development enabled in Studio Pro Preferences → Advanced tab."
     },
-    "manifest": {
-      "filename": "manifest.json",
-      "content": "{\n  \"mx_extensions\": [\"MyExtension.dll\"]\n}",
-      "critical": "This simple format is REQUIRED - schema-based manifests do NOT work"
+    {
+      "id": "enable-extension-dev",
+      "title": "Enable Extension Development Mode",
+      "category": "setup",
+      "description": "To enable extension development: Open Studio Pro → Edit → Preferences → Advanced tab → Enable 'Extension Development mode' → Click OK and restart Studio Pro. This only needs to be done once."
+    },
+    {
+      "id": "create-project",
+      "title": "Create Extension Project",
+      "category": "setup",
+      "description": "Create project with: dotnet new classlib -n MyExtension -f net8.0-windows. Then add packages: dotnet add package Mendix.StudioPro.ExtensionsAPI --version 11.5.0 and dotnet add package System.ComponentModel.Composition --version 8.0.0"
+    },
+    {
+      "id": "manifest-format-critical",
+      "title": "Extension Manifest Format (CRITICAL)",
+      "category": "configuration",
+      "description": "The manifest.json MUST use this simple format: { \"mx_extensions\": [\"YourExtension.dll\"] }. Do NOT use schema-based manifest with name, version, author fields - that format does NOT work. This simple array format is the ONLY one that works."
+    },
+    {
+      "id": "folder-structure-critical",
+      "title": "Extension Folder Structure (CRITICAL)",
+      "category": "deployment",
+      "description": "Extensions MUST be deployed as UNPACKED FOLDERS, not .mxext zip files. Create folder at {YourMendixApp}/extensions/MyExtension/ and copy: MyExtension.dll, MyExtension.deps.json, and manifest.json into it."
+    },
+    {
+      "id": "menu-extension",
+      "title": "MenuExtension - Add Menu Items",
+      "category": "extension-types",
+      "description": "MenuExtension adds items to the Extensions menu. Use [Export(typeof(MenuExtension))] attribute. Override GetMenus() to return IEnumerable<MenuViewModel>. Use MenuViewModel(caption, action) constructor - NOT MenuItemViewModel which doesn't exist."
+    },
+    {
+      "id": "menu-extension-code",
+      "title": "MenuExtension Code Example",
+      "category": "code-examples",
+      "description": "[Export(typeof(MenuExtension))] public class MyMenuExtension : MenuExtension { private readonly IMessageBoxService _messageBox; [ImportingConstructor] public MyMenuExtension(IMessageBoxService messageBox) { _messageBox = messageBox; } public override IEnumerable<MenuViewModel> GetMenus() { yield return new MenuViewModel(\"Hello\", () => _messageBox.ShowInformation(\"Hello!\")); } }"
+    },
+    {
+      "id": "dockable-pane-extension",
+      "title": "DockablePaneExtension - Add Panels",
+      "category": "extension-types",
+      "description": "DockablePaneExtension adds dockable panes like Properties or Toolbox panels. Use [Export(typeof(DockablePaneExtension))] attribute. Override Id (unique string), InitialPosition, and Open() which returns DockablePaneViewModelBase. Use WebViewDockablePaneViewModel for HTML/React UI."
+    },
+    {
+      "id": "context-menu-extension",
+      "title": "ContextMenuExtension - Right-Click Menus",
+      "category": "extension-types",
+      "description": "ContextMenuExtension<T> adds right-click context menu items. Generic type T can be IDocument, IEntity, IMicroflow, IPage, INanoflow etc. Override GetContextMenus(T element) to return IEnumerable<MenuViewModel> based on the selected element."
+    },
+    {
+      "id": "web-server-extension",
+      "title": "WebServerExtension - HTTP Endpoints",
+      "category": "extension-types",
+      "description": "WebServerExtension exposes HTTP endpoints from Studio Pro. Use [Export(typeof(WebServerExtension))] attribute. Override InitializeWebServer(IWebServer webServer) and use webServer.AddRoute(HttpVerb.Get, \"/api/path\", async (req, res, ct) => { ... }). Great for MCP server integration."
+    },
+    {
+      "id": "currentapp-null-check",
+      "title": "Always Check CurrentApp for Null",
+      "category": "best-practices",
+      "description": "CurrentApp is null when no app is open in Studio Pro. ALWAYS check: if (CurrentApp == null) { _messageBox.ShowWarning(\"Please open an app first\"); return; } before accessing CurrentApp.Root or any model properties."
+    },
+    {
+      "id": "transactions-required",
+      "title": "Use Transactions for Model Changes",
+      "category": "best-practices",
+      "description": "All model modifications require transactions: using (var tx = CurrentApp.StartTransaction(\"My Change\")) { /* make changes */ tx.Commit(); }. Never modify the model outside a transaction or changes won't persist."
+    },
+    {
+      "id": "dependency-injection",
+      "title": "Service Injection via MEF",
+      "category": "best-practices",
+      "description": "Services are injected via MEF ImportingConstructor: [ImportingConstructor] public MyExtension(IMessageBoxService msgBox, IMicroflowService mfService) { _msgBox = msgBox; _mfService = mfService; }. Available services: IMessageBoxService, INotificationPopupService, IDockingWindowService, IMicroflowService, IDialogService."
+    },
+    {
+      "id": "api-imessageboxservice",
+      "title": "IMessageBoxService API",
+      "category": "api-reference",
+      "description": "IMessageBoxService provides dialog methods: ShowInformation(string message), ShowWarning(string message), ShowError(string message). Inject via [ImportingConstructor] for user notifications."
+    },
+    {
+      "id": "api-imodel",
+      "title": "IModel (CurrentApp) API",
+      "category": "api-reference",
+      "description": "IModel accessed via CurrentApp. Properties: Root (IProject). Methods: Create<T>(), StartTransaction(string name), Copy<T>(T element). Use to access and modify the Mendix model."
+    },
+    {
+      "id": "api-iproject",
+      "title": "IProject (CurrentApp.Root) API",
+      "category": "api-reference",
+      "description": "IProject is the root project. Properties: Name, DirectoryPath. Methods: GetModules(), GetDocuments(), AddModule(). Use CurrentApp.Root to access."
+    },
+    {
+      "id": "api-imodule",
+      "title": "IModule API",
+      "category": "api-reference",
+      "description": "IModule represents a module. Properties: Name, DomainModel, FromAppStore. Methods: GetFolders(), GetDocuments(). Access via CurrentApp.Root.GetModules()."
+    },
+    {
+      "id": "api-ientity",
+      "title": "IEntity API",
+      "category": "api-reference",
+      "description": "IEntity represents a domain model entity. Properties: Name, Documentation, QualifiedName. Methods: GetAttributes(), GetAssociations(). Access via module.DomainModel.GetEntities()."
+    },
+    {
+      "id": "api-menuviewmodel",
+      "title": "MenuViewModel (NOT MenuItemViewModel)",
+      "category": "api-reference",
+      "description": "MenuViewModel is the correct class for menu items. Constructor: MenuViewModel(string caption, Action callback). Properties: Caption, IsEnabled, Children. WARNING: MenuItemViewModel does NOT exist - use MenuViewModel."
+    },
+    {
+      "id": "http-bridge-pattern",
+      "title": "HTTP Bridge Pattern for MCP Integration",
+      "category": "patterns",
+      "description": "Use WebServerExtension to expose model data via HTTP for external tools like MCP servers. Architecture: Studio Pro Extension (WebServerExtension) → HTTP → MCP Server → AI Assistant. Example endpoints: GET /api/modules, GET /api/entities?module=X."
+    },
+    {
+      "id": "http-bridge-code",
+      "title": "HTTP Bridge Code Example",
+      "category": "code-examples",
+      "description": "[Export(typeof(WebServerExtension))] public class HttpBridgeExtension : WebServerExtension { public override void InitializeWebServer(IWebServer webServer) { webServer.AddRoute(HttpVerb.Get, \"/api/modules\", async (req, res, ct) => { if (CurrentApp == null) { res.StatusCode = 503; return; } var modules = CurrentApp.Root.GetModules().Select(m => new { name = m.Name }); res.ContentType = \"application/json\"; await res.WriteAsync(JsonSerializer.Serialize(modules)); }); } }"
+    },
+    {
+      "id": "troubleshoot-not-loading",
+      "title": "Troubleshooting: Extension Not Loading",
+      "category": "troubleshooting",
+      "description": "If extension not visible in menu: 1) Verify Extension Development mode enabled in Preferences → Advanced, 2) Verify extension is UNPACKED folder not .mxext zip, 3) Verify manifest.json uses { \"mx_extensions\": [\"Name.dll\"] } format, 4) Verify all required DLLs present (check .deps.json), 5) Restart Studio Pro after changes."
+    },
+    {
+      "id": "troubleshoot-manifest-error",
+      "title": "Troubleshooting: Manifest Parse Error",
+      "category": "troubleshooting",
+      "description": "If 'Unable to parse manifest' or 'Type not recognized' error: Use simple format { \"mx_extensions\": [\"YourExtension.dll\"] }. Do NOT use schema-based manifest with name, version, author, extensionType fields - that format is NOT supported."
+    },
+    {
+      "id": "troubleshoot-compile-errors",
+      "title": "Troubleshooting: Common Compile Errors",
+      "category": "troubleshooting",
+      "description": "MenuItemViewModel not found → Use MenuViewModel instead. HandleWebRequestAsync signature wrong → Use 3 parameters (request, response, cancellationToken). ShowSuccess not found → Use ShowNotification(title, msg, null, TimeSpan.FromSeconds(3))."
+    },
+    {
+      "id": "csproj-template",
+      "title": "Project File Template (.csproj)",
+      "category": "templates",
+      "description": "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net8.0-windows</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup><ItemGroup><PackageReference Include=\"Mendix.StudioPro.ExtensionsAPI\" Version=\"11.5.0\" /><PackageReference Include=\"System.ComponentModel.Composition\" Version=\"8.0.0\" /></ItemGroup></Project>"
+    },
+    {
+      "id": "version-info",
+      "title": "Version Requirements",
+      "category": "requirements",
+      "description": "Minimum Studio Pro: 11.0.0. Recommended: 11.5.0+. NuGet package: Mendix.StudioPro.ExtensionsAPI 11.5.0. .NET version: 8.0. Target framework: net8.0-windows."
+    },
+    {
+      "id": "linq-queries",
+      "title": "LINQ Queries on Model",
+      "category": "patterns",
+      "description": "Use LINQ to query model elements: var requestEntities = CurrentApp.Root.GetModules().SelectMany(m => m.DomainModel.GetEntities()).Where(e => e.Name.StartsWith(\"Request\"));"
     }
-  },
-
-  "extension_types": {
-    "MenuExtension": {
-      "purpose": "Add menu items to Extensions menu",
-      "base_class": "MenuExtension",
-      "export_type": "MenuExtension",
-      "key_method": "GetMenus() returns IEnumerable<MenuViewModel>",
-      "example": "[Export(typeof(MenuExtension))]\npublic class MyMenu : MenuExtension\n{\n    public override IEnumerable<MenuViewModel> GetMenus()\n    {\n        yield return new MenuViewModel(\"Action Name\", () => { /* action */ });\n    }\n}"
-    },
-    "DockablePaneExtension": {
-      "purpose": "Add dockable panes (like Properties, Toolbox panels)",
-      "base_class": "DockablePaneExtension",
-      "export_type": "DockablePaneExtension",
-      "key_properties": ["Id (unique string)", "InitialPosition"],
-      "key_method": "Open() returns DockablePaneViewModelBase",
-      "note": "Use WebViewDockablePaneViewModel for HTML/React UI"
-    },
-    "ContextMenuExtension": {
-      "purpose": "Add right-click context menu items",
-      "base_class": "ContextMenuExtension<T>",
-      "generic_types": ["IDocument", "IEntity", "IMicroflow", "IPage", "INanoflow"],
-      "key_method": "GetContextMenus(T element) returns IEnumerable<MenuViewModel>"
-    },
-    "WebServerExtension": {
-      "purpose": "Expose HTTP endpoints from Studio Pro",
-      "base_class": "WebServerExtension",
-      "export_type": "WebServerExtension",
-      "key_method": "InitializeWebServer(IWebServer webServer)",
-      "use_case": "External tools can call Studio Pro via HTTP"
-    },
-    "ConsistencyCheckExtension": {
-      "purpose": "Add custom validation rules",
-      "base_class": "ConsistencyCheckExtension<T>",
-      "key_method": "Check(T element) returns IEnumerable<ConsistencyError>"
-    }
-  },
-
-  "api_reference": {
-    "model_access": {
-      "CurrentApp": {
-        "description": "Current open app model (available from UIExtensionBase)",
-        "type": "IModel",
-        "properties": ["Root (IProject)"],
-        "methods": ["Create<T>()", "StartTransaction(string)", "Copy<T>(T)"]
-      },
-      "IProject": {
-        "description": "The root project/app",
-        "methods": ["GetModules()", "GetDocuments()", "AddModule()", "Name", "DirectoryPath"]
-      },
-      "IModule": {
-        "description": "A module in the app",
-        "properties": ["Name", "DomainModel", "FromAppStore"],
-        "methods": ["GetFolders()", "GetDocuments()"]
-      },
-      "IDomainModel": {
-        "description": "Domain model of a module",
-        "methods": ["GetEntities()", "AddEntity()", "InsertEntity()", "RemoveEntity()"]
-      },
-      "IEntity": {
-        "description": "An entity in the domain model",
-        "properties": ["Name", "Documentation", "QualifiedName"],
-        "methods": ["GetAttributes()", "GetAssociations()"]
-      }
-    },
-    "services": {
-      "IMessageBoxService": {
-        "methods": ["ShowInformation(string)", "ShowWarning(string)", "ShowError(string)"],
-        "usage": "Inject via [ImportingConstructor]"
-      },
-      "INotificationPopupService": {
-        "methods": ["ShowNotification(title, message, icon, timeout)"],
-        "note": "For toast-style notifications"
-      },
-      "IDockingWindowService": {
-        "methods": ["OpenPane(string paneId)", "OpenTab(...)"],
-        "usage": "Open dockable panes programmatically"
-      },
-      "IMicroflowService": {
-        "methods": ["CreateMicroflow(...)", "Initialize(...)", "GetParameters(...)"],
-        "usage": "Create and modify microflows programmatically"
-      },
-      "IDialogService": {
-        "methods": ["ShowDialog(...)", "CloseDialog(...)"],
-        "usage": "Show modal dialogs"
-      }
-    },
-    "ui_models": {
-      "MenuViewModel": {
-        "constructor": "MenuViewModel(string caption, Action callback)",
-        "properties": ["Caption", "IsEnabled", "Children"],
-        "note": "NOT MenuItemViewModel - that doesn't exist"
-      }
-    }
-  },
-
-  "common_patterns": {
-    "dependency_injection": {
-      "description": "Services are injected via MEF ImportingConstructor",
-      "example": "[ImportingConstructor]\npublic MyExtension(IMessageBoxService msgBox, IMicroflowService mfService)\n{\n    _msgBox = msgBox;\n    _mfService = mfService;\n}"
-    },
-    "transactions": {
-      "description": "Model changes require transactions",
-      "example": "using (var tx = CurrentApp.StartTransaction(\"My Change\"))\n{\n    // Make changes to model\n    tx.Commit();\n}"
-    },
-    "null_check_currentapp": {
-      "description": "CurrentApp is null when no app is open",
-      "example": "if (CurrentApp == null)\n{\n    _messageBox.ShowWarning(\"Please open an app first\");\n    return;\n}"
-    },
-    "linq_queries": {
-      "description": "Use LINQ to query model elements",
-      "example": "var requestEntities = CurrentApp.Root.GetModules()\n    .SelectMany(m => m.DomainModel.GetEntities())\n    .Where(e => e.Name.StartsWith(\"Request\"));"
-    }
-  },
-
-  "http_bridge_pattern": {
-    "description": "Expose model data via HTTP for external tools",
-    "use_cases": [
-      "MCP server accessing model data",
-      "VS Code extension reading model",
-      "Custom documentation tools",
-      "External analysis tools"
-    ],
-    "example_extension": {
-      "filename": "HttpBridgeExtension.cs",
-      "code": "[Export(typeof(WebServerExtension))]\npublic class HttpBridgeExtension : WebServerExtension\n{\n    public override void InitializeWebServer(IWebServer webServer)\n    {\n        webServer.AddRoute(HttpVerb.Get, \"/api/modules\", async (req, res, ct) =>\n        {\n            if (CurrentApp == null)\n            {\n                res.StatusCode = 503;\n                await res.WriteAsync(\"{\\\"error\\\": \\\"No app open\\\"}\");\n                return;\n            }\n            \n            var modules = CurrentApp.Root.GetModules()\n                .Select(m => new { name = m.Name, entityCount = m.DomainModel.GetEntities().Count() });\n            \n            res.ContentType = \"application/json\";\n            await res.WriteAsync(JsonSerializer.Serialize(modules));\n        });\n    }\n}"
-    }
-  },
-
-  "troubleshooting": {
-    "extension_not_loading": {
-      "symptoms": ["Extension not visible in menu", "F4 shows no extensions"],
-      "solutions": [
-        "Verify Extension Development mode is enabled in Preferences → Advanced",
-        "Verify extension is in UNPACKED folder, not .mxext zip",
-        "Verify manifest.json uses { \"mx_extensions\": [\"Name.dll\"] } format",
-        "Verify all required DLLs are present (check .deps.json)",
-        "Restart Studio Pro after changes"
-      ]
-    },
-    "manifest_parse_error": {
-      "symptoms": ["Unable to parse manifest", "Type not recognized"],
-      "solution": "Use simple format: { \"mx_extensions\": [\"YourExtension.dll\"] }",
-      "wrong": "Do NOT use schema-based manifest with name, version, author fields"
-    },
-    "compile_errors": {
-      "MenuItemViewModel_not_found": "Use MenuViewModel instead",
-      "HandleWebRequestAsync_signature": "Use 3 parameters: (request, response, cancellationToken)",
-      "ShowSuccess_not_found": "Use ShowNotification(title, msg, null, TimeSpan.FromSeconds(3))"
-    },
-    "runtime_errors": {
-      "CurrentApp_null": "App must be open; check CurrentApp != null before accessing",
-      "MEF_composition": "Ensure [Export] and [ImportingConstructor] attributes are correct"
-    }
-  },
-
-  "best_practices": {
-    "always": [
-      "Check CurrentApp != null before accessing model",
-      "Use transactions for model modifications",
-      "Inject services via [ImportingConstructor]",
-      "Use [Export(typeof(ExtensionType))] on all extension classes",
-      "Test with Extension Development mode enabled"
-    ],
-    "never": [
-      "Never modify model without a transaction",
-      "Never assume CurrentApp is not null",
-      "Never use .mxext zip files - use unpacked folders",
-      "Never use schema-based manifest format"
-    ],
-    "deployment": [
-      "Use app-level extensions folder for project-specific extensions",
-      "Use global Extensions folder only for system-wide tools",
-      "Include .deps.json for dependency resolution",
-      "Test on clean install of Studio Pro"
-    ]
-  },
-
-  "integration_with_mcp": {
-    "description": "How Studio Pro Extensions enable MCP server integration",
-    "architecture": "Studio Pro Extension (WebServerExtension) → HTTP → MCP Server → AI Assistant",
-    "flow": [
-      "1. Extension exposes HTTP endpoints inside Studio Pro",
-      "2. MCP server calls those endpoints to read model data",
-      "3. AI assistant uses MCP tools to query the model",
-      "4. Results flow back to user"
-    ],
-    "benefits": [
-      "No cloud authentication needed",
-      "Works offline",
-      "Real-time model access",
-      "Direct local .mpr file operations"
-    ],
-    "example_endpoints": [
-      "GET /api/modules - List all modules",
-      "GET /api/entities?module=X - List entities in module",
-      "GET /api/microflows?module=X - List microflows",
-      "GET /api/model/summary - Full model summary"
-    ]
-  },
-
-  "version_info": {
-    "minimum_studio_pro": "11.0.0",
-    "recommended_studio_pro": "11.5.0+",
-    "nuget_package": "Mendix.StudioPro.ExtensionsAPI 11.5.0",
-    "dotnet_version": ".NET 8.0",
-    "target_framework": "net8.0-windows"
-  }
+  ]
 }

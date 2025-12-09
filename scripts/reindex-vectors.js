@@ -195,9 +195,15 @@ async function main() {
   for (const file of files) {
     try {
       const content = await fs.readFile(path.join(knowledgePath, file), 'utf8');
-      // Use JSON5 or strip-json-comments approach - handle JSONC properly
-      const cleanContent = stripJsonComments(content);
-      const data = JSON.parse(cleanContent);
+      
+      // Try parsing directly first, only strip comments if needed
+      let data;
+      try {
+        data = JSON.parse(content);
+      } catch {
+        const cleanContent = stripJsonComments(content);
+        data = JSON.parse(cleanContent);
+      }
 
       const entryCount = countEntries(data);
       totalEntries += entryCount;
@@ -241,8 +247,16 @@ async function main() {
     console.log(`   Processing ${file}...`);
     try {
       const content = await fs.readFile(path.join(knowledgePath, file), 'utf8');
-      const cleanContent = stripJsonComments(content);
-      const data = JSON.parse(cleanContent);
+      
+      // Try parsing directly first, only strip comments if needed
+      let data;
+      try {
+        data = JSON.parse(content);
+      } catch {
+        // Only strip comments if direct parse fails
+        const cleanContent = stripJsonComments(content);
+        data = JSON.parse(cleanContent);
+      }
 
       // Extract indexable entries
       const entries = extractEntries(data, file);

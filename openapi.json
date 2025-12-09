@@ -3,7 +3,7 @@
   "info": {
     "title": "Mendix Expert API",
     "description": "A self-learning knowledge base for Mendix development. Provides expert-level answers about SDK patterns, best practices, troubleshooting, and project analysis.",
-    "version": "2.7.0"
+    "version": "2.9.2"
   },
   "servers": [
     {
@@ -404,6 +404,45 @@
           },
           "500": {
             "description": "Analysis error"
+          }
+        }
+      }
+    },
+    "/beast-mode": {
+      "get": {
+        "operationId": "getBeastMode",
+        "summary": "Get Beast Mode Research Protocol",
+        "description": "Returns the Beast Mode research protocol - an exhaustive, 5-tier research methodology for finding answers to any Mendix question. Use this when you need thorough research or want to know what Beast Mode means.",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["prompt", "instructions", "brief"],
+              "default": "prompt"
+            },
+            "description": "Output format: 'prompt' = full copy-paste protocol, 'instructions' = explanation of what it is, 'brief' = quick summary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Beast Mode protocol",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string", "description": "Beast Mode" },
+                    "description": { "type": "string" },
+                    "format": { "type": "string" },
+                    "prompt": { "type": "string", "description": "The actual Beast Mode protocol/prompt text" },
+                    "tip": { "type": "string" },
+                    "stats": { "type": "string" }
+                  }
+                }
+              }
+            }
           }
         }
       }

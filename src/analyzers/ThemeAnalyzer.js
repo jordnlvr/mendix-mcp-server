@@ -332,7 +332,10 @@ class ThemeAnalyzer {
 
     // Get full content by following imports
     const customVarsPath = path.join(projectDir, 'theme', 'web', 'custom-variables.scss');
-    const { content, resolvedPath } = await this.resolveVariablesContent(projectDir, customVarsPath);
+    const { content, resolvedPath } = await this.resolveVariablesContent(
+      projectDir,
+      customVarsPath
+    );
 
     if (!content) {
       colorScheme.score = 50;
@@ -348,7 +351,7 @@ class ThemeAnalyzer {
 
     // Check for brand color definitions (both SCSS variables and CSS custom properties)
     const definedBrandColors = [];
-    
+
     // Check SCSS variables ($brand-*)
     for (const brandColor of this.brandColors) {
       const regex = new RegExp(`\\${brandColor}\\s*:`, 'g');
@@ -356,7 +359,7 @@ class ThemeAnalyzer {
         definedBrandColors.push(brandColor);
       }
     }
-    
+
     // Check CSS custom properties (--brand-*) - modern approach used by SmartHub and others
     for (const cssVar of this.cssCustomPropertyBrandColors) {
       const regex = new RegExp(`${cssVar}\\s*:`, 'g');
@@ -734,7 +737,7 @@ class ThemeAnalyzer {
     });
 
     // Verdict 4: Color Scheme
-    const colorSource = results.colorScheme.variableSource 
+    const colorSource = results.colorScheme.variableSource
       ? ` (from ${results.colorScheme.variableSource})`
       : '';
     verdicts.push({
@@ -742,7 +745,9 @@ class ThemeAnalyzer {
       status: results.colorScheme.brandColorsConfigured ? 'PASS' : 'WARN',
       score: results.colorScheme.score,
       detail: results.colorScheme.brandColorsConfigured
-        ? `Brand colors configured${colorSource}: ${results.colorScheme.definedBrandColors?.slice(0, 5).join(', ') || 'Yes'}${results.colorScheme.definedBrandColors?.length > 5 ? '...' : ''}`
+        ? `Brand colors configured${colorSource}: ${
+            results.colorScheme.definedBrandColors?.slice(0, 5).join(', ') || 'Yes'
+          }${results.colorScheme.definedBrandColors?.length > 5 ? '...' : ''}`
         : 'Brand colors not fully configured - customize your color palette',
     });
 
@@ -947,7 +952,7 @@ class ThemeAnalyzer {
     const importMatch = content.match(/@import\s+['"]([^'"]+)['"]/);
     if (importMatch) {
       const importPath = importMatch[1];
-      
+
       // Resolve the import path relative to the file's directory
       let resolvedPath;
       if (importPath.startsWith('../') || importPath.startsWith('./')) {
@@ -966,7 +971,7 @@ class ThemeAnalyzer {
           '_' + path.basename(resolvedPath) + '.scss'
         );
         const withoutUnderscore = resolvedPath + '.scss';
-        
+
         if (await this.pathExists(withUnderscore)) {
           resolvedPath = withUnderscore;
         } else if (await this.pathExists(withoutUnderscore)) {
@@ -978,9 +983,9 @@ class ThemeAnalyzer {
       const importedContent = await this.safeReadFile(resolvedPath);
       if (importedContent) {
         // Return the imported content (the real variables)
-        return { 
-          content: importedContent, 
-          resolvedPath: path.relative(projectDir, resolvedPath)
+        return {
+          content: importedContent,
+          resolvedPath: path.relative(projectDir, resolvedPath),
         };
       }
     }

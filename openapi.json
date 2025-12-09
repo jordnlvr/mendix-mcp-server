@@ -3,7 +3,7 @@
   "info": {
     "title": "Mendix Expert API",
     "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol. Includes automated weekly harvesting and disk-cached embeddings for fast performance.",
-    "version": "3.1.0"
+    "version": "3.1.1"
   },
   "servers": [
     {
@@ -520,7 +520,14 @@
                     "type": "array",
                     "items": {
                       "type": "string",
-                      "enum": ["releaseNotes", "refGuide", "howTo", "studioProGuide", "apidocs", "mxsdk"]
+                      "enum": [
+                        "releaseNotes",
+                        "refGuide",
+                        "howTo",
+                        "studioProGuide",
+                        "apidocs",
+                        "mxsdk"
+                      ]
                     },
                     "description": "Specific sources to harvest. If omitted, harvests from all sources."
                   },
@@ -597,8 +604,14 @@
                   "properties": {
                     "success": { "type": "boolean" },
                     "message": { "type": "string" },
-                    "gapId": { "type": "string", "description": "Unique identifier for this knowledge gap" },
-                    "totalGaps": { "type": "integer", "description": "Total number of recorded gaps" }
+                    "gapId": {
+                      "type": "string",
+                      "description": "Unique identifier for this knowledge gap"
+                    },
+                    "totalGaps": {
+                      "type": "integer",
+                      "description": "Total number of recorded gaps"
+                    }
                   }
                 }
               }

@@ -31,17 +31,20 @@ npx @jordnlvr/mendix-mcp-server
 ## 🆕 What's New in v3.1.0
 
 ### 🌾 Automated Weekly Harvesting
+
 - **GitHub Action** runs every Monday at 3AM UTC
 - Crawls `releaseNotes`, `studioProGuide`, and `refGuide` from docs.mendix.com
 - Auto-commits fresh knowledge - your AI assistant stays current!
 - Manual trigger available via GitHub Actions UI
 
-### 🚀 Performance Improvements  
+### 🚀 Performance Improvements
+
 - **Disk-cached embeddings** - Cache persists to `data/embedding-cache.json`
 - Server restarts 3-5x faster with warm cache
 - Graceful shutdown saves cache automatically
 
 ### 📊 New REST API Endpoints
+
 - `GET /harvest-status` - Check harvest schedule and last run time
 - `POST /harvest` - Trigger manual harvest (sources: releaseNotes, studioProGuide, etc.)
 - `POST /knowledge-gap` - Report missing knowledge for future harvesting
@@ -83,17 +86,47 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 
 ---
 
-## 🔬 The Research Protocol
+## 🔬 The Research Protocol (Beast Mode)
 
-**This is the magic.** When the knowledge base doesn't have an answer, the AI is instructed to:
+**This is the magic.** When the knowledge base doesn't have an answer, the AI is instructed to search through **5 tiers exhaustively**:
 
-1. **Search official docs** - docs.mendix.com, API references
-2. **Check GitHub** - mendix/sdk-demo repo, public implementations
-3. **Search npm** - packages that depend on mendixmodelsdk
-4. **Check forums** - community.mendix.com, Stack Overflow
-5. **Try archives** - Wayback Machine for old/removed content
-6. **Verify version** - Make sure info matches your Mendix version
-7. **Save findings** - Automatically add to knowledge base
+### 📚 Tier 1: Official Sources
+- docs.mendix.com, API references, Academy, Marketplace
+- Release notes (version-specific changes)
+
+### 💻 Tier 2: Code Repositories  
+- **GitHub mendix org** - sdk-demo (GOLDMINE!), widgets-resources, docs repo
+- **GitHub Code Search** - Find real implementations across ALL repos
+- **npm packages** - Search `mendixmodelsdk`, `mendixplatformsdk`, `@mendix/*`
+
+### 💬 Tier 3: Community Sources
+- Mendix Forum (community.mendix.com)
+- Stack Overflow ([mendix] tag)
+- GitHub Issues & Discussions
+- Reddit (r/mendix, r/lowcode)
+- Dev.to, Medium, LinkedIn articles
+
+### 🗄️ Tier 4: Archives
+- **Wayback Machine** (web.archive.org) - Old/removed docs
+- **archive.today** (archive.ph) - Preserved pages
+- **Google Cache** - Recently cached versions
+
+### 🎬 Tier 5: Video & Multimedia
+- YouTube (Mendix Official, Mendix World talks)
+- LinkedIn Learning courses
+
+### ⚠️ Version Grading
+Results are graded by version compatibility:
+- 🟢 **Exact** - Same Mendix version
+- 🟡 **Close** - Same major version (10.x matches 10.y)  
+- 🟠 **Relevant** - Different major but concept applies
+- ⚪ **Legacy** - Old but useful for understanding
+
+### 🧠 Self-Learning
+After finding ANY information:
+1. ✅ Automatically saves to knowledge base
+2. ✅ Re-indexes keyword search
+3. ✅ **Updates vector embeddings** for semantic search
 
 **The knowledge base grows every time you use it!**
 

@@ -390,7 +390,10 @@ Real developers solving real problems:
 | **Stack Overflow** | stackoverflow.com/questions/tagged/mendix | [mendix] tagged Q&A |
 | **GitHub Issues** | github.com/mendix/*/issues | Bug reports, feature requests, workarounds |
 | **GitHub Discussions** | github.com/mendix/*/discussions | Community discussions |
-| **Reddit** | reddit.com/r/mendix | Informal discussions, tips |
+| **Reddit** | reddit.com/r/mendix, r/lowcode | Informal discussions, tips |
+| **Dev.to** | dev.to/t/mendix | Developer articles and tutorials |
+| **Medium** | medium.com/tag/mendix | In-depth technical articles |
+| **LinkedIn** | Search "Mendix" + topic | Expert insights, MVPs |
 
 ---
 
@@ -401,8 +404,9 @@ Old docs, removed content, cached pages - the archaeology zone:
 | Source | URL | Why It's Useful |
 |--------|-----|-----------------|
 | **Wayback Machine** | web.archive.org | Old docs that were removed/changed |
-| **Archive.ph** | archive.ph | Preserved web pages |
+| **Archive.today** | archive.ph / archive.is | Preserved web pages |
 | **Google Cache** | cache:URL | Recently cached versions |
+| **Bing Cache** | Use Bing search → Cached | Alternative cache |
 | **Archive.org Book Search** | archive.org | Old Mendix books, PDFs |
 
 **How to use Wayback Machine:**

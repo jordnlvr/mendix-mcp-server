@@ -9,8 +9,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 
-- Automated vector reindexing on knowledge updates
 - Design Properties Gap Analysis - suggest where design properties would benefit widgets
+
+---
+
+## [3.1.1] - 2025-12-09
+
+### Added
+
+- **📝 Mandatory Documentation Update Rule**
+  - Explicit rule in copilot-instructions.md requiring ALL docs updated on ANY change
+  - Checklist: README, CHANGELOG, AI-SESSION-CONTEXT, openapi.json, docs/*
+  - Also added to AI-SESSION-CONTEXT.md for persistence
+
+### Changed
+
+- **🔬 Expanded Beast Mode Research Sources**
+  - Community: Added Dev.to, Medium, LinkedIn to Tier 3
+  - Archives: Added archive.today aliases (archive.is), Bing Cache to Tier 4
+  - Clarified Reddit includes r/lowcode subreddit
+  
+- **📖 README Research Protocol Section Overhauled**
+  - Now shows full 5-tier structure with detailed sources
+  - Added version grading explanation (Exact/Close/Relevant/Legacy)
+  - Clarified that vector embeddings ARE updated on knowledge add
+
+### Clarified
+
+- Auto-reindex vectors ALREADY works (verified code at lines 869-879)
+- Vector embeddings update automatically when `add_to_knowledge_base` is called
+- README now accurately reflects Beast Mode's full capabilities
 
 ---
 
@@ -19,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **🌾 Automated Weekly Harvesting (GitHub Action)**
+
   - New `.github/workflows/weekly-harvest.yml` workflow
   - Runs every Monday at 3AM UTC via cron
   - Manual dispatch with source selection and dry-run option

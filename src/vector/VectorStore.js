@@ -15,7 +15,7 @@
 
 import { Pinecone } from '@pinecone-database/pinecone';
 import { createHash } from 'crypto';
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import Logger from '../utils/logger.js';
@@ -58,7 +58,7 @@ function getBuiltinPineconeKey() {
 /**
  * LRU Cache for query embeddings - avoids re-embedding repeated queries
  * Huge performance boost for common searches!
- * 
+ *
  * NEW in v3.1.0: Disk persistence for faster server restarts!
  * Cache is saved to data/embedding-cache.json and loaded on startup.
  */
@@ -69,7 +69,7 @@ class EmbeddingCache {
     this.hits = 0;
     this.misses = 0;
     this.diskHits = 0;
-    
+
     // Determine persistence path
     if (persistPath) {
       this.persistPath = persistPath;
@@ -78,7 +78,7 @@ class EmbeddingCache {
       const projectRoot = join(__dirname, '..', '..');
       this.persistPath = join(projectRoot, 'data', 'embedding-cache.json');
     }
-    
+
     // Load from disk on startup
     this.loadFromDisk();
   }
@@ -114,10 +114,10 @@ class EmbeddingCache {
       if (!existsSync(dataDir)) {
         mkdirSync(dataDir, { recursive: true });
       }
-      
+
       // Convert Map to array of entries (preserves insertion order = LRU order)
       const entries = Array.from(this.cache.entries());
-      
+
       const data = {
         version: '3.1.0',
         savedAt: new Date().toISOString(),
@@ -125,10 +125,10 @@ class EmbeddingCache {
         stats: {
           size: entries.length,
           hits: this.hits,
-          misses: this.misses
-        }
+          misses: this.misses,
+        },
       };
-      
+
       writeFileSync(this.persistPath, JSON.stringify(data, null, 2));
       logger.debug('EmbeddingCache saved to disk', { entries: entries.length });
     } catch (err) {
@@ -156,7 +156,7 @@ class EmbeddingCache {
       this.cache.delete(firstKey);
     }
     this.cache.set(key, value);
-    
+
     // Auto-save every 50 new entries
     if (this.cache.size % 50 === 0) {
       this.saveToDisk();
@@ -190,7 +190,7 @@ class EmbeddingCache {
       logger.debug('Could not clear disk cache', { error: err.message });
     }
   }
-  
+
   /**
    * Graceful shutdown - save cache to disk
    */

@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 9, 2025  
-**Version:** 3.1.0  
+**Version:** 3.1.1  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -80,6 +80,23 @@ mendix-mcp-server/
 ├── ARCHITECTURE.md           # Full system design
 └── package.json              # v3.1.0
 ```
+
+---
+
+## 📝 MANDATORY: Documentation Update Rule
+
+**When making ANY change to this project, you MUST update ALL of these:**
+
+| Document | What to Update |
+|----------|----------------|
+| **README.md** | Features, version, any visible changes |
+| **CHANGELOG.md** | New version section with all changes |
+| **AI-SESSION-CONTEXT.md** | Version, file structure, capabilities |
+| **openapi.json** | Version, any REST API changes |
+| **package.json** | Version number bump |
+| **docs/*.md** | Any affected documentation pages |
+
+**This is non-negotiable.** Every functional change = documentation update.
 
 ---
 

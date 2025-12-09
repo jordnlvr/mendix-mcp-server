@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 9, 2025  
-**Version:** 2.9.2  
+**Version:** 3.0.0  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -40,7 +40,7 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 mendix-mcp-server/
 ├── src/
 │   ├── index.js              # Main MCP server (ESM)
-│   ├── rest-proxy.js         # REST API for ChatGPT (includes /beast-mode)
+│   ├── rest-proxy.js         # REST API for ChatGPT (includes /beast-mode, /dashboard)
 │   ├── core/
 │   │   ├── SearchEngine.js   # TF-IDF + fuzzy + semantic
 │   │   ├── KnowledgeManager.js
@@ -54,7 +54,7 @@ mendix-mcp-server/
 │   └── utils/
 │       ├── MaintenanceScheduler.js
 │       └── Analytics.js
-├── knowledge/                 # JSON knowledge base (~1MB)
+├── knowledge/                 # JSON knowledge base (~700KB)
 │   ├── theme-analysis.json   # v1.4.0 - fonts, design-properties, scaffold
 │   ├── platform-sdk.json     # Verified SDK patterns
 │   ├── best-practices.json
@@ -72,7 +72,7 @@ mendix-mcp-server/
 │       └── weekly-stats.yml
 ├── CHANGELOG.md              # Version history
 ├── ARCHITECTURE.md           # Full system design
-└── package.json              # v2.7.3
+└── package.json              # v3.0.0
 ```
 
 ---
@@ -181,11 +181,11 @@ When asked for deep research or when information isn't in knowledge base:
 
 ### How to Access Beast Mode
 
-| Interface | Command |
-|-----------|---------|
+| Interface                | Command                                                                  |
+| ------------------------ | ------------------------------------------------------------------------ |
 | **MCP (Copilot/Claude)** | Call `beast_mode` tool with format: `prompt`, `instructions`, or `brief` |
-| **REST API (ChatGPT)** | `GET /beast-mode?format=prompt` |
-| **Direct** | Ask "What is Beast Mode?" or "Use Beast Mode" |
+| **REST API (ChatGPT)**   | `GET /beast-mode?format=prompt`                                          |
+| **Direct**               | Ask "What is Beast Mode?" or "Use Beast Mode"                            |
 
 ### Trigger Words
 

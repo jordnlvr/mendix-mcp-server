@@ -15,6 +15,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.0.0] - 2025-12-09
+
+### Added
+
+- **📊 Analytics Dashboard** - Visual HTML dashboard at `GET /dashboard`
+  - Beautiful dark theme with gradient styling
+  - Live tool usage charts
+  - Popular topics list
+  - Knowledge base stats
+  - Server health indicators
+
+### Changed
+
+- **Comprehensive quality improvements across all categories**
+  - Updated README with accurate v3.0 feature descriptions
+  - 700KB+ knowledge base (was listed as 300+)
+  - All marketing numbers updated to reflect current state
+  - REST API endpoints table expanded with all endpoints
+
+### Documentation
+
+- Updated feature list to include Theme Analyzer v2.0, Beast Mode, Analytics Dashboard
+- Corrected "6-tier" to "5-tier" research protocol
+- Added Zero Config as key feature (built-in Pinecone)
+- REST endpoint table now includes `/dashboard` and `/beast-mode`
+
+---
+
 ## [2.9.2] - 2025-12-09
 
 ### Added

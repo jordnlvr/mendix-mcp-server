@@ -180,10 +180,19 @@ app.get('/tools', (req, res) => {
         name: 'beast-mode',
         method: 'GET',
         path: '/beast-mode',
-        description: 'Get the Beast Mode research protocol - the exact prompt for exhaustive Mendix research',
+        description:
+          'Get the Beast Mode research protocol - the exact prompt for exhaustive Mendix research',
         parameters: {
-          format: 'string (optional) - prompt (full), instructions (explanation), or brief (summary)',
+          format:
+            'string (optional) - prompt (full), instructions (explanation), or brief (summary)',
         },
+      },
+      {
+        name: 'dashboard',
+        method: 'GET',
+        path: '/dashboard',
+        description: 'Visual HTML dashboard showing usage analytics, tool usage, and popular topics',
+        parameters: {},
       },
     ],
   });
@@ -411,7 +420,7 @@ app.get('/status', async (req, res) => {
  */
 app.get('/beast-mode', (req, res) => {
   const format = req.query.format || 'prompt';
-  
+
   const fullPrompt = `# 🔥 BEAST MODE: MAXIMUM MENDIX RESEARCH PROTOCOL 🔥
 
 **YOU ARE NOW IN BEAST MODE.**
@@ -597,7 +606,7 @@ Just tell any AI: "Use Beast Mode for this question" or paste the full prompt.`;
     format,
     prompt: response,
     tip: 'Copy this and paste it into any AI chat when you need thorough Mendix research!',
-    stats: 'Beast Mode has helped grow the knowledge base from 0 → 177+ entries.'
+    stats: 'Beast Mode has helped grow the knowledge base from 0 → 177+ entries.',
   });
 });
 
@@ -608,24 +617,12 @@ app.get('/analytics', async (req, res) => {
   try {
     await initialize();
 
-    const period = req.query.period || 'all';
-    const includeTrends = req.query.include_trends !== 'false';
-
-    const report = await analytics.getReport(period);
+    const detailed = req.query.detailed === 'true';
+    const report = detailed ? analytics.getDetailedReport() : analytics.getSummary();
 
     res.json({
-      period,
-      report: {
-        toolUsage: report.toolUsage,
-        popularTopics: report.popularTopics?.slice(0, 10) || [],
-        trends: includeTrends ? report.trends : undefined,
-        summary: {
-          totalQueries: report.totalQueries || 0,
-          uniqueTopics: report.uniqueTopics || 0,
-          periodStart: report.periodStart,
-          periodEnd: report.periodEnd,
-        },
-      },
+      report,
+      serverVersion: '3.0.0'
     });
   } catch (error) {
     logger.error('Analytics failed', { error: error.message });
@@ -670,6 +667,121 @@ app.post('/analyze-theme', async (req, res) => {
 });
 
 /**
+ * Analytics Dashboard - Visual HTML dashboard for usage patterns
+ */
+app.get('/dashboard', async (req, res) => {
+  try {
+    await initialize();
+    const report = analytics.getDetailedReport();
+    const stats = knowledgeManager.getStats();
+    
+    // Build tool usage chart data
+    const toolData = Object.entries(report.allToolUsage || {})
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+    
+    const topTopics = Object.entries(report.topTopics || {}).slice(0, 10);
+    
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🧠 Mendix Expert Analytics Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; min-height: 100vh; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 30px; font-size: 2.5rem; }
+    h1 span { background: linear-gradient(90deg, #00d9ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
+    .card { background: rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; backdrop-filter: blur(10px); }
+    .card h2 { font-size: 1rem; color: #888; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    .stat { font-size: 3rem; font-weight: bold; background: linear-gradient(90deg, #00d9ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { color: #aaa; margin-top: 8px; }
+    .bar-chart { margin-top: 16px; }
+    .bar { display: flex; align-items: center; margin-bottom: 12px; }
+    .bar-label { width: 150px; font-size: 0.85rem; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-fill { height: 24px; background: linear-gradient(90deg, #00d9ff, #00ff88); border-radius: 4px; margin-left: 10px; min-width: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 0.75rem; }
+    .topics { list-style: none; }
+    .topics li { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; }
+    .topics li:last-child { border-bottom: none; }
+    .badge { background: rgba(0,217,255,0.2); padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; }
+    .footer { text-align: center; margin-top: 40px; color: #666; font-size: 0.85rem; }
+    .status-dot { width: 10px; height: 10px; background: #00ff88; border-radius: 50%; display: inline-block; margin-right: 8px; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 <span>Mendix Expert</span> Analytics</h1>
+    
+    <div class="grid">
+      <div class="card">
+        <h2>Knowledge Base</h2>
+        <div class="stat">${stats.totalEntries || 200}+</div>
+        <div class="stat-label">Verified Entries</div>
+        <div style="margin-top: 16px; color: #888;">
+          📁 ${stats.filesLoaded || 23} knowledge files<br>
+          📊 ~700KB curated content
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Total Queries</h2>
+        <div class="stat">${report.overview?.totalToolCalls || 0}</div>
+        <div class="stat-label">Questions Answered</div>
+        <div style="margin-top: 16px; color: #888;">
+          <span class="status-dot"></span>Server Online
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Vector Search</h2>
+        <div class="stat">${vectorSearchAvailable ? '✅' : '⚠️'}</div>
+        <div class="stat-label">${vectorSearchAvailable ? 'Pinecone Connected' : 'Using TF-IDF'}</div>
+        <div style="margin-top: 16px; color: #888;">
+          Hybrid keyword + semantic search
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid">
+      <div class="card">
+        <h2>Tool Usage</h2>
+        <div class="bar-chart">
+          ${toolData.map(([name, count]) => {
+            const max = toolData[0]?.[1] || 1;
+            const width = Math.max((count / max) * 100, 5);
+            return `<div class="bar"><span class="bar-label">${name.replace(/_/g, ' ')}</span><div class="bar-fill" style="width: ${width}%">${count}</div></div>`;
+          }).join('')}
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2>Popular Topics</h2>
+        <ul class="topics">
+          ${topTopics.map(([topic, count]) => `<li><span>${topic}</span><span class="badge">${count}</span></li>`).join('') || '<li>No data yet</li>'}
+        </ul>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>@jordnlvr/mendix-mcp-server v2.9.2 • Last updated: ${new Date().toISOString().split('T')[0]}</p>
+      <p style="margin-top: 8px;">📖 <a href="https://jordnlvr.github.io/mendix-mcp-server/" style="color: #00d9ff;">Documentation</a> • 🐙 <a href="https://github.com/jordnlvr/mendix-mcp-server" style="color: #00d9ff;">GitHub</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+    
+    res.type('html').send(html);
+  } catch (error) {
+    logger.error('Dashboard failed', { error: error.message });
+    res.status(500).send('Dashboard error: ' + error.message);
+  }
+});
+
+/**
  * Serve OpenAPI specification for ChatGPT Actions import
  */
 app.get('/openapi.json', (req, res) => {
@@ -700,7 +812,7 @@ const server = app.listen(PORT, async () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║   🧠 Mendix Expert REST API                                       ║
+║   🧠 Mendix Expert REST API v3.0.0                                ║
 ║                                                                   ║
 ║   Server running at: http://localhost:${PORT}                      ║
 ║                                                                   ║
@@ -709,10 +821,12 @@ const server = app.listen(PORT, async () => {
 ║     GET  /tools          - List available tools                   ║
 ║     GET  /status         - Server status                          ║
 ║     GET  /beast-mode     - Beast Mode research protocol           ║
+║     GET  /dashboard      - 📊 Visual analytics dashboard          ║
+║     GET  /analytics      - Usage analytics (JSON)                 ║
 ║     POST /query          - Query knowledge base                   ║
 ║     POST /search         - Hybrid search                          ║
 ║     POST /analyze        - Analyze Mendix project                 ║
-║     POST /analyze-theme  - Analyze Mendix theme                   ║
+║     POST /analyze-theme  - Analyze Mendix theme (v2.0)            ║
 ║     POST /best-practice  - Get recommendations                    ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝

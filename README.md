@@ -30,14 +30,15 @@ npx @jordnlvr/mendix-mcp-server
 
 ## 🤔 What Is This?
 
-This is a **Model Context Protocol (MCP) server** that supercharges AI assistants (like GitHub Copilot, Claude) with:
+This is a **Model Context Protocol (MCP) server** that supercharges AI assistants (like GitHub Copilot, Claude, ChatGPT) with:
 
-1. **Deep Mendix Knowledge** - 300+ curated entries about SDK patterns, best practices, troubleshooting
-2. **Semantic Vector Search** - Pinecone + Azure OpenAI embeddings for meaning-based search
+1. **Deep Mendix Knowledge** - 700KB+ of curated entries about SDK patterns, best practices, troubleshooting
+2. **Semantic Vector Search** - Pinecone + Azure OpenAI/OpenAI embeddings for meaning-based search
 3. **Self-Learning** - Every discovery gets saved to the knowledge base automatically
-4. **Auto-Harvesting** - Weekly crawls of docs.mendix.com for fresh content
-5. **Project Analysis** - Can analyze your actual `.mpr` files to understand your project structure
-6. **Beast Mode** - Exhaustive 6-tier research protocol when answers aren't in the knowledge base
+4. **Auto-Harvesting** - Scheduled crawls of docs.mendix.com for fresh content
+5. **Project & Theme Analysis** - Analyze `.mpr` files AND custom themes with grades (A+ to F)
+6. **Beast Mode** - Exhaustive 5-tier research protocol when answers aren't in the knowledge base
+7. **Analytics Dashboard** - Visual dashboard showing usage patterns and popular topics
 
 **Think of it as giving your AI assistant a Mendix expert's brain that keeps getting smarter.**
 
@@ -45,17 +46,18 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 
 ## ✨ Key Features
 
-| Feature                   | Description                                                                  |
-| ------------------------- | ---------------------------------------------------------------------------- |
-| 🔍 **Intelligent Search** | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow"   |
-| 🔮 **Vector Search**      | Semantic search using Pinecone - find concepts, not just keywords (NEW!)     |
-| 🎯 **Hybrid Search**      | Combined keyword + semantic search for best of both worlds (NEW!)            |
-| 🧠 **Self-Learning**      | Automatically grows smarter as you add knowledge                             |
-| 🔬 **Auto-Research**      | Embedded research protocol guides AI to find answers in docs, GitHub, forums |
-| 📊 **Analytics**          | 92% hit rate, tracks missed queries to identify knowledge gaps               |
-| 🔧 **Auto-Maintenance**   | Scheduled validation, staleness detection, cache cleanup                     |
-| 📁 **Project Analysis**   | Analyze any `.mpr` file - discover modules, entities, microflows             |
-| 🔄 **Sync Reminder**      | Reminds you to sync with GitHub after 7 days                                 |
+| Feature                    | Description                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| 🔍 **Intelligent Search**  | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow"   |
+| 🔮 **Vector Search**       | Semantic search using Pinecone - find concepts, not just keywords            |
+| 🎯 **Hybrid Search**       | Combined keyword + semantic search for best of both worlds                   |
+| 🧠 **Self-Learning**       | Automatically grows smarter as you add knowledge                             |
+| 🔬 **Beast Mode**          | 5-tier research protocol - docs, GitHub, npm, forums, archives               |
+| 📊 **Analytics Dashboard** | Visual HTML dashboard at `/dashboard` endpoint                               |
+| 🎨 **Theme Analyzer v2.0** | Web-focused, follows @imports, CSS custom properties, letter grades          |
+| 🔧 **Auto-Maintenance**    | Scheduled harvesting, validation, staleness detection, cache cleanup         |
+| 📁 **Project Analysis**    | Analyze any `.mpr` file - discover modules, entities, microflows             |
+| 🔄 **Zero Config**         | Built-in Pinecone key - works out of the box, no API keys required!          |
 
 ---
 
@@ -146,17 +148,19 @@ Server runs at `http://localhost:5050`
 
 ### Available Endpoints
 
-| Endpoint         | Method | Description                        |
-| ---------------- | ------ | ---------------------------------- |
-| `/health`        | GET    | Health check and status            |
-| `/status`        | GET    | Server status with example queries |
-| `/tools`         | GET    | List all available endpoints       |
-| `/query`         | POST   | Query knowledge base               |
-| `/search`        | POST   | Hybrid search (keyword + semantic) |
-| `/best-practice` | POST   | Get best practice recommendations  |
-| `/analyze`       | POST   | Analyze Mendix project             |
-| `/analytics`     | GET    | Usage analytics and statistics     |
-| `/analyze-theme` | POST   | Deep theme analysis with grading   |
+| Endpoint         | Method | Description                             |
+| ---------------- | ------ | --------------------------------------- |
+| `/health`        | GET    | Health check and status                 |
+| `/status`        | GET    | Server status with example queries      |
+| `/tools`         | GET    | List all available endpoints            |
+| `/dashboard`     | GET    | 📊 Visual analytics dashboard (HTML)    |
+| `/beast-mode`    | GET    | 🔥 Get Beast Mode research protocol     |
+| `/query`         | POST   | Query knowledge base                    |
+| `/search`        | POST   | Hybrid search (keyword + semantic)      |
+| `/best-practice` | POST   | Get best practice recommendations       |
+| `/analyze`       | POST   | Analyze Mendix project                  |
+| `/analyze-theme` | POST   | 🎨 Deep theme analysis with grading     |
+| `/analytics`     | GET    | Usage analytics and statistics (JSON)   |
 
 ### Example Usage
 

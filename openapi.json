@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Mendix Expert API",
-    "description": "A self-learning knowledge base for Mendix development. Provides expert-level answers about SDK patterns, best practices, troubleshooting, and project analysis.",
-    "version": "2.9.2"
+    "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol.",
+    "version": "3.0.0"
   },
   "servers": [
     {
@@ -436,10 +436,33 @@
                     "name": { "type": "string", "description": "Beast Mode" },
                     "description": { "type": "string" },
                     "format": { "type": "string" },
-                    "prompt": { "type": "string", "description": "The actual Beast Mode protocol/prompt text" },
+                    "prompt": {
+                      "type": "string",
+                      "description": "The actual Beast Mode protocol/prompt text"
+                    },
                     "tip": { "type": "string" },
                     "stats": { "type": "string" }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "operationId": "getDashboard",
+        "summary": "Analytics Dashboard",
+        "description": "Returns a beautiful HTML dashboard showing usage analytics, tool usage charts, popular topics, and server health. Open in browser for visual display.",
+        "responses": {
+          "200": {
+            "description": "HTML analytics dashboard",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "Full HTML page with embedded CSS and usage visualizations"
                 }
               }
             }

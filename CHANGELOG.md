@@ -19,11 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Built-in Pinecone Connection** - Server now works out of the box with shared knowledge base!
+
   - No Pinecone API key required for users
   - Built-in obfuscated key connects to shared Mendix knowledge index
   - Users can still override with `PINECONE_API_KEY` for custom index
 
 - **OpenAI + Azure OpenAI Support**:
+
   - Both embedding providers fully supported
   - Priority: Azure OpenAI → OpenAI → Local TF-IDF
   - `OPENAI_API_KEY` for standard OpenAI users

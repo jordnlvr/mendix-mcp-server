@@ -350,7 +350,9 @@ export default class VectorStore {
       this.embedder = this.localEmbedder;
       this.dimension = 384;
       this.embeddingMode = 'local';
-      logger.info('Using local TF-IDF embeddings (no API key found - set OPENAI_API_KEY or AZURE_OPENAI_API_KEY for better results)');
+      logger.info(
+        'Using local TF-IDF embeddings (no API key found - set OPENAI_API_KEY or AZURE_OPENAI_API_KEY for better results)'
+      );
     }
 
     this.pinecone = null;
@@ -373,7 +375,7 @@ export default class VectorStore {
 
     // Try user-provided key first, then fall back to built-in
     let apiKey = process.env.PINECONE_API_KEY;
-    
+
     if (!apiKey) {
       apiKey = getBuiltinPineconeKey();
       if (apiKey) {
@@ -383,7 +385,9 @@ export default class VectorStore {
     }
 
     if (!apiKey) {
-      logger.warn('No Pinecone API key available, vector search disabled. Local TF-IDF search will be used.');
+      logger.warn(
+        'No Pinecone API key available, vector search disabled. Local TF-IDF search will be used.'
+      );
       return false;
     }
 

@@ -247,14 +247,14 @@ Without embedding keys, server uses local TF-IDF search (still good!).
 
 ### Version History (Recent)
 
-| Version | Date  | Highlights                                                |
-| ------- | ----- | --------------------------------------------------------- |
+| Version | Date  | Highlights                                                      |
+| ------- | ----- | --------------------------------------------------------------- |
 | 2.8.0   | Dec 8 | Built-in Pinecone, OpenAI+Azure support, ThemeAnalyzer verdicts |
-| 2.7.3   | Dec 8 | Font config, design system workflow enhancements          |
-| 2.7.2   | Dec 8 | Comprehensive design-properties.json documentation        |
-| 2.7.1   | Dec 8 | Scaffold pattern for custom themes                        |
-| 2.7.0   | Dec 8 | ThemeAnalyzer (50KB deep SCSS analysis)                   |
-| 2.6.0   | Dec 8 | Usage analytics, Mendix 10/11 knowledge                   |
+| 2.7.3   | Dec 8 | Font config, design system workflow enhancements                |
+| 2.7.2   | Dec 8 | Comprehensive design-properties.json documentation              |
+| 2.7.1   | Dec 8 | Scaffold pattern for custom themes                              |
+| 2.7.0   | Dec 8 | ThemeAnalyzer (50KB deep SCSS analysis)                         |
+| 2.6.0   | Dec 8 | Usage analytics, Mendix 10/11 knowledge                         |
 
 ### What's Working Well
 

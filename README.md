@@ -716,7 +716,7 @@ The MCP server is designed to be **self-maintaining**:
 | Search results seem wrong   | Run `reindex_vectors`                                                 |
 | Missing new Mendix features | Run `harvest` to fetch latest docs                                    |
 | Slow embeddings             | Check if Azure OpenAI key is configured (faster than standard OpenAI) |
-| No vector results           | Verify `PINECONE_API_KEY` is set in `.env`                            |
+| No vector results           | Built-in Pinecone works automatically; check network connectivity     |
 
 - ✅ Web suggestions for missed queries
 - ✅ Staleness detection for old entries

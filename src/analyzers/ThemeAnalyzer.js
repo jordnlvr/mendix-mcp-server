@@ -184,6 +184,17 @@ class ThemeAnalyzer {
     // Determine grade
     const grade = this.calculateGrade(scores.overall);
 
+    // Generate explicit PASS/FAIL verdicts for AI interpretation
+    const verdicts = this.generateVerdicts({
+      structure: structureAnalysis,
+      web: webAnalysis,
+      native: nativeAnalysis,
+      modules: moduleAnalysis,
+      fonts: fontAnalysis,
+      projectInfo,
+      scores,
+    });
+
     return {
       projectPath: projectDir,
       projectInfo,
@@ -195,6 +206,10 @@ class ThemeAnalyzer {
         grade,
         breakdown: scores.breakdown,
       },
+
+      // EXPLICIT VERDICTS - Clear PASS/FAIL for AI interpretation
+      // AI assistants should use these verdicts as authoritative assessments
+      verdicts,
 
       analysis: {
         structure: structureAnalysis,
@@ -210,7 +225,7 @@ class ThemeAnalyzer {
         suggestions: recommendations.filter((r) => r.severity === 'suggestion'),
       },
 
-      summary: this.generateSummary(scores, recommendations, grade),
+      summary: this.generateSummary(scores, recommendations, grade, verdicts),
     };
   }
 
@@ -1522,7 +1537,9 @@ class ThemeAnalyzer {
         status: scaffoldResult.mirrorsAtlasStructure ? 'PASS' : 'WARN',
         detail: scaffoldResult.mirrorsAtlasStructure
           ? 'Custom theme mirrors Atlas_Core folder structure for easy overrides'
-          : `Theme does not fully mirror Atlas_Core. Missing: ${scaffoldResult.recommendedFolders?.join(', ') || 'unknown'}`,
+          : `Theme does not fully mirror Atlas_Core. Missing: ${
+              scaffoldResult.recommendedFolders?.join(', ') || 'unknown'
+            }`,
       });
     }
 
@@ -1580,7 +1597,9 @@ class ThemeAnalyzer {
     verdicts.push({
       check: 'Overall Theme Health',
       status: overallStatus,
-      detail: `Overall score: ${overallScore}/100 (Grade: ${scores.grade || this.calculateGrade(overallScore)})`,
+      detail: `Overall score: ${overallScore}/100 (Grade: ${
+        scores.grade || this.calculateGrade(overallScore)
+      })`,
     });
 
     return verdicts;

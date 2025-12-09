@@ -28,26 +28,53 @@
     {
       "concept": "App (Project)",
       "description": "Mendix application/project in the platform",
-      "properties": ["name", "appId", "projectId", "repositoryType", "teamServer"],
-      "operations": ["Create", "Delete", "List", "Get details"]
+      "properties": [
+        "name",
+        "appId",
+        "projectId",
+        "repositoryType",
+        "teamServer"
+      ],
+      "operations": [
+        "Create",
+        "Delete",
+        "List",
+        "Get details"
+      ]
     },
     {
       "concept": "Team Server",
       "description": "SVN-based version control for Mendix projects",
-      "features": ["Branches", "Revisions", "Commits", "Merge operations"],
+      "features": [
+        "Branches",
+        "Revisions",
+        "Commits",
+        "Merge operations"
+      ],
       "integration": "Integrated with Studio Pro, accessible via Platform SDK"
     },
     {
       "concept": "Working Copy",
       "description": "Temporary cloud-hosted copy of app for SDK manipulation",
-      "types": ["Online working copy (for Model SDK)", "Offline working copy (.mpk download)"],
+      "types": [
+        "Online working copy (for Model SDK)",
+        "Offline working copy (.mpk download)"
+      ],
       "limitations": "One online working copy per app at a time"
     },
     {
       "concept": "Deployment",
       "description": "Deploy app to Mendix Cloud or Private Cloud environments",
-      "environments": ["Development", "Acceptance", "Production"],
-      "methods": ["Direct deploy", "Deploy via Build API", "CI/CD pipeline integration"]
+      "environments": [
+        "Development",
+        "Acceptance",
+        "Production"
+      ],
+      "methods": [
+        "Direct deploy",
+        "Deploy via Build API",
+        "CI/CD pipeline integration"
+      ]
     }
   ],
   "key_apis": {
@@ -58,7 +85,11 @@
           "method": "Personal Access Token (PAT)",
           "code": "const client = new MendixPlatformClient({ mendixToken: process.env.MENDIX_TOKEN });",
           "generation": "Developer Portal → Settings → Personal Access Tokens → Generate",
-          "scopes": ["Read projects", "Write projects", "Deploy apps"],
+          "scopes": [
+            "Read projects",
+            "Write projects",
+            "Deploy apps"
+          ],
           "best_practice": "Store in environment variables, never hardcode"
         }
       ],
@@ -548,7 +579,11 @@
           "step3": "Add roles to microflow.allowedModuleRoles",
           "code": "// Get module security\\nconst moduleSecurity = module.moduleSecurity;\\nconst adminRole = moduleSecurity.moduleRoles.find(r => r.name === 'Administrator');\\n// Add to microflow\\nmicroflow.allowedModuleRoles.push(adminRole);"
         },
-        "common_roles": ["Administrator", "User", "Anonymous"],
+        "common_roles": [
+          "Administrator",
+          "User",
+          "Anonymous"
+        ],
         "best_practice": "Add at least Administrator role to all microflows, add other roles based on who should access",
         "verified_in": "SmartHub SDK scripts - December 2025",
         "source": "Platform SDK documentation workflow - Kelly Seale",
@@ -560,14 +595,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.67
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-09T13:05:07.920Z"
         }
       }
     ],
@@ -809,14 +845,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.95
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-09T13:05:07.918Z"
         }
       },
       {
@@ -842,7 +879,9 @@
           "version": 1,
           "verified": true,
           "mendix_version": "11.5.0",
-          "quality_score": 1.0
+          "quality_score": 1,
+          "usage_count": 1,
+          "last_used_at": "2025-12-09T13:05:07.920Z"
         }
       }
     ]

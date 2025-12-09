@@ -45,7 +45,8 @@ class ThemeAnalyzer {
       'theme/web/exclusion-variables.scss': {
         required: false,
         purpose: 'Disable default Atlas styling for specific widgets',
-        docRef: 'https://docs.mendix.com/howto/front-end/customize-styling-new/#disable-default-styling',
+        docRef:
+          'https://docs.mendix.com/howto/front-end/customize-styling-new/#disable-default-styling',
       },
       'theme/web/settings.json': {
         required: true,
@@ -81,7 +82,7 @@ class ThemeAnalyzer {
       lineComment: /\/\/.*/g,
     };
 
-    // Brand color variable names from Atlas
+    // Brand color variable names from Atlas (both SCSS and CSS custom properties)
     this.brandColors = [
       '$brand-primary',
       '$brand-secondary',
@@ -90,6 +91,17 @@ class ThemeAnalyzer {
       '$brand-danger',
       '$brand-info',
       '$brand-default',
+    ];
+
+    // CSS custom property equivalents (modern approach)
+    this.cssCustomPropertyBrandColors = [
+      '--brand-primary',
+      '--brand-secondary',
+      '--brand-success',
+      '--brand-warning',
+      '--brand-danger',
+      '--brand-info',
+      '--brand-default',
     ];
   }
 
@@ -315,10 +327,12 @@ class ThemeAnalyzer {
       colorConsistency: 'unknown',
       potentialIssues: [],
       score: 100,
+      variableSource: null,
     };
 
+    // Get full content by following imports
     const customVarsPath = path.join(projectDir, 'theme', 'web', 'custom-variables.scss');
-    const content = await this.safeReadFile(customVarsPath);
+    const { content, resolvedPath } = await this.resolveVariablesContent(projectDir, customVarsPath);
 
     if (!content) {
       colorScheme.score = 50;
@@ -330,12 +344,24 @@ class ThemeAnalyzer {
       return colorScheme;
     }
 
-    // Check for brand color definitions
+    colorScheme.variableSource = resolvedPath;
+
+    // Check for brand color definitions (both SCSS variables and CSS custom properties)
     const definedBrandColors = [];
+    
+    // Check SCSS variables ($brand-*)
     for (const brandColor of this.brandColors) {
       const regex = new RegExp(`\\${brandColor}\\s*:`, 'g');
       if (regex.test(content)) {
         definedBrandColors.push(brandColor);
+      }
+    }
+    
+    // Check CSS custom properties (--brand-*) - modern approach used by SmartHub and others
+    for (const cssVar of this.cssCustomPropertyBrandColors) {
+      const regex = new RegExp(`${cssVar}\\s*:`, 'g');
+      if (regex.test(content)) {
+        definedBrandColors.push(cssVar);
       }
     }
 
@@ -499,7 +525,9 @@ class ThemeAnalyzer {
       // 100KB
       performance.issues.push({
         severity: 'suggestion',
-        message: `Theme SCSS is ${Math.round(performance.totalScssSize / 1024)}KB - consider optimization`,
+        message: `Theme SCSS is ${Math.round(
+          performance.totalScssSize / 1024
+        )}KB - consider optimization`,
         fix: 'Review for unused styles, consider code splitting',
       });
       performance.score -= 10;
@@ -664,15 +692,18 @@ class ThemeAnalyzer {
     // Verdict 1: Theme Structure
     verdicts.push({
       check: 'Theme Structure',
-      status: results.structure.score >= 75 ? 'PASS' : results.structure.score >= 50 ? 'WARN' : 'FAIL',
+      status:
+        results.structure.score >= 75 ? 'PASS' : results.structure.score >= 50 ? 'WARN' : 'FAIL',
       score: results.structure.score,
       detail:
         results.structure.score >= 75
           ? 'Theme folder structure follows Mendix best practices'
-          : `Missing required files: ${Object.entries(results.structure.files)
-              .filter(([, f]) => f.required && !f.exists)
-              .map(([p]) => path.basename(p))
-              .join(', ') || 'Check structure'}`,
+          : `Missing required files: ${
+              Object.entries(results.structure.files)
+                .filter(([, f]) => f.required && !f.exists)
+                .map(([p]) => path.basename(p))
+                .join(', ') || 'Check structure'
+            }`,
     });
 
     // Verdict 2: SCSS Variable Usage
@@ -703,12 +734,15 @@ class ThemeAnalyzer {
     });
 
     // Verdict 4: Color Scheme
+    const colorSource = results.colorScheme.variableSource 
+      ? ` (from ${results.colorScheme.variableSource})`
+      : '';
     verdicts.push({
       check: 'Color Scheme Configuration',
       status: results.colorScheme.brandColorsConfigured ? 'PASS' : 'WARN',
       score: results.colorScheme.score,
       detail: results.colorScheme.brandColorsConfigured
-        ? `Brand colors configured: ${results.colorScheme.definedBrandColors?.join(', ') || 'Yes'}`
+        ? `Brand colors configured${colorSource}: ${results.colorScheme.definedBrandColors?.slice(0, 5).join(', ') || 'Yes'}${results.colorScheme.definedBrandColors?.length > 5 ? '...' : ''}`
         : 'Brand colors not fully configured - customize your color palette',
     });
 
@@ -719,8 +753,8 @@ class ThemeAnalyzer {
         results.performance.deepNesting.count === 0
           ? 'PASS'
           : results.performance.deepNesting.count < 5
-            ? 'WARN'
-            : 'FAIL',
+          ? 'WARN'
+          : 'FAIL',
       score: results.performance.score,
       detail:
         results.performance.deepNesting.count === 0
@@ -732,7 +766,8 @@ class ThemeAnalyzer {
     verdicts.push({
       check: 'Code Maintainability',
       status:
-        results.maintainability.hasComments && results.maintainability.fileOrganization !== 'minimal'
+        results.maintainability.hasComments &&
+        results.maintainability.fileOrganization !== 'minimal'
           ? 'PASS'
           : 'WARN',
       score: results.maintainability.score,
@@ -769,7 +804,12 @@ class ThemeAnalyzer {
     // Convert to recommendations
     for (const issue of allIssues) {
       recommendations.push({
-        priority: issue.severity === 'critical' ? 'HIGH' : issue.severity === 'important' ? 'MEDIUM' : 'LOW',
+        priority:
+          issue.severity === 'critical'
+            ? 'HIGH'
+            : issue.severity === 'important'
+            ? 'MEDIUM'
+            : 'LOW',
         issue: issue.message,
         recommendation: issue.fix || 'Review and address this issue',
         docRef: issue.docRef,
@@ -888,6 +928,65 @@ class ThemeAnalyzer {
       // Ignore errors
     }
     return files;
+  }
+
+  /**
+   * Resolve variables content by following @import statements
+   * This handles the common pattern where custom-variables.scss imports from a theme module
+   * @param {string} projectDir - Project root directory
+   * @param {string} startFile - Initial file to read
+   * @returns {object} { content: string, resolvedPath: string }
+   */
+  async resolveVariablesContent(projectDir, startFile) {
+    const content = await this.safeReadFile(startFile);
+    if (!content) {
+      return { content: null, resolvedPath: null };
+    }
+
+    // Check for @import statements that point to variable files
+    const importMatch = content.match(/@import\s+['"]([^'"]+)['"]/);
+    if (importMatch) {
+      const importPath = importMatch[1];
+      
+      // Resolve the import path relative to the file's directory
+      let resolvedPath;
+      if (importPath.startsWith('../') || importPath.startsWith('./')) {
+        // Relative import
+        resolvedPath = path.resolve(path.dirname(startFile), importPath);
+      } else {
+        // Could be a module import, try themesource
+        resolvedPath = path.join(projectDir, 'themesource', importPath);
+      }
+
+      // Add .scss extension if not present
+      if (!resolvedPath.endsWith('.scss')) {
+        // Try with underscore prefix (SCSS partial convention)
+        const withUnderscore = path.join(
+          path.dirname(resolvedPath),
+          '_' + path.basename(resolvedPath) + '.scss'
+        );
+        const withoutUnderscore = resolvedPath + '.scss';
+        
+        if (await this.pathExists(withUnderscore)) {
+          resolvedPath = withUnderscore;
+        } else if (await this.pathExists(withoutUnderscore)) {
+          resolvedPath = withoutUnderscore;
+        }
+      }
+
+      // Try to read the imported file
+      const importedContent = await this.safeReadFile(resolvedPath);
+      if (importedContent) {
+        // Return the imported content (the real variables)
+        return { 
+          content: importedContent, 
+          resolvedPath: path.relative(projectDir, resolvedPath)
+        };
+      }
+    }
+
+    // No import found or couldn't resolve - use original content
+    return { content, resolvedPath: path.relative(projectDir, startFile) };
   }
 }
 

@@ -765,14 +765,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.7
+          "quality_score": 0.7,
+          "last_used_at": "2025-12-09T13:05:07.919Z"
         }
       }
     ],
@@ -1040,14 +1041,15 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 0,
+          "usage_count": 1,
           "access_count": 0,
           "feedback": {
             "positive": 0,
             "negative": 0,
             "total": 0
           },
-          "quality_score": 0.7
+          "quality_score": 0.7,
+          "last_used_at": "2025-12-09T13:05:07.919Z"
         }
       }
     ],

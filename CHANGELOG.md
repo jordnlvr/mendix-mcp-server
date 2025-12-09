@@ -22,11 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **ThemeAnalyzer v2.0 - Complete Rewrite** - Focused on actionable, Mendix-best-practices analysis!
 
   - **Removed** irrelevant checks:
+
     - Native theme analysis (not useful for web-focused teams)
     - Atlas_Core existence check (it's always in every project)
     - design-properties.json existence (always exists by default)
-  
+
   - **Added** meaningful analysis categories:
+
     - **Structure Compliance**: Required files (custom-variables.scss, main.scss, exclusion-variables.scss, settings.json)
     - **Variable Usage Quality**: Hardcoded values vs SCSS tokens, brand/spacing/font variable usage
     - **Organization Assessment**: File separation, import structure, naming conventions, comments

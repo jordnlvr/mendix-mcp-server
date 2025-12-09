@@ -320,9 +320,9 @@ Scheduled Crawler → docs.mendix.com → Parse → Add to Knowledge Base
 
 ---
 
-## 🔮 Vector Search (Enhanced in v2.4.0!)
+## 🔮 Vector Search (Enhanced in v2.8.0!)
 
-The server includes **semantic vector search** using Pinecone with **Azure OpenAI embeddings**! This means you can search by **meaning**, not just keywords.
+The server includes **semantic vector search** using Pinecone! This means you can search by **meaning**, not just keywords.
 
 ### Why Vector Search?
 
@@ -332,42 +332,40 @@ The server includes **semantic vector search** using Pinecone with **Azure OpenA
 | Exact match required        | Semantic understanding                                        |
 | "loop" won't find "iterate" | "loop" finds "iterate", "forEach", "while"                    |
 
-### Setup
+### Zero Configuration Required! 🎉
 
-Vector search requires **Pinecone** (vector database) and **OpenAI** (embeddings):
+**Good news: Vector search works out of the box!** The server includes a built-in connection to the shared Mendix knowledge base. No Pinecone account or API key needed.
 
-#### 1. Pinecone (Required for Vector Search)
+### Optional: Improve Search Quality with Embeddings
 
-1. Sign up at [pinecone.io](https://www.pinecone.io) (free tier: 100K vectors)
-2. Create an index named `mendix-knowledge` with **1536 dimensions** (for OpenAI embeddings)
-3. Add to your `.env` file:
-   ```
-   PINECONE_API_KEY=your_pinecone_key
-   PINECONE_INDEX=mendix-knowledge
-   ```
+For the best semantic search quality, provide an embedding API key:
 
-#### 2. Azure OpenAI (Recommended - Faster!)
+#### Option 1: OpenAI (Recommended for most users)
 
-1. Create an Azure OpenAI resource in Azure Portal
-2. Deploy `text-embedding-3-small` model (name it `embed3s` or similar)
-3. Add to your `.env` file:
-   ```
-   AZURE_OPENAI_API_KEY=your_azure_key
-   AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
-   AZURE_OPENAI_EMBEDDING_DEPLOYMENT=embed3s
-   ```
-
-#### 3. Standard OpenAI (Fallback)
-
-If you don't have Azure, you can use standard OpenAI:
-
+```env
+OPENAI_API_KEY=sk-your-key-here
 ```
-OPENAI_API_KEY=sk-proj-your_key_here
+
+#### Option 2: Azure OpenAI (Enterprise/Siemens users)
+
+```env
+AZURE_OPENAI_API_KEY=your_azure_key
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
 ```
 
 **Priority Order:** Azure OpenAI → Standard OpenAI → Local TF-IDF (fallback)
 
-**Without any API keys:** Server works fine with keyword search only!
+**Without any API keys:** Server uses local TF-IDF search - still works great!
+
+### Advanced: Use Your Own Pinecone Index
+
+If you want to maintain your own knowledge base:
+
+```env
+PINECONE_API_KEY=your_pinecone_key
+PINECONE_INDEX=your-index-name
+```
 
 ### Usage
 

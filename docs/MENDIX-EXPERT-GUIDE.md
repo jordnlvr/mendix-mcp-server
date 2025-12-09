@@ -2,7 +2,7 @@
 
 ## Complete User & Integration Guide
 
-### v2.7.3 | December 2025
+### v2.8.0 | December 2025
 
 ---
 
@@ -149,22 +149,25 @@ Import `openapi.json` into your Custom GPT's Actions configuration.
 
 ### Environment Variables (Optional)
 
-Create `.env` file for enhanced features:
+**Good news: No configuration required!** The server works out of the box.
+
+For enhanced semantic search, you can optionally add:
 
 ```env
-# Semantic Search (Pinecone)
-PINECONE_API_KEY=your_key_here
+# OPTIONAL: Better semantic search with OpenAI
+OPENAI_API_KEY=sk-your-key-here
 
-# Embeddings (choose one)
+# OR for Azure OpenAI (enterprise users)
 AZURE_OPENAI_API_KEY=your_key
 AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com
 AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002
 
-# OR
-OPENAI_API_KEY=your_key
+# OPTIONAL: Use your own Pinecone (advanced)
+# By default uses built-in shared knowledge base
+# PINECONE_API_KEY=your_key
 ```
 
-Without these, the server uses local TF-IDF search (still good, just not semantic).
+Without any API keys, the server uses local TF-IDF search (still works well!).
 
 ---
 

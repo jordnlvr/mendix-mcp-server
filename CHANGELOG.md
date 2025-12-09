@@ -14,6 +14,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.8.0] - 2025-12-08
+
+### Added
+
+- **Built-in Pinecone Connection** - Server now works out of the box with shared knowledge base!
+  - No Pinecone API key required for users
+  - Built-in obfuscated key connects to shared Mendix knowledge index
+  - Users can still override with `PINECONE_API_KEY` for custom index
+
+- **OpenAI + Azure OpenAI Support**:
+  - Both embedding providers fully supported
+  - Priority: Azure OpenAI → OpenAI → Local TF-IDF
+  - `OPENAI_API_KEY` for standard OpenAI users
+  - `AZURE_OPENAI_*` vars for enterprise/Siemens users
+  - Graceful fallback to local TF-IDF if no API keys
+
+- **ThemeAnalyzer Explicit Verdicts**:
+  - Clear PASS/FAIL/WARN assessments for each check
+  - Prevents AI misinterpretation of raw analysis data
+  - 9 explicit verdict checks including:
+    - Custom Theme Folder
+    - Atlas_Core Location (correctly in themesource, not marketplace)
+    - Theme Structure compliance
+    - Scaffold Pattern (mirrors Atlas_Core)
+    - design-properties.json presence
+    - Web Theme quality
+    - Native Theme quality
+    - UI Resources Module
+    - Overall Theme Health
+
+### Changed
+
+- **VectorStore** updated to v2.8.0 with built-in Pinecone
+- **Documentation** updated throughout:
+  - README.md - Zero configuration messaging
+  - .env.example - Clarified all vars are optional
+  - AI-SESSION-CONTEXT.md - Updated for v2.8.0
+
+---
+
 ## [2.7.3] - 2025-12-08
 
 ### Added

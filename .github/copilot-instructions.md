@@ -3,6 +3,7 @@
 ## 🚨 FIRST: Read AI-SESSION-CONTEXT.md
 
 **Before doing any work, read `AI-SESSION-CONTEXT.md` in the project root.** It contains:
+
 - Full project context and architecture
 - Owner preferences (Kelly Seale)
 - Release workflow
@@ -23,6 +24,7 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade MCP server for Men
 **When you don't have an answer, you MUST research it!**
 
 ### Trigger Words for Beast Mode
+
 `deep`, `comprehensive`, `exhaustive`, `everything about`, `complete guide`, `[BEAST MODE]`
 
 ### Research Sources (in priority order):

@@ -1409,14 +1409,24 @@ class ThemeAnalyzer {
   }
 
   /**
-   * Generate human-readable summary
+   * Generate human-readable summary with explicit verdicts
    */
-  generateSummary(scores, recommendations, grade) {
+  generateSummary(scores, recommendations, grade, verdicts = null) {
     const criticalCount = recommendations.filter((r) => r.severity === 'critical').length;
     const importantCount = recommendations.filter((r) => r.severity === 'important').length;
 
     let summary = `## Theme Analysis Summary\n\n`;
     summary += `**Overall Grade: ${grade}** (Score: ${scores.overall}/100)\n\n`;
+
+    // Add explicit verdicts section for clear AI interpretation
+    if (verdicts) {
+      summary += `### Quick Verdicts (PASS/FAIL)\n`;
+      for (const verdict of verdicts) {
+        const icon = verdict.status === 'PASS' ? '✅' : verdict.status === 'FAIL' ? '❌' : '⚠️';
+        summary += `${icon} **${verdict.status}**: ${verdict.check} - ${verdict.detail}\n`;
+      }
+      summary += `\n`;
+    }
 
     summary += `### Score Breakdown\n`;
     summary += `- Structure: ${scores.breakdown.structure}/100\n`;
@@ -1465,6 +1475,115 @@ class ThemeAnalyzer {
       // Fallback to simple file listing
       return files;
     }
+  }
+
+  /**
+   * Generate explicit PASS/FAIL verdicts for clear AI interpretation
+   * This prevents AI from misinterpreting raw data
+   */
+  generateVerdicts({ structure, web, native, modules, fonts, projectInfo, scores }) {
+    const verdicts = [];
+
+    // 1. Theme Folder Exists
+    verdicts.push({
+      check: 'Custom Theme Folder',
+      status: projectInfo.hasTheme ? 'PASS' : 'FAIL',
+      detail: projectInfo.hasTheme
+        ? 'Custom theme folder exists at /theme'
+        : 'No custom theme folder found - create /theme/web for custom styles',
+    });
+
+    // 2. Atlas_Core Location (should be in themesource, NOT marketplace)
+    const atlasInThemesource = projectInfo.hasAtlasCore;
+    verdicts.push({
+      check: 'Atlas_Core Location',
+      status: atlasInThemesource ? 'PASS' : 'WARN',
+      detail: atlasInThemesource
+        ? 'Atlas_Core is correctly located in /themesource (NOT in marketplace modules)'
+        : 'Atlas_Core not found in themesource - may be using marketplace version',
+    });
+
+    // 3. Theme Structure Compliance
+    const structureScore = scores.breakdown?.structure || 0;
+    verdicts.push({
+      check: 'Theme Structure',
+      status: structureScore >= 70 ? 'PASS' : structureScore >= 50 ? 'WARN' : 'FAIL',
+      detail:
+        structureScore >= 70
+          ? `Good structure (${structureScore}/100) - follows Mendix conventions`
+          : `Structure needs improvement (${structureScore}/100)`,
+    });
+
+    // 4. Scaffold Pattern (mirrors Atlas_Core)
+    const scaffoldResult = structure?.scaffoldPattern;
+    if (scaffoldResult) {
+      verdicts.push({
+        check: 'Scaffold Pattern (mirrors Atlas_Core)',
+        status: scaffoldResult.mirrorsAtlasStructure ? 'PASS' : 'WARN',
+        detail: scaffoldResult.mirrorsAtlasStructure
+          ? 'Custom theme mirrors Atlas_Core folder structure for easy overrides'
+          : `Theme does not fully mirror Atlas_Core. Missing: ${scaffoldResult.recommendedFolders?.join(', ') || 'unknown'}`,
+      });
+    }
+
+    // 5. design-properties.json
+    const hasDesignProps = structure?.designPropertiesFound;
+    verdicts.push({
+      check: 'design-properties.json',
+      status: hasDesignProps ? 'PASS' : 'INFO',
+      detail: hasDesignProps
+        ? 'design-properties.json found - Studio Pro design mode enabled'
+        : 'No design-properties.json - optional, only needed for Studio design mode',
+    });
+
+    // 6. Web Theme Quality
+    const webScore = scores.breakdown?.webTheme || 0;
+    verdicts.push({
+      check: 'Web Theme (SCSS)',
+      status: webScore >= 70 ? 'PASS' : webScore >= 50 ? 'WARN' : 'FAIL',
+      detail:
+        webScore >= 70
+          ? `Good web theme quality (${webScore}/100)`
+          : `Web theme needs work (${webScore}/100) - check for hardcoded values`,
+    });
+
+    // 7. Native Theme (only relevant if it exists)
+    if (native?.hasNativeTheme) {
+      const nativeScore = scores.breakdown?.nativeTheme || 0;
+      verdicts.push({
+        check: 'Native Theme (React Native)',
+        status: nativeScore >= 70 ? 'PASS' : nativeScore >= 50 ? 'WARN' : 'FAIL',
+        detail:
+          nativeScore >= 70
+            ? `Native theme quality good (${nativeScore}/100)`
+            : `Native theme needs work (${nativeScore}/100)`,
+      });
+    }
+
+    // 8. UI Resources Module Configuration
+    if (modules?.uiResourcesModule) {
+      verdicts.push({
+        check: 'UI Resources Module',
+        status: modules.uiResourcesModule.isConfigured ? 'PASS' : 'INFO',
+        detail: modules.uiResourcesModule.isConfigured
+          ? 'Custom theme registered as UI Resources module'
+          : 'Theme not registered as UI Resources module - optional but recommended',
+      });
+    }
+
+    // 9. Overall Health
+    const overallScore = scores.overall || 0;
+    let overallStatus = 'PASS';
+    if (overallScore < 50) overallStatus = 'FAIL';
+    else if (overallScore < 70) overallStatus = 'WARN';
+
+    verdicts.push({
+      check: 'Overall Theme Health',
+      status: overallStatus,
+      detail: `Overall score: ${overallScore}/100 (Grade: ${scores.grade || this.calculateGrade(overallScore)})`,
+    });
+
+    return verdicts;
   }
 }
 

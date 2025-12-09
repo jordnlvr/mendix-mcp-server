@@ -1,12 +1,16 @@
 /**
  * VectorStore - Pinecone-based semantic search for Mendix knowledge
  *
- * Supports three embedding modes:
- * 1. Azure OpenAI text-embedding-ada-002 (1536 dims) - Best quality, requires Azure key
- * 2. OpenAI text-embedding-3-small (1536 dims) - Best quality, requires API key
- * 3. Local TF-IDF (384 dims) - Free fallback, decent quality
+ * EMBEDDING PROVIDERS (checked in order):
+ * 1. Azure OpenAI - Uses text-embedding-ada-002 or custom deployment (1536 dims)
+ * 2. OpenAI - Uses text-embedding-3-small (1536 dims)
+ * 3. Local TF-IDF - Free fallback, no API key required (384 dims)
  *
- * @version 2.4.1
+ * PINECONE:
+ * - Built-in API key for shared knowledge base (no user setup needed)
+ * - User can override with PINECONE_API_KEY env var for custom index
+ *
+ * @version 2.8.0
  */
 
 import { Pinecone } from '@pinecone-database/pinecone';
@@ -14,6 +18,36 @@ import { createHash } from 'crypto';
 import Logger from '../utils/logger.js';
 
 const logger = new Logger('VectorStore');
+
+/**
+ * Built-in Pinecone configuration for shared knowledge base
+ * Users don't need to configure Pinecone - it works out of the box!
+ * The key is obfuscated to prevent casual extraction but provides read access.
+ */
+const BUILTIN_PINECONE = {
+  // Obfuscated key - decoded at runtime
+  keyParts: [
+    'cGNza18yZG1mc05fS0ZaQTh',
+    'IeHV6b0xMM2NFQTFzYlJi',
+    'elI1b0xUbUVLdmJ3c01G',
+    'R01MTHlOenhTRVBMNW4z',
+    'ZDZaTmZER3ZHOGRl',
+  ],
+  index: 'mendix-knowledge',
+  region: 'us-east-1',
+};
+
+/**
+ * Decode the built-in Pinecone key
+ */
+function getBuiltinPineconeKey() {
+  try {
+    const encoded = BUILTIN_PINECONE.keyParts.join('');
+    return Buffer.from(encoded, 'base64').toString('utf-8');
+  } catch {
+    return null;
+  }
+}
 
 /**
  * LRU Cache for query embeddings - avoids re-embedding repeated queries
@@ -69,12 +103,13 @@ class EmbeddingCache {
 
 /**
  * Azure OpenAI Embeddings - High quality semantic embeddings via Azure
+ * Configure with: AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_EMBEDDING_DEPLOYMENT
  */
 class AzureOpenAIEmbedder {
   constructor() {
     this.dimension = 1536; // text-embedding-ada-002 dimension
     this.apiKey = process.env.AZURE_OPENAI_API_KEY;
-    this.endpoint = process.env.AZURE_OPENAI_ENDPOINT || 'https://api.openai.azure.com';
+    this.endpoint = process.env.AZURE_OPENAI_ENDPOINT;
     this.deploymentName = process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-ada-002';
     this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-01';
     this.batchSize = 16; // Azure has lower batch limits
@@ -127,11 +162,12 @@ class AzureOpenAIEmbedder {
 
 /**
  * OpenAI Embeddings - High quality semantic embeddings
+ * Configure with: OPENAI_API_KEY
  */
 class OpenAIEmbedder {
   constructor() {
     this.dimension = 1536; // text-embedding-3-small dimension
-    this.model = 'text-embedding-3-small';
+    this.model = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
     this.apiKey = process.env.OPENAI_API_KEY;
     this.batchSize = 100; // OpenAI allows up to 2048 inputs per request
   }
@@ -145,7 +181,7 @@ class OpenAIEmbedder {
    */
   async embedBatch(texts) {
     if (!this.apiKey) {
-      throw new Error('OpenAI API key not configured');
+      throw new Error('OpenAI API key not configured. Set OPENAI_API_KEY environment variable.');
     }
 
     const response = await fetch('https://api.openai.com/v1/embeddings', {
@@ -284,7 +320,7 @@ class LocalEmbedder {
 
 export default class VectorStore {
   constructor(options = {}) {
-    this.indexName = options.indexName || 'mendix-knowledge';
+    this.indexName = options.indexName || process.env.PINECONE_INDEX || BUILTIN_PINECONE.index;
     this.namespace = options.namespace || 'default';
 
     // Query embedding cache - avoids re-embedding repeated queries
@@ -307,17 +343,20 @@ export default class VectorStore {
       this.embedder = this.openaiEmbedder;
       this.dimension = 1536;
       this.embeddingMode = 'openai';
-      logger.info('Using OpenAI embeddings (high quality)');
+      logger.info('Using OpenAI embeddings (high quality)', {
+        model: this.openaiEmbedder.model,
+      });
     } else {
       this.embedder = this.localEmbedder;
       this.dimension = 384;
       this.embeddingMode = 'local';
-      logger.info('Using local TF-IDF embeddings (no OpenAI key found)');
+      logger.info('Using local TF-IDF embeddings (no API key found - set OPENAI_API_KEY or AZURE_OPENAI_API_KEY for better results)');
     }
 
     this.pinecone = null;
     this.index = null;
     this.initialized = false;
+    this.usingBuiltinKey = false;
 
     logger.info('VectorStore created', {
       indexName: this.indexName,
@@ -327,24 +366,36 @@ export default class VectorStore {
 
   /**
    * Initialize Pinecone connection
+   * Uses built-in key if no PINECONE_API_KEY is set
    */
   async initialize() {
-    if (this.initialized) return;
+    if (this.initialized) return true;
 
-    const apiKey = process.env.PINECONE_API_KEY;
+    // Try user-provided key first, then fall back to built-in
+    let apiKey = process.env.PINECONE_API_KEY;
+    
     if (!apiKey) {
-      logger.warn('No Pinecone API key found, vector search disabled');
+      apiKey = getBuiltinPineconeKey();
+      if (apiKey) {
+        this.usingBuiltinKey = true;
+        logger.info('Using built-in Pinecone key for shared knowledge base');
+      }
+    }
+
+    if (!apiKey) {
+      logger.warn('No Pinecone API key available, vector search disabled. Local TF-IDF search will be used.');
       return false;
     }
 
     try {
       this.pinecone = new Pinecone({ apiKey });
 
-      // Check if index exists, create if not
+      // Check if index exists, create if not (only for user's own key)
       const indexes = await this.pinecone.listIndexes();
       const indexExists = indexes.indexes?.some((i) => i.name === this.indexName);
 
-      if (!indexExists) {
+      if (!indexExists && !this.usingBuiltinKey) {
+        // Only create index if using user's own key
         logger.info('Creating Pinecone index', { name: this.indexName });
         await this.pinecone.createIndex({
           name: this.indexName,
@@ -353,13 +404,16 @@ export default class VectorStore {
           spec: {
             serverless: {
               cloud: 'aws',
-              region: 'us-east-1',
+              region: BUILTIN_PINECONE.region,
             },
           },
         });
 
         // Wait for index to be ready
         await this.waitForIndex();
+      } else if (!indexExists && this.usingBuiltinKey) {
+        logger.warn('Shared knowledge base index not found. Contact maintainer.');
+        return false;
       }
 
       this.index = this.pinecone.index(this.indexName);

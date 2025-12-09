@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mendix Expert MCP Server - User Guide v2.7.3</title>
+  <title>Mendix Expert MCP Server - User Guide v2.8.0</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -330,7 +330,7 @@
   <div class="header">
     <h1>🧠 Mendix Expert MCP Server</h1>
     <div class="subtitle">Complete User & Integration Guide</div>
-    <div class="version">Version 2.7.3 | December 2025</div>
+    <div class="version">Version 2.8.0 | December 2025</div>
   </div>
 
   <div class="toc">
@@ -423,8 +423,12 @@ node src/index.js</code></pre>
   }
 }</code></pre>
 
-  <h3>Environment Variables (Optional - enables semantic search)</h3>
-  <pre><code>PINECONE_API_KEY=your_key
+  <h3>Environment Variables (Optional - no config required!)</h3>
+  <p><strong>Good news:</strong> Works out of the box! For better semantic search:</p>
+  <pre><code># Option 1: OpenAI (most users)
+OPENAI_API_KEY=sk-your-key-here
+
+# Option 2: Azure OpenAI (enterprise)
 AZURE_OPENAI_API_KEY=your_key
 AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com
 AZURE_OPENAI_EMBEDDING_DEPLOYMENT=text-embedding-ada-002</code></pre>
@@ -734,7 +738,7 @@ npm run rest</code></pre>
     <a href="https://jordnlvr.github.io/mendix-mcp-server/">Docs</a> ·
     <a href="https://smithery.ai/server/@jordnlvr/mendix-mcp-server">Smithery</a>
     <br><br>
-    Built with ❤️ for the Mendix community | @jordnlvr/mendix-mcp-server v2.7.3
+    Built with ❤️ for the Mendix community | @jordnlvr/mendix-mcp-server v2.8.0
   </div>
 
 </body>

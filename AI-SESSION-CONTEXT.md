@@ -2,8 +2,8 @@
 
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
-**Last Updated:** December 8, 2025  
-**Version:** 2.9.0  
+**Last Updated:** December 9, 2025  
+**Version:** 2.9.2  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -19,7 +19,7 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 - **Multiple embedding providers** - Azure OpenAI, OpenAI, or local TF-IDF
 - **Project & theme analysis** for actual .mpr files (web-focused, best practices based)
 - **Self-learning** - harvests docs, remembers solutions
-- **Beast Mode** - exhaustive multi-step research on demand
+- **Beast Mode** - exhaustive multi-step research on demand (MCP + REST)
 
 ---
 
@@ -40,13 +40,13 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 mendix-mcp-server/
 ├── src/
 │   ├── index.js              # Main MCP server (ESM)
-│   ├── rest-proxy.js         # REST API for ChatGPT
+│   ├── rest-proxy.js         # REST API for ChatGPT (includes /beast-mode)
 │   ├── core/
 │   │   ├── SearchEngine.js   # TF-IDF + fuzzy + semantic
 │   │   ├── KnowledgeManager.js
 │   │   └── ...
 │   ├── analyzers/
-│   │   ├── ThemeAnalyzer.js  # v2.0 Web-focused best practices analysis
+│   │   ├── ThemeAnalyzer.js  # v2.0 Web-focused, follows @imports
 │   │   └── ThemeAnalyzer.v1.js.bak  # Old version backup
 │   ├── vector/
 │   │   ├── VectorStore.js    # Pinecone integration (built-in key)
@@ -179,9 +179,17 @@ npm publish --access public
 
 When asked for deep research or when information isn't in knowledge base:
 
+### How to Access Beast Mode
+
+| Interface | Command |
+|-----------|---------|
+| **MCP (Copilot/Claude)** | Call `beast_mode` tool with format: `prompt`, `instructions`, or `brief` |
+| **REST API (ChatGPT)** | `GET /beast-mode?format=prompt` |
+| **Direct** | Ask "What is Beast Mode?" or "Use Beast Mode" |
+
 ### Trigger Words
 
-`deep`, `comprehensive`, `exhaustive`, `everything about`, `complete guide`, `[BEAST MODE]`
+`deep`, `comprehensive`, `exhaustive`, `everything about`, `complete guide`, `[BEAST MODE]`, `use beast mode`, `what is beast mode`
 
 ### Research Process
 

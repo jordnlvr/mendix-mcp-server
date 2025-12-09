@@ -15,6 +15,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.9.2] - 2025-12-09
+
+### Added
+
+- **Beast Mode REST Endpoint** - `GET /beast-mode` now available for ChatGPT and REST clients
+  - Returns the full Beast Mode research protocol
+  - Supports `format` param: `prompt` (default), `instructions`, `brief`
+  - ChatGPT custom GPTs can now properly access Beast Mode
+  - Updated OpenAPI spec to v2.9.2
+
+### Fixed
+
+- ChatGPT integration: Beast Mode was only available via MCP, now accessible via REST API
+
+---
+
+## [2.9.1] - 2025-12-09
+
+### Fixed
+
+- **ThemeAnalyzer now follows @import statements** - Resolves actual variable files
+- **CSS custom properties recognized** - `--brand-primary` not just `$brand-primary`
+- Supports "Company Design System" pattern (themesource modules with variables)
+- SmartHub theme analysis: 93 → 96 score (all verdicts PASS)
+
+---
+
 ## [2.9.0] - 2025-12-08
 
 ### Changed

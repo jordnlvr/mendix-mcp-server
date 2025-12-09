@@ -191,7 +191,8 @@ app.get('/tools', (req, res) => {
         name: 'dashboard',
         method: 'GET',
         path: '/dashboard',
-        description: 'Visual HTML dashboard showing usage analytics, tool usage, and popular topics',
+        description:
+          'Visual HTML dashboard showing usage analytics, tool usage, and popular topics',
         parameters: {},
       },
     ],
@@ -622,10 +623,132 @@ app.get('/analytics', async (req, res) => {
 
     res.json({
       report,
-      serverVersion: '3.0.0'
+      serverVersion: '3.0.0',
     });
   } catch (error) {
     logger.error('Analytics failed', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Get harvest status - shows when last harvest ran, next scheduled, and stats
+ */
+app.get('/harvest-status', async (req, res) => {
+  try {
+    const { default: HarvestScheduler } = await import('./harvester/HarvestScheduler.js');
+    const knowledgePath = join(__dirname, 'knowledge');
+    const scheduler = new HarvestScheduler(knowledgePath);
+    await scheduler.loadState();
+
+    res.json({
+      lastHarvest: scheduler.state.lastHarvest,
+      nextScheduledHarvest: scheduler.getNextHarvestDate?.() || 'Not scheduled',
+      totalHarvests: scheduler.state.totalHarvests || 0,
+      lastResults: scheduler.state.lastHarvestResults || null,
+      harvestIntervalDays: scheduler.harvestIntervalDays,
+      status: scheduler.state.isRunning ? 'running' : 'idle',
+    });
+  } catch (error) {
+    logger.error('Harvest status failed', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Trigger a manual harvest - fetch latest Mendix docs
+ */
+app.post('/harvest', async (req, res) => {
+  try {
+    const { sources = ['releaseNotes', 'studioProGuide'], dryRun = false } = req.body;
+
+    const { default: KnowledgeHarvester } = await import('./harvester/KnowledgeHarvester.js');
+    const knowledgePath = join(__dirname, '..', 'knowledge');
+    const harvester = new KnowledgeHarvester(knowledgePath);
+
+    logger.info('Starting manual harvest', { sources, dryRun });
+
+    // Run harvest (this may take a while)
+    const results = await harvester.harvest({ sources, dryRun, verbose: false });
+
+    // Re-index if we got new content
+    if (!dryRun && results.newEntries?.length > 0) {
+      await knowledgeManager.reload();
+      searchEngine.indexKnowledgeBase(knowledgeManager.knowledgeBase);
+      if (hybridSearch) {
+        await hybridSearch.indexKnowledgeBase(knowledgeManager.knowledgeBase);
+      }
+    }
+
+    res.json({
+      success: true,
+      dryRun,
+      sources,
+      results: {
+        newEntries: results.newEntries?.length || 0,
+        updatedEntries: results.updatedEntries?.length || 0,
+        errors: results.failed?.length || 0,
+        pagesScanned: harvester.stats.pagesScanned,
+      },
+      message: dryRun
+        ? 'Dry run complete - no changes made'
+        : `Harvest complete: ${results.newEntries?.length || 0} new entries added`,
+    });
+  } catch (error) {
+    logger.error('Manual harvest failed', { error: error.message });
+    res.status(500).json({ error: error.message, success: false });
+  }
+});
+
+/**
+ * Track a knowledge gap - log topics users ask about that we don't have answers for
+ */
+app.post('/knowledge-gap', async (req, res) => {
+  try {
+    await initialize();
+    const { topic, query, context } = req.body;
+
+    if (!topic) {
+      return res.status(400).json({ error: 'topic is required' });
+    }
+
+    // Track in analytics for future harvesting priority
+    analytics.trackQuery(topic, 'gap');
+
+    // Log to harvest-log for manual review
+    const { default: fs } = await import('fs/promises');
+    const gapLogPath = join(__dirname, '..', 'knowledge', 'knowledge-gaps.json');
+
+    let gaps = [];
+    try {
+      const existing = await fs.readFile(gapLogPath, 'utf-8');
+      gaps = JSON.parse(existing);
+    } catch {
+      // File doesn't exist yet
+    }
+
+    gaps.push({
+      topic,
+      query: query || topic,
+      context: context || null,
+      timestamp: new Date().toISOString(),
+      addressed: false,
+    });
+
+    // Keep last 100 gaps
+    if (gaps.length > 100) {
+      gaps = gaps.slice(-100);
+    }
+
+    await fs.writeFile(gapLogPath, JSON.stringify(gaps, null, 2));
+
+    res.json({
+      success: true,
+      message: `Knowledge gap "${topic}" recorded for future harvesting`,
+      totalGaps: gaps.filter((g) => !g.addressed).length,
+    });
+  } catch (error) {
+    logger.error('Knowledge gap tracking failed', { error: error.message });
     res.status(500).json({ error: error.message });
   }
 });
@@ -674,14 +797,14 @@ app.get('/dashboard', async (req, res) => {
     await initialize();
     const report = analytics.getDetailedReport();
     const stats = knowledgeManager.getStats();
-    
+
     // Build tool usage chart data
     const toolData = Object.entries(report.allToolUsage || {})
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
-    
+
     const topTopics = Object.entries(report.topTopics || {}).slice(0, 10);
-    
+
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -739,7 +862,9 @@ app.get('/dashboard', async (req, res) => {
       <div class="card">
         <h2>Vector Search</h2>
         <div class="stat">${vectorSearchAvailable ? '✅' : '⚠️'}</div>
-        <div class="stat-label">${vectorSearchAvailable ? 'Pinecone Connected' : 'Using TF-IDF'}</div>
+        <div class="stat-label">${
+          vectorSearchAvailable ? 'Pinecone Connected' : 'Using TF-IDF'
+        }</div>
         <div style="margin-top: 16px; color: #888;">
           Hybrid keyword + semantic search
         </div>
@@ -750,30 +875,44 @@ app.get('/dashboard', async (req, res) => {
       <div class="card">
         <h2>Tool Usage</h2>
         <div class="bar-chart">
-          ${toolData.map(([name, count]) => {
-            const max = toolData[0]?.[1] || 1;
-            const width = Math.max((count / max) * 100, 5);
-            return `<div class="bar"><span class="bar-label">${name.replace(/_/g, ' ')}</span><div class="bar-fill" style="width: ${width}%">${count}</div></div>`;
-          }).join('')}
+          ${toolData
+            .map(([name, count]) => {
+              const max = toolData[0]?.[1] || 1;
+              const width = Math.max((count / max) * 100, 5);
+              return `<div class="bar"><span class="bar-label">${name.replace(
+                /_/g,
+                ' '
+              )}</span><div class="bar-fill" style="width: ${width}%">${count}</div></div>`;
+            })
+            .join('')}
         </div>
       </div>
       
       <div class="card">
         <h2>Popular Topics</h2>
         <ul class="topics">
-          ${topTopics.map(([topic, count]) => `<li><span>${topic}</span><span class="badge">${count}</span></li>`).join('') || '<li>No data yet</li>'}
+          ${
+            topTopics
+              .map(
+                ([topic, count]) =>
+                  `<li><span>${topic}</span><span class="badge">${count}</span></li>`
+              )
+              .join('') || '<li>No data yet</li>'
+          }
         </ul>
       </div>
     </div>
     
     <div class="footer">
-      <p>@jordnlvr/mendix-mcp-server v2.9.2 • Last updated: ${new Date().toISOString().split('T')[0]}</p>
+      <p>@jordnlvr/mendix-mcp-server v2.9.2 • Last updated: ${
+        new Date().toISOString().split('T')[0]
+      }</p>
       <p style="margin-top: 8px;">📖 <a href="https://jordnlvr.github.io/mendix-mcp-server/" style="color: #00d9ff;">Documentation</a> • 🐙 <a href="https://github.com/jordnlvr/mendix-mcp-server" style="color: #00d9ff;">GitHub</a></p>
     </div>
   </div>
 </body>
 </html>`;
-    
+
     res.type('html').send(html);
   } catch (error) {
     logger.error('Dashboard failed', { error: error.message });
@@ -812,22 +951,25 @@ const server = app.listen(PORT, async () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════════════╗
 ║                                                                   ║
-║   🧠 Mendix Expert REST API v3.0.0                                ║
+║   🧠 Mendix Expert REST API v3.0.1                                ║
 ║                                                                   ║
 ║   Server running at: http://localhost:${PORT}                      ║
 ║                                                                   ║
 ║   Endpoints:                                                      ║
-║     GET  /health         - Health check                           ║
-║     GET  /tools          - List available tools                   ║
-║     GET  /status         - Server status                          ║
-║     GET  /beast-mode     - Beast Mode research protocol           ║
-║     GET  /dashboard      - 📊 Visual analytics dashboard          ║
-║     GET  /analytics      - Usage analytics (JSON)                 ║
-║     POST /query          - Query knowledge base                   ║
-║     POST /search         - Hybrid search                          ║
-║     POST /analyze        - Analyze Mendix project                 ║
-║     POST /analyze-theme  - Analyze Mendix theme (v2.0)            ║
-║     POST /best-practice  - Get recommendations                    ║
+║     GET  /health          - Health check                          ║
+║     GET  /tools           - List available tools                  ║
+║     GET  /status          - Server status                         ║
+║     GET  /beast-mode      - Beast Mode research protocol          ║
+║     GET  /dashboard       - 📊 Visual analytics dashboard         ║
+║     GET  /analytics       - Usage analytics (JSON)                ║
+║     GET  /harvest-status  - 🌾 Auto-harvest status & schedule     ║
+║     POST /query           - Query knowledge base                  ║
+║     POST /search          - Hybrid search                         ║
+║     POST /analyze         - Analyze Mendix project                ║
+║     POST /analyze-theme   - Analyze Mendix theme (v2.0)           ║
+║     POST /best-practice   - Get recommendations                   ║
+║     POST /harvest         - 🌾 Trigger manual harvest             ║
+║     POST /knowledge-gap   - 📝 Report missing knowledge           ║
 ║                                                                   ║
 ╚═══════════════════════════════════════════════════════════════════╝
   `);

@@ -46,18 +46,18 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 
 ## ✨ Key Features
 
-| Feature                    | Description                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------- |
-| 🔍 **Intelligent Search**  | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow"   |
-| 🔮 **Vector Search**       | Semantic search using Pinecone - find concepts, not just keywords            |
-| 🎯 **Hybrid Search**       | Combined keyword + semantic search for best of both worlds                   |
-| 🧠 **Self-Learning**       | Automatically grows smarter as you add knowledge                             |
-| 🔬 **Beast Mode**          | 5-tier research protocol - docs, GitHub, npm, forums, archives               |
-| 📊 **Analytics Dashboard** | Visual HTML dashboard at `/dashboard` endpoint                               |
-| 🎨 **Theme Analyzer v2.0** | Web-focused, follows @imports, CSS custom properties, letter grades          |
-| 🔧 **Auto-Maintenance**    | Scheduled harvesting, validation, staleness detection, cache cleanup         |
-| 📁 **Project Analysis**    | Analyze any `.mpr` file - discover modules, entities, microflows             |
-| 🔄 **Zero Config**         | Built-in Pinecone key - works out of the box, no API keys required!          |
+| Feature                    | Description                                                                |
+| -------------------------- | -------------------------------------------------------------------------- |
+| 🔍 **Intelligent Search**  | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow" |
+| 🔮 **Vector Search**       | Semantic search using Pinecone - find concepts, not just keywords          |
+| 🎯 **Hybrid Search**       | Combined keyword + semantic search for best of both worlds                 |
+| 🧠 **Self-Learning**       | Automatically grows smarter as you add knowledge                           |
+| 🔬 **Beast Mode**          | 5-tier research protocol - docs, GitHub, npm, forums, archives             |
+| 📊 **Analytics Dashboard** | Visual HTML dashboard at `/dashboard` endpoint                             |
+| 🎨 **Theme Analyzer v2.0** | Web-focused, follows @imports, CSS custom properties, letter grades        |
+| 🔧 **Auto-Maintenance**    | Scheduled harvesting, validation, staleness detection, cache cleanup       |
+| 📁 **Project Analysis**    | Analyze any `.mpr` file - discover modules, entities, microflows           |
+| 🔄 **Zero Config**         | Built-in Pinecone key - works out of the box, no API keys required!        |
 
 ---
 
@@ -148,19 +148,19 @@ Server runs at `http://localhost:5050`
 
 ### Available Endpoints
 
-| Endpoint         | Method | Description                             |
-| ---------------- | ------ | --------------------------------------- |
-| `/health`        | GET    | Health check and status                 |
-| `/status`        | GET    | Server status with example queries      |
-| `/tools`         | GET    | List all available endpoints            |
-| `/dashboard`     | GET    | 📊 Visual analytics dashboard (HTML)    |
-| `/beast-mode`    | GET    | 🔥 Get Beast Mode research protocol     |
-| `/query`         | POST   | Query knowledge base                    |
-| `/search`        | POST   | Hybrid search (keyword + semantic)      |
-| `/best-practice` | POST   | Get best practice recommendations       |
-| `/analyze`       | POST   | Analyze Mendix project                  |
-| `/analyze-theme` | POST   | 🎨 Deep theme analysis with grading     |
-| `/analytics`     | GET    | Usage analytics and statistics (JSON)   |
+| Endpoint         | Method | Description                           |
+| ---------------- | ------ | ------------------------------------- |
+| `/health`        | GET    | Health check and status               |
+| `/status`        | GET    | Server status with example queries    |
+| `/tools`         | GET    | List all available endpoints          |
+| `/dashboard`     | GET    | 📊 Visual analytics dashboard (HTML)  |
+| `/beast-mode`    | GET    | 🔥 Get Beast Mode research protocol   |
+| `/query`         | POST   | Query knowledge base                  |
+| `/search`        | POST   | Hybrid search (keyword + semantic)    |
+| `/best-practice` | POST   | Get best practice recommendations     |
+| `/analyze`       | POST   | Analyze Mendix project                |
+| `/analyze-theme` | POST   | 🎨 Deep theme analysis with grading   |
+| `/analytics`     | GET    | Usage analytics and statistics (JSON) |
 
 ### Example Usage
 

@@ -10,8 +10,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Planned
 
 - Automated vector reindexing on knowledge updates
-- Weekly harvest of Mendix release notes
 - Design Properties Gap Analysis - suggest where design properties would benefit widgets
+
+---
+
+## [3.0.1] - 2025-12-09
+
+### Added
+
+- **🌾 Auto-Learning & Harvesting Improvements**
+  - `GET /harvest-status` - View harvest schedule, last run, and stats
+  - `POST /harvest` - Trigger manual knowledge harvest from Mendix docs
+  - `POST /knowledge-gap` - Report missing knowledge for future harvesting
+  - Knowledge gaps tracked in `knowledge/knowledge-gaps.json`
+  
+- **Validator Fix** - Knowledge files with `entries`, `verified_patterns`, or `rules` now validate correctly
+
+### Changed
+
+- REST API now has 15 endpoints (was 12)
+- Server banner updated to v3.0.1 with new endpoints listed
 
 ---
 

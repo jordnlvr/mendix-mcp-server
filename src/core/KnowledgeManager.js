@@ -817,11 +817,15 @@ class KnowledgeManager {
         continue;
       }
 
+      // Check for any content structure - expanded to include all formats
       if (
         !fileData.categories &&
         !fileData.items &&
         !fileData.mendix_11_specific &&
-        !fileData.resources
+        !fileData.resources &&
+        !fileData.entries &&
+        !fileData.verified_patterns &&
+        !fileData.rules
       ) {
         issues.push(`${fileName}: No content found`);
       }

@@ -29,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **🧩 Studio Pro Extensions Complete Guide**
-  - New knowledge file: `studio-pro-extensions-complete.json` with 300+ lines of verified patterns
+  - New knowledge file: `studio-pro-extensions-complete.json` with 56 entries
+  - **COMPLETE_WORKING_EXAMPLE** - All files (csproj, cs, manifest) in one entry for first-time success
   - Quick start guide: Create a working extension in 10 minutes
   - Verified manifest format: `{ "mx_extensions": ["Name.dll"] }` - NOT schema-based
   - Extension types: MenuExtension, DockablePaneExtension, ContextMenuExtension, WebServerExtension
@@ -37,12 +38,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Common troubleshooting with verified solutions
   - API reference for IModel, IProject, IModule, IEntity, services
 
+- **🔄 Embedding Provider Fallback Chain**
+  - Azure OpenAI → OpenAI → Local TF-IDF automatic fallback
+  - Graceful degradation when primary provider fails
+  - Added OpenAI API key support as fallback
+
 ### Fixed
 
 - **🔧 Vector Reindex Script**
-  - Fixed JSON comment stripping - proper character-by-character parser respects string boundaries
+  - Fixed JSON comment stripping - try direct JSON.parse before comment stripping
   - Fixed method call: `indexKnowledge` → `indexDocuments` to match VectorStore API
   - Script now parses all knowledge files correctly
+  - Azure OpenAI key updated and verified working
 
 ### Changed
 

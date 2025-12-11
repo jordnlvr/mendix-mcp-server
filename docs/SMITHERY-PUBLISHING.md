@@ -237,5 +237,5 @@ If you encounter issues with Smithery publishing:
 
 ---
 
-**Last Updated**: December 11, 2025  
+**Last Updated**: December 9, 2024  
 **Server Version**: 3.2.0

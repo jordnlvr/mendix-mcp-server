@@ -54,13 +54,18 @@ commandFunction: |-
   (config) => {
     const env = {};
     
-    // Only add environment variables if they are provided
-    if (config.OPENAI_API_KEY) env.OPENAI_API_KEY = config.OPENAI_API_KEY;
-    if (config.AZURE_OPENAI_API_KEY) env.AZURE_OPENAI_API_KEY = config.AZURE_OPENAI_API_KEY;
-    if (config.AZURE_OPENAI_ENDPOINT) env.AZURE_OPENAI_ENDPOINT = config.AZURE_OPENAI_ENDPOINT;
-    if (config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT) env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT = config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT;
-    if (config.PINECONE_API_KEY) env.PINECONE_API_KEY = config.PINECONE_API_KEY;
-    if (config.PINECONE_INDEX) env.PINECONE_INDEX = config.PINECONE_INDEX;
+    // Only add environment variables if they are provided and non-empty
+    // Skip default empty strings to avoid setting unnecessary env vars
+    if (config.OPENAI_API_KEY && config.OPENAI_API_KEY !== "") env.OPENAI_API_KEY = config.OPENAI_API_KEY;
+    if (config.AZURE_OPENAI_API_KEY && config.AZURE_OPENAI_API_KEY !== "") env.AZURE_OPENAI_API_KEY = config.AZURE_OPENAI_API_KEY;
+    if (config.AZURE_OPENAI_ENDPOINT && config.AZURE_OPENAI_ENDPOINT !== "") env.AZURE_OPENAI_ENDPOINT = config.AZURE_OPENAI_ENDPOINT;
+    // Only set deployment name if Azure endpoint is also provided (they work together)
+    if (config.AZURE_OPENAI_ENDPOINT && config.AZURE_OPENAI_ENDPOINT !== "" && 
+        config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT && config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT !== "text-embedding-ada-002") {
+      env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT = config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT;
+    }
+    if (config.PINECONE_API_KEY && config.PINECONE_API_KEY !== "") env.PINECONE_API_KEY = config.PINECONE_API_KEY;
+    if (config.PINECONE_INDEX && config.PINECONE_INDEX !== "") env.PINECONE_INDEX = config.PINECONE_INDEX;
     if (config.DEBUG) env.DEBUG = 'true';
     
     return {

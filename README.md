@@ -16,6 +16,25 @@
 
 ## 🚀 Quick Install
 
+### Option 1: Via Smithery (Recommended)
+
+The easiest way to install and configure:
+
+```bash
+# Install Smithery CLI
+npm install -g @smithery/cli
+
+# Install Mendix Expert MCP Server
+smithery install @jordnlvr/mendix-mcp-server --client claude
+
+# Or for VS Code Copilot
+smithery install @jordnlvr/mendix-mcp-server --client vscode
+```
+
+**Registry**: [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)
+
+### Option 2: Via npm
+
 ```bash
 # Install globally
 npm install -g @jordnlvr/mendix-mcp-server
@@ -147,7 +166,23 @@ See [docs/RESEARCH-PROTOCOL.md](docs/RESEARCH-PROTOCOL.md) for the full protocol
 
 ## 🚀 Quick Start
 
-### 1. Clone & Install
+### 1. Install the Server
+
+**Option A: Via Smithery (Easiest)**
+
+```bash
+smithery install @jordnlvr/mendix-mcp-server --client claude
+```
+
+Smithery handles all configuration automatically!
+
+**Option B: Via npm**
+
+```bash
+npm install -g @jordnlvr/mendix-mcp-server
+```
+
+**Option C: From Source**
 
 ```bash
 git clone https://github.com/jordnlvr/mendix-mcp-server.git
@@ -155,7 +190,7 @@ cd mendix-mcp-server
 npm install
 ```
 
-### 2. Configure Your MCP Client
+### 2. Configure Your MCP Client (if not using Smithery)
 
 **VS Code (Copilot Chat)**
 

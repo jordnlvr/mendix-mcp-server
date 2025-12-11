@@ -30,12 +30,19 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 
 ### Publishing & Distribution
 
-| Platform          | Location                                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **npm**           | `@jordnlvr/mendix-mcp-server` - [npmjs.com/package/@jordnlvr/mendix-mcp-server](https://npmjs.com/package/@jordnlvr/mendix-mcp-server) |
-| **GitHub**        | `jordnlvr/mendix-mcp-server` - [github.com/jordnlvr/mendix-mcp-server](https://github.com/jordnlvr/mendix-mcp-server)                  |
-| **Documentation** | [jordnlvr.github.io/mendix-mcp-server](https://jordnlvr.github.io/mendix-mcp-server/)                                                  |
-| **Smithery**      | [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)                               |
+| Platform          | Location                                                                                                                               | Status |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **npm**           | `@jordnlvr/mendix-mcp-server` - [npmjs.com/package/@jordnlvr/mendix-mcp-server](https://npmjs.com/package/@jordnlvr/mendix-mcp-server) | ✅ v3.2.0 |
+| **GitHub**        | `jordnlvr/mendix-mcp-server` - [github.com/jordnlvr/mendix-mcp-server](https://github.com/jordnlvr/mendix-mcp-server)                  | ✅ Active |
+| **Documentation** | [jordnlvr.github.io/mendix-mcp-server](https://jordnlvr.github.io/mendix-mcp-server/)                                                  | ✅ Live |
+| **Smithery**      | [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)                               | ✅ Listed |
+
+**Installing from Smithery:**
+```bash
+smithery install @jordnlvr/mendix-mcp-server --client claude
+```
+
+See [docs/SMITHERY-PUBLISHING.md](docs/SMITHERY-PUBLISHING.md) for publishing updates.
 
 ### Key Files & Folders
 
@@ -70,6 +77,7 @@ mendix-mcp-server/
 │   └── reindex-vectors.js    # Vector reindex utility (fixed in v3.2.0)
 ├── docs/                      # Jekyll site for GitHub Pages
 │   ├── MENDIX-EXPERT-GUIDE.html  # PDF-ready user guide
+│   ├── SMITHERY-PUBLISHING.md    # 🆕 How to publish to Smithery registry
 │   └── ...
 ├── .github/
 │   └── workflows/            # CI/CD automation
@@ -85,9 +93,10 @@ mendix-mcp-server/
 ├── start-ngrok-tunnel.bat    # ngrok for ChatGPT tunnel
 ├── start-all.bat             # Server + ngrok combined
 ├── check-server-status.bat   # Quick status check
+├── smithery.yaml             # 🆕 Smithery registry configuration
 ├── CHANGELOG.md              # Version history
 ├── ARCHITECTURE.md           # Full system design
-└── package.json              # v3.1.1
+└── package.json              # v3.2.0
 ```
 
 ---

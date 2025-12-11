@@ -16,7 +16,21 @@ has_children: true
 
 ## Installation
 
-### 1. Clone the Repository
+### Option 1: Smithery (Recommended)
+
+The easiest way to install:
+
+```bash
+# Install Smithery CLI
+npm install -g @smithery/cli
+
+# Install Mendix Expert
+smithery install @jordnlvr/mendix-mcp-server --client claude
+```
+
+**Done!** Skip to the "Usage" section below.
+
+### Option 2: From Source
 
 ```bash
 git clone https://github.com/jordnlvr/mendix-mcp-server.git

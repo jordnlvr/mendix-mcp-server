@@ -1,2 +1,80 @@
-# Smithery Configuration
+# Smithery Configuration for Mendix Expert MCP Server
+# https://smithery.ai/docs/build/project-config/smithery-yaml
+
 runtime: "typescript"
+
+# Start command configuration
+startCommand:
+  type: stdio
+
+# Configuration schema for user-provided settings
+# All fields are optional - the server works without any configuration
+configSchema:
+  type: object
+  required: []
+  properties:
+    OPENAI_API_KEY:
+      type: string
+      title: "OpenAI API Key (Optional)"
+      description: "OpenAI API key for enhanced semantic search. If not provided, uses local TF-IDF search."
+      default: ""
+    AZURE_OPENAI_API_KEY:
+      type: string
+      title: "Azure OpenAI API Key (Optional)"
+      description: "Azure OpenAI API key for enterprise semantic search. Takes priority over standard OpenAI."
+      default: ""
+    AZURE_OPENAI_ENDPOINT:
+      type: string
+      title: "Azure OpenAI Endpoint (Optional)"
+      description: "Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com)"
+      default: ""
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT:
+      type: string
+      title: "Azure OpenAI Embedding Deployment (Optional)"
+      description: "Name of the embedding deployment (e.g., text-embedding-ada-002)"
+      default: "text-embedding-ada-002"
+    PINECONE_API_KEY:
+      type: string
+      title: "Pinecone API Key (Optional)"
+      description: "Pinecone API key for custom vector index. Built-in shared index is used by default."
+      default: ""
+    PINECONE_INDEX:
+      type: string
+      title: "Pinecone Index Name (Optional)"
+      description: "Custom Pinecone index name. Only needed if using your own index."
+      default: ""
+    DEBUG:
+      type: boolean
+      title: "Debug Mode"
+      description: "Enable debug logging for troubleshooting"
+      default: false
+
+# Command function to translate configuration into execution
+commandFunction: |-
+  (config) => {
+    const env = {};
+    
+    // Only add environment variables if they are provided and non-empty
+    // Skip default empty strings to avoid setting unnecessary env vars
+    if (config.OPENAI_API_KEY && config.OPENAI_API_KEY !== "") env.OPENAI_API_KEY = config.OPENAI_API_KEY;
+    if (config.AZURE_OPENAI_API_KEY && config.AZURE_OPENAI_API_KEY !== "") env.AZURE_OPENAI_API_KEY = config.AZURE_OPENAI_API_KEY;
+    if (config.AZURE_OPENAI_ENDPOINT && config.AZURE_OPENAI_ENDPOINT !== "") env.AZURE_OPENAI_ENDPOINT = config.AZURE_OPENAI_ENDPOINT;
+    // Only set deployment name if Azure endpoint is also provided (they work together)
+    if (config.AZURE_OPENAI_ENDPOINT && config.AZURE_OPENAI_ENDPOINT !== "" && 
+        config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT && config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT !== "text-embedding-ada-002") {
+      env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT = config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT;
+    }
+    if (config.PINECONE_API_KEY && config.PINECONE_API_KEY !== "") env.PINECONE_API_KEY = config.PINECONE_API_KEY;
+    if (config.PINECONE_INDEX && config.PINECONE_INDEX !== "") env.PINECONE_INDEX = config.PINECONE_INDEX;
+    if (config.DEBUG) env.DEBUG = 'true';
+    
+    return {
+      command: 'node',
+      args: ['src/index.js'],
+      env: env
+    };
+  }
+
+# Example configuration for testing
+exampleConfig:
+  DEBUG: false

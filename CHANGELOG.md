@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **📦 Smithery Registry Configuration**
+  - Enhanced `smithery.yaml` with comprehensive configuration schema
+  - Added all optional environment variables (OPENAI_API_KEY, AZURE_OPENAI_*, PINECONE_*)
+  - Documented zero-config operation (all fields optional)
+  - Created `commandFunction` to translate user config to execution environment
+  - Added `exampleConfig` for testing
+  - New documentation: `docs/SMITHERY-PUBLISHING.md` - Complete guide to publishing updates
+
+- **📖 Installation Documentation**
+  - Added Smithery CLI installation method to README.md
+  - Documented three installation options: Smithery, npm, and from source
+  - Updated quick start guide to prioritize Smithery installation
+  - Added registry URL: https://smithery.ai/server/@jordnlvr/mendix-mcp-server
+
 - **🚀 Desktop Launcher Scripts**
   - `START-SERVER.cmd` - One-click launcher (main entry point)
   - `Start-MendixServer.ps1` - PowerShell launcher with status feedback

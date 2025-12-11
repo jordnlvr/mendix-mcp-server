@@ -19,7 +19,46 @@ Get mendix-expert running in 5 minutes
 
 ---
 
-## Step 1: Clone the Repository
+## Installation Methods
+
+Choose the method that works best for you:
+
+### Method 1: Smithery (Recommended - Easiest)
+
+**Smithery** automatically handles installation and configuration:
+
+```bash
+# Install Smithery CLI
+npm install -g @smithery/cli
+
+# Install Mendix Expert MCP Server
+smithery install @jordnlvr/mendix-mcp-server --client claude
+
+# Or for VS Code Copilot
+smithery install @jordnlvr/mendix-mcp-server --client vscode
+```
+
+**Done!** Smithery configures everything for you. You can start using `@mendix-expert` immediately.
+
+**Registry URL:** [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)
+
+---
+
+### Method 2: npm (Quick)
+
+```bash
+# Install globally
+npm install -g @jordnlvr/mendix-mcp-server
+
+# Or use with npx (no install needed)
+npx @jordnlvr/mendix-mcp-server
+```
+
+Then configure your MCP client manually (see Step 2 below).
+
+---
+
+### Method 3: From Source (Advanced)
 
 ```powershell
 # Choose where to install (anywhere you want)
@@ -31,13 +70,8 @@ cd mendix-mcp-server
 
 # Install dependencies
 npm install
-```
 
----
-
-## Step 2: Test It Works
-
-```powershell
+# Test it works
 node src/index.js
 ```
 
@@ -45,7 +79,7 @@ You should see output about the server starting. Press `Ctrl+C` to stop.
 
 ---
 
-## Step 3: Configure Your AI Client
+## Step 2: Configure Your AI Client (Methods 2 & 3 only)
 
 ### Option A: VS Code Copilot
 

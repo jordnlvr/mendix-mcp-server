@@ -763,6 +763,77 @@ export default class VectorStore {
   }
 
   /**
+   * Index a single document - used for auto-indexing new knowledge entries
+   * This is more efficient than re-indexing everything when adding one item.
+   * 
+   * @param {Object} doc - Document with title, content, category, source
+   * @returns {Object} - { success: boolean, id?: string, error?: string }
+   */
+  async indexSingleDocument(doc) {
+    if (!this.initialized) {
+      const ready = await this.initialize();
+      if (!ready) {
+        return { success: false, error: 'VectorStore not initialized' };
+      }
+    }
+
+    // Validate document
+    const text = doc.content || doc.text || '';
+    if (!text || text.length < 20) {
+      return { success: false, error: 'Document content too short' };
+    }
+
+    try {
+      // Get embedding for this document
+      let embedding;
+      const textToEmbed = `${doc.title || ''} ${text}`.trim();
+      
+      const isCloudEmbedding = this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
+      
+      if (isCloudEmbedding) {
+        try {
+          embedding = await this.embedder.embed(textToEmbed);
+        } catch (error) {
+          logger.warn('Cloud embedding failed for single doc, using local', { error: error.message });
+          embedding = this.localEmbedder.embed(textToEmbed);
+        }
+      } else {
+        embedding = this.localEmbedder.embed(textToEmbed);
+      }
+
+      // Check if vector has content
+      const hasContent = embedding.some(v => v !== 0);
+      if (!hasContent) {
+        return { success: false, error: 'Generated embedding has no content' };
+      }
+
+      // Create vector object
+      const id = this.generateId(doc);
+      const vector = {
+        id,
+        values: embedding,
+        metadata: {
+          title: doc.title?.slice(0, 500) || '',
+          category: doc.category || 'general',
+          source: doc.source || 'knowledge-base',
+          version: doc.version || 'unknown',
+          preview: text.slice(0, 200),
+        },
+      };
+
+      // Upsert single vector
+      await this.index.namespace(this.namespace).upsert([vector]);
+      
+      logger.info('Single document indexed', { id, title: doc.title });
+      return { success: true, id };
+      
+    } catch (error) {
+      logger.error('Failed to index single document', { error: error.message, title: doc.title });
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
    * Get stats about the vector index
    */
   async getStats() {

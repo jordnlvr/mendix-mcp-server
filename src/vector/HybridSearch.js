@@ -725,6 +725,14 @@ export default class HybridSearch {
   }
 
   /**
+   * Get the VectorStore instance for auto-indexing new entries
+   * Used by SupabaseKnowledgeManager to index new knowledge to Pinecone
+   */
+  getVectorStore() {
+    return this.vectorStore;
+  }
+
+  /**
    * Get search engine statistics
    */
   async getStats() {

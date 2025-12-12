@@ -9,7 +9,9 @@
  * (files with categories). This manager fetches from Supabase and transforms
  * into that format for compatibility.
  *
- * @version 1.0.0
+ * NEW in v3.4.0: Auto-indexes new entries to Pinecone for semantic search!
+ *
+ * @version 1.1.0
  */
 
 import SupabaseKnowledgeStore from '../storage/SupabaseKnowledgeStore.js';
@@ -17,9 +19,12 @@ import Logger from '../utils/logger.js';
 import QualityScorer from './QualityScorer.js';
 
 class SupabaseKnowledgeManager {
-  constructor() {
+  constructor(options = {}) {
     this.logger = new Logger('SupabaseKnowledgeManager');
     this.qualityScorer = new QualityScorer();
+
+    // Optional VectorStore for auto-indexing new entries
+    this.vectorStore = options.vectorStore || null;
 
     // Supabase store
     this.store = new SupabaseKnowledgeStore();
@@ -47,6 +52,15 @@ class SupabaseKnowledgeManager {
     this.knowledgeFiles = Object.keys(this.categoryFileMap);
 
     this.logger.info('SupabaseKnowledgeManager initialized');
+  }
+
+  /**
+   * Set VectorStore for auto-indexing new entries to Pinecone
+   * Call this after VectorStore is initialized
+   */
+  setVectorStore(vectorStore) {
+    this.vectorStore = vectorStore;
+    this.logger.info('VectorStore attached for auto-indexing');
   }
 
   /**
@@ -173,7 +187,7 @@ class SupabaseKnowledgeManager {
 
   /**
    * Add new knowledge entry
-   * Writes to Supabase and updates local cache
+   * Writes to Supabase, updates local cache, and auto-indexes to Pinecone
    */
   async add(fileName, category, content, source, options = {}) {
     try {
@@ -196,10 +210,34 @@ class SupabaseKnowledgeManager {
       // Refresh local cache
       await this.reload();
 
+      // Auto-index to Pinecone if VectorStore is available (non-blocking)
+      let vectorIndexed = false;
+      if (this.vectorStore && !result.duplicate) {
+        try {
+          const vectorResult = await this.vectorStore.indexSingleDocument({
+            title: entry.title,
+            content: entry.content,
+            category: entry.category,
+            source: entry.source,
+            version: entry.mendixVersion,
+          });
+          vectorIndexed = vectorResult.success;
+          if (vectorIndexed) {
+            this.logger.info('Auto-indexed to Pinecone', { id: vectorResult.id });
+          }
+        } catch (vectorError) {
+          // Don't fail the add operation if vector indexing fails
+          this.logger.warn('Auto-index to Pinecone failed (non-fatal)', { 
+            error: vectorError.message 
+          });
+        }
+      }
+
       this.logger.info('Knowledge added to Supabase', {
         id: result.id,
         category,
         duplicate: result.duplicate || false,
+        vectorIndexed,
       });
 
       return {
@@ -207,6 +245,7 @@ class SupabaseKnowledgeManager {
         id: result.id,
         qualityScore: entry.qualityScore,
         duplicate: result.duplicate || false,
+        vectorIndexed,
       };
     } catch (error) {
       this.logger.error('Failed to add knowledge', { error: error.message });

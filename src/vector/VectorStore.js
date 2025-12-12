@@ -588,13 +588,21 @@ export default class VectorStore {
 
     for (let i = 0; i < validDocs.length; i += batchSize) {
       const batch = validDocs.slice(i, i + batchSize);
-      const texts = batch.map((doc) => doc.content || doc.text || doc.title);
+      // Truncate texts to avoid token limit (8192 tokens ≈ 32000 chars, use 6000 for safety per doc)
+      const MAX_CHARS = 6000;
+      const texts = batch.map((doc) => {
+        const text = doc.content || doc.text || doc.title || '';
+        return text.length > MAX_CHARS ? text.slice(0, MAX_CHARS) + '...' : text;
+      });
 
       let embeddings;
+      let embeddingDimension = this.dimension; // Track dimension of embeddings produced
+      
       if (isCloudEmbedding) {
         // Batch embedding for OpenAI/Azure (faster)
         try {
           embeddings = await this.embedder.embedBatch(texts);
+          embeddingDimension = 1536; // Cloud embeddings are always 1536
         } catch (error) {
           logger.error('Primary cloud embedding failed', { error: error.message });
 
@@ -603,23 +611,24 @@ export default class VectorStore {
             try {
               logger.info('Attempting fallback to OpenAI embeddings');
               embeddings = await this.openaiEmbedder.embedBatch(texts);
+              embeddingDimension = 1536;
             } catch (fallbackError) {
-              logger.error('OpenAI fallback also failed, using local', {
+              logger.error('OpenAI fallback also failed, skipping batch', {
                 error: fallbackError.message,
               });
-              this.localEmbedder.buildVocabulary(batch);
-              embeddings = texts.map((t) => this.localEmbedder.embed(t));
+              // Skip this batch entirely rather than mixing dimensions
+              continue;
             }
           } else {
-            // Fall back to local for this batch
-            logger.warn('Falling back to local embeddings');
-            this.localEmbedder.buildVocabulary(batch);
-            embeddings = texts.map((t) => this.localEmbedder.embed(t));
+            // Skip batch rather than fall back to local (dimension mismatch)
+            logger.warn('Skipping batch - local embeddings would cause dimension mismatch');
+            continue;
           }
         }
       } else {
         // Local embeddings (synchronous)
         embeddings = texts.map((t) => this.localEmbedder.embed(t));
+        embeddingDimension = 384;
       }
 
       for (let j = 0; j < batch.length; j++) {
@@ -765,7 +774,7 @@ export default class VectorStore {
   /**
    * Index a single document - used for auto-indexing new knowledge entries
    * This is more efficient than re-indexing everything when adding one item.
-   * 
+   *
    * @param {Object} doc - Document with title, content, category, source
    * @returns {Object} - { success: boolean, id?: string, error?: string }
    */
@@ -784,25 +793,37 @@ export default class VectorStore {
     }
 
     try {
-      // Get embedding for this document
+      // Truncate to avoid token limits (6000 chars ≈ 1500 tokens, safe for 8192 limit)
+      const MAX_CHARS = 6000;
+      const fullText = `${doc.title || ''} ${text}`.trim();
+      const textToEmbed = fullText.length > MAX_CHARS ? fullText.slice(0, MAX_CHARS) + '...' : fullText;
+
+      const isCloudEmbedding =
+        this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
+
+      // Only use cloud embeddings for indexing (to match Pinecone's 1536 dimension)
+      if (!isCloudEmbedding) {
+        return { success: false, error: 'Cloud embeddings required for indexing (dimension mismatch with local)' };
+      }
+
       let embedding;
-      const textToEmbed = `${doc.title || ''} ${text}`.trim();
-      
-      const isCloudEmbedding = this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
-      
-      if (isCloudEmbedding) {
-        try {
-          embedding = await this.embedder.embed(textToEmbed);
-        } catch (error) {
-          logger.warn('Cloud embedding failed for single doc, using local', { error: error.message });
-          embedding = this.localEmbedder.embed(textToEmbed);
+      try {
+        embedding = await this.embedder.embed(textToEmbed);
+      } catch (error) {
+        // Try fallback to OpenAI if Azure fails
+        if (this.embeddingMode === 'azure-openai' && this.openaiEmbedder.isAvailable()) {
+          try {
+            embedding = await this.openaiEmbedder.embed(textToEmbed);
+          } catch (fallbackError) {
+            return { success: false, error: `Embedding failed: ${fallbackError.message}` };
+          }
+        } else {
+          return { success: false, error: `Embedding failed: ${error.message}` };
         }
-      } else {
-        embedding = this.localEmbedder.embed(textToEmbed);
       }
 
       // Check if vector has content
-      const hasContent = embedding.some(v => v !== 0);
+      const hasContent = embedding.some((v) => v !== 0);
       if (!hasContent) {
         return { success: false, error: 'Generated embedding has no content' };
       }
@@ -823,10 +844,9 @@ export default class VectorStore {
 
       // Upsert single vector
       await this.index.namespace(this.namespace).upsert([vector]);
-      
+
       logger.info('Single document indexed', { id, title: doc.title });
       return { success: true, id };
-      
     } catch (error) {
       logger.error('Failed to index single document', { error: error.message, title: doc.title });
       return { success: false, error: error.message };

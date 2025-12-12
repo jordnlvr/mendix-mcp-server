@@ -98,28 +98,27 @@ This will:
 
 ## How It Works
 
-### Hybrid Storage Mode
+### Supabase-First Storage (v3.4.0+)
 
-The server uses a `HybridKnowledgeManager` that:
+The server uses `SupabaseKnowledgeManager` as the primary storage:
 
-1. **Tries Supabase first** - Fast, indexed, persistent
-2. **Falls back to JSON** - For local-only development
-3. **Writes to both** - Keeps JSON as backup when possible
+1. **Supabase is primary** - Fast, indexed, cloud-persistent
+2. **JSON is fallback** - Only used when Supabase is unavailable
+3. **Auto-indexes to Pinecone** - New entries are automatically indexed for semantic search
 
 ### Storage Priority
 
-| Environment             | Primary Storage | Backup             |
-| ----------------------- | --------------- | ------------------ |
-| Railway (with Supabase) | Supabase        | None (JSON resets) |
-| Local (with Supabase)   | Supabase        | JSON files         |
-| Local (no Supabase)     | JSON files      | None               |
+| Environment             | Storage         | Vector Search |
+| ----------------------- | --------------- | ------------- |
+| Railway (with Supabase) | Supabase        | Pinecone      |
+| Local (with Supabase)   | Supabase        | Pinecone      |
+| Local (no Supabase)     | JSON files      | Optional      |
 
 ### Self-Learning Flow
 
 ```
-User adds knowledge → HybridManager → Supabase (cloud)
-                                   → JSON (local backup)
-                                   → Pinecone (vectors)
+User adds knowledge → SupabaseKnowledgeManager → Supabase (primary)
+                                              → Pinecone (auto-indexed)
 ```
 
 ## Troubleshooting

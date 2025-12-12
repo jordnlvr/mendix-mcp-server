@@ -227,8 +227,8 @@ class SupabaseKnowledgeManager {
           }
         } catch (vectorError) {
           // Don't fail the add operation if vector indexing fails
-          this.logger.warn('Auto-index to Pinecone failed (non-fatal)', { 
-            error: vectorError.message 
+          this.logger.warn('Auto-index to Pinecone failed (non-fatal)', {
+            error: vectorError.message,
           });
         }
       }

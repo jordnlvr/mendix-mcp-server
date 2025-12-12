@@ -124,7 +124,7 @@ vectorStore
       if (Object.keys(kb).length > 0) {
         await hybridSearch.indexKnowledgeBase(kb);
       }
-      
+
       // Wire up VectorStore for auto-indexing new knowledge entries to Pinecone
       if (useSupabase && hybridSearch.getVectorStore()) {
         knowledgeManager.setVectorStore(hybridSearch.getVectorStore());

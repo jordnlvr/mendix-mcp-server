@@ -83,13 +83,13 @@ async function initialize() {
     hybridSearch = new HybridSearch();
     await hybridSearch.indexKnowledgeBase(knowledgeManager.knowledgeBase);
     vectorSearchAvailable = true;
-    
+
     // Wire up VectorStore for auto-indexing new knowledge entries to Pinecone
     if (storageMode === 'supabase' && hybridSearch.getVectorStore()) {
       knowledgeManager.setVectorStore(hybridSearch.getVectorStore());
       logger.info('VectorStore attached to SupabaseKnowledgeManager for auto-indexing');
     }
-    
+
     logger.info('Hybrid search initialized with vector support');
   } catch (error) {
     logger.warn('Vector search unavailable, using keyword search only', { error: error.message });

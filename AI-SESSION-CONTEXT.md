@@ -49,15 +49,14 @@ mendix-mcp-server/
 │   ├── core/
 │   │   ├── SearchEngine.js   # TF-IDF + fuzzy + semantic
 │   │   ├── SupabaseKnowledgeManager.js  # 🆕 Primary storage (v3.4.0)
-│   │   ├── KnowledgeManager.js          # Legacy JSON (deprecated)
-│   │   └── HybridKnowledgeManager.js    # Deprecated
+│   │   └── KnowledgeManager.js          # Legacy JSON fallback
 │   ├── storage/
 │   │   └── SupabaseKnowledgeStore.js    # Supabase client
 │   ├── analyzers/
 │   │   ├── ThemeAnalyzer.js  # LOCAL ONLY - requires filesystem
 │   │   └── ProjectAnalyzer   # LOCAL ONLY - requires .mpr files
 │   ├── vector/
-│   │   ├── VectorStore.js    # Pinecone semantic search
+│   │   ├── VectorStore.js    # Pinecone semantic search (auto-indexes new entries)
 │   │   └── HybridSearch.js   # Keyword + semantic fusion
 │   └── utils/
 │       ├── MaintenanceScheduler.js

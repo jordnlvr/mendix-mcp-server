@@ -13,6 +13,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.4.2] - 2025-12-12
+
+### Fixed
+
+- **🐛 Pinecone Dimension Mismatch Resolved**
+  - Root cause: OpenAI embedding token limit (8192) exceeded on large docs
+  - Documents now truncated to 6000 chars before embedding (~1500 tokens)
+  - No longer falls back to local embeddings (384 dims) when Pinecone expects 1536
+  - Batches that fail cloud embedding are now skipped rather than mixed
+
+- **🗑️ Removed Obsolete Code**
+  - DELETED: `src/core/HybridKnowledgeManager.js` - no longer needed
+  - Updated docs to reflect Supabase-first architecture
+  - Simplified storage flow: Supabase → Pinecone (no more hybrid complexity)
+
+### Changed
+
+- `VectorStore.indexDocuments()` now truncates text before embedding
+- `VectorStore.indexSingleDocument()` requires cloud embeddings (no local fallback)
+- Updated AI-SESSION-CONTEXT.md and SUPABASE-SETUP.md documentation
+
+---
+
 ## [3.4.0] - 2025-12-12
 
 ### Added

@@ -623,6 +623,81 @@ Just tell any AI: "Use Beast Mode for this question" or paste the full prompt.`;
   }
 );
 
+// ============================================================================
+// SELF-LEARNING QUALITY ASSESSMENT (shared by all interfaces)
+// ============================================================================
+/**
+ * Assess answer quality based on search results.
+ * Used by both MCP tools and REST API to enable self-learning across ALL clients:
+ * - GitHub Copilot, Claude Desktop, Cursor (MCP)
+ * - ChatGPT Custom GPT (REST)
+ * - n8n, Make, Zapier, custom integrations (REST)
+ */
+function assessAnswerQuality(results, query) {
+  if (!results || results.length === 0) {
+    return {
+      answerQuality: 'none',
+      beastModeNeeded: true,
+      qualityReason: 'No results found in knowledge base.',
+    };
+  }
+
+  const topScore = results[0]?.score || 0;
+  const avgScore = results.slice(0, 5).reduce((sum, r) => sum + (r.score || 0), 0) / Math.min(5, results.length);
+
+  if (topScore < 0.1 || avgScore < 0.05) {
+    return {
+      answerQuality: 'weak',
+      beastModeNeeded: true,
+      qualityReason: 'Results have low relevance scores. Web search recommended.',
+    };
+  }
+
+  if (topScore < 0.3 || avgScore < 0.15) {
+    return {
+      answerQuality: 'partial',
+      beastModeNeeded: true,
+      qualityReason: 'Some relevant info found, but web search could provide more complete answers.',
+    };
+  }
+
+  if (topScore > 0.6 && avgScore > 0.4) {
+    return {
+      answerQuality: 'strong',
+      beastModeNeeded: false,
+      qualityReason: 'High-quality results found.',
+    };
+  }
+
+  return {
+    answerQuality: 'good',
+    beastModeNeeded: false,
+    qualityReason: 'Good results found.',
+  };
+}
+
+/**
+ * Generate self-learning instructions for AI clients.
+ * This message tells ANY AI (Copilot, Claude, ChatGPT, etc.) what to do when answers are weak.
+ */
+function getSelfLearningInstructions(query, interfaceType = 'mcp') {
+  const addTool = interfaceType === 'rest' ? 'POST /learn' : 'add_to_knowledge_base';
+  return `
+🔍 **SELF-LEARNING MODE ACTIVATED**
+
+The knowledge base doesn't have a strong answer for "${query}".
+
+**Your mission:**
+1. Search the web for authoritative information (official Mendix docs, GitHub, community forums)
+2. Synthesize what you find into clear, actionable knowledge
+3. Call \`${addTool}\` to permanently store what you learned
+
+This ensures the next time anyone asks about "${query}", the answer will be ready!
+
+*Every search you add makes the knowledge base smarter for everyone.*
+`;
+}
+
 // Tool 1: Query Mendix Knowledge
 server.tool(
   'query_mendix_knowledge',
@@ -649,6 +724,9 @@ server.tool(
         minScore: detail_level === 'basic' ? 0.5 : 0.3,
       });
 
+      // Assess answer quality for self-learning
+      const quality = assessAnswerQuality(searchResults, topic);
+
       if (searchResults.length === 0) {
         // Suggest web sources when no results found
         const fetchSuggestions = webFetcher.suggestFetchUrls(topic);
@@ -665,7 +743,7 @@ server.tool(
           content: [
             {
               type: 'text',
-              text: `No specific knowledge found for "${topic}". Try broader terms like "microflow", "domain modeling", "security", "performance", etc.${suggestionText}\n\n💡 **Tip**: Use the add_to_knowledge_base tool to add new knowledge about this topic after researching it!`,
+              text: `No specific knowledge found for "${topic}". Try broader terms like "microflow", "domain modeling", "security", "performance", etc.${suggestionText}\n${getSelfLearningInstructions(topic, 'mcp')}`,
             },
           ],
         };
@@ -674,6 +752,7 @@ server.tool(
       // Format results
       const sections = [];
       sections.push(`# Search Results (${searchResults.length} matches)\n`);
+      sections.push(`**Answer Quality:** ${quality.answerQuality} | **Web Search Recommended:** ${quality.beastModeNeeded ? 'Yes' : 'No'}\n`);
 
       for (const result of searchResults) {
         const { file, category, entry, score } = result;
@@ -697,6 +776,13 @@ server.tool(
         if (entry._metadata?.id) {
           await knowledgeManager.recordUsage(file, entry._metadata.id);
         }
+      }
+
+      // Add self-learning instructions if results are weak
+      if (quality.beastModeNeeded) {
+        sections.push(getSelfLearningInstructions(topic, 'mcp'));
+      } else {
+        sections.push('\n💡 **Good results found!** If you discover additional information while helping the user, consider using `add_to_knowledge_base` to enhance future queries.');
       }
 
       return {
@@ -801,16 +887,23 @@ server.tool(
         minScore: 0.4,
       });
 
+      // Assess answer quality for self-learning
+      const quality = assessAnswerQuality(results, scenario);
+
       if (results.length === 0) {
         return {
           content: [
             {
               type: 'text',
-              text: `No best practice found for: ${scenario}. Try terms like "error handling", "performance", "security", "domain modeling", etc.\n\n💡 **Tip**: Use the add_to_knowledge_base tool to add best practices for this scenario!`,
+              text: `No best practice found for: ${scenario}. Try terms like "error handling", "performance", "security", "domain modeling", etc.\n${getSelfLearningInstructions(scenario, 'mcp')}`,
             },
           ],
         };
       }
+
+      const sections = [];
+      sections.push(`# Best Practices for: ${scenario}\n`);
+      sections.push(`**Answer Quality:** ${quality.answerQuality} | **Web Search Recommended:** ${quality.beastModeNeeded ? 'Yes' : 'No'}\n`);
 
       const formatted = results
         .map(
@@ -821,8 +914,17 @@ server.tool(
         )
         .join('\n');
 
+      sections.push(formatted);
+
+      // Add self-learning instructions if results are weak
+      if (quality.beastModeNeeded) {
+        sections.push(getSelfLearningInstructions(scenario, 'mcp'));
+      } else {
+        sections.push('\n💡 **Good results found!** If you discover additional best practices while helping the user, use `add_to_knowledge_base` to share them with future users.');
+      }
+
       return {
-        content: [{ type: 'text', text: formatted }],
+        content: [{ type: 'text', text: sections.join('\n') }],
       };
     } catch (error) {
       logger.error('Failed to get best practice', { error: error.message });

@@ -13,6 +13,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.5.1] - 2025-12-12
+
+### Added
+
+- **🌍 Universal Self-Learning - EVERY client now learns!**
+
+  - MCP tools (`query_mendix_knowledge`, `get_best_practice`) now include quality assessment
+  - GitHub Copilot, Claude Desktop, Cursor all get `beastModeNeeded` signals
+  - Shared `assessAnswerQuality()` function ensures consistent behavior
+  - Shared `getSelfLearningInstructions()` function guides all AI clients
+  - Works identically across: ChatGPT, Copilot, Claude, n8n, Make, Zapier, custom integrations
+
+### Changed
+
+- MCP tool responses now include Answer Quality and Web Search Recommended indicators
+- All AI clients receive self-learning instructions when results are weak
+- Even good results include encouragement to use `add_to_knowledge_base` for new discoveries
+
+### Technical
+
+- Added `assessAnswerQuality(results, query)` shared helper in index.js
+- Added `getSelfLearningInstructions(query, interfaceType)` shared helper
+- Both MCP (stdio) and REST (HTTP) use same quality assessment logic
+
+---
+
 ## [3.5.0] - 2025-12-12
 
 ### Added

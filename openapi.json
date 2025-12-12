@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Mendix Expert API",
-    "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol. Now with Supabase cloud persistence for knowledge that survives container restarts!",
-    "version": "3.5.0"
+    "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol. Universal self-learning enabled - ALL clients (ChatGPT, Copilot, Claude, n8n) now get quality signals!",
+    "version": "3.5.1"
   },
   "servers": [
     {
@@ -110,7 +110,7 @@
                   "properties": {
                     "query": { "type": "string" },
                     "resultCount": { "type": "integer" },
-                    "answerQuality": { 
+                    "answerQuality": {
                       "type": "string",
                       "enum": ["none", "weak", "partial", "good", "strong"],
                       "description": "Quality of results found. If 'none', 'weak', or 'partial', consider searching the web."

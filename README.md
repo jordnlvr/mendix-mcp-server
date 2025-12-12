@@ -28,34 +28,35 @@ npx @jordnlvr/mendix-mcp-server
 
 ---
 
-## 🆕 What's New in v3.3.0
+## 🆕 What's New in v3.5.1
 
-### 🗄️ Supabase Cloud Persistence
+### 🌍 Universal Self-Learning (v3.5.1)
 
-- **Persistent knowledge storage** - No more lost knowledge on Railway container restarts!
-- **Hybrid storage mode** - Supabase for cloud, JSON for local backup
-- **Full-text search** - PostgreSQL-powered search with indexes for faster queries
-- **Shared knowledge** - Same knowledge base across local dev and cloud deployments
-- **Migration script** - `npm run migrate:supabase` to load existing JSON knowledge
+**Every AI client now learns automatically!**
 
-### 🌾 Automated Weekly Harvesting
+- **Quality signals for ALL clients** - GitHub Copilot, Claude Desktop, Cursor, ChatGPT, n8n, Make, Zapier
+- **MCP tools get quality assessment** - `query_mendix_knowledge` and `get_best_practice` return answer quality
+- **Shared logic** - `assessAnswerQuality()` ensures consistent behavior across REST and MCP
+- **Self-learning instructions** - AI clients are guided to add knowledge when results are weak
 
-- **GitHub Action** runs every Monday at 3AM UTC
-- Crawls `releaseNotes`, `studioProGuide`, and `refGuide` from docs.mendix.com
-- Auto-commits fresh knowledge - your AI assistant stays current!
-- Manual trigger available via GitHub Actions UI
+### 🧠 Self-Learning API (v3.5.0)
 
-### 🚀 Performance Improvements
+- **NEW: `POST /learn` endpoint** - Add knowledge via REST API
+- **Accepts:** title, content, category, source, sourceUrl, mendixVersion, tags
+- **Auto-stores to Supabase + auto-indexes to Pinecone**
+- **Quality assessment on `/search`** - Returns `answerQuality` and `beastModeNeeded`
 
-- **Disk-cached embeddings** - Cache persists to `data/embedding-cache.json`
-- Server restarts 3-5x faster with warm cache
-- Graceful shutdown saves cache automatically
+### 🗄️ Supabase-First Storage (v3.4.0)
 
-### 📊 New REST API Endpoints
+- **242+ knowledge entries** in PostgreSQL (no more JSON file chaos!)
+- **Single source of truth** - Supabase is primary, vectors in Pinecone
+- **Persistent across restarts** - Railway containers can restart without data loss
 
-- `GET /harvest-status` - Check harvest schedule and last run time
-- `POST /harvest` - Trigger manual harvest (sources: releaseNotes, studioProGuide, etc.)
-- `POST /knowledge-gap` - Report missing knowledge for future harvesting
+### 🔮 Pinecone Auto-Indexing (v3.4.1-3.4.2)
+
+- **253 vectors indexed** - All knowledge searchable semantically
+- **Auto-index on add** - New knowledge immediately gets vector embeddings
+- **OpenAI text-embedding-3-small** - 1536 dimensions, truncated to 6000 chars
 
 See [CHANGELOG.md](CHANGELOG.md) for full release history.
 
@@ -80,19 +81,20 @@ This is a **Model Context Protocol (MCP) server** that supercharges AI assistant
 
 ## ✨ Key Features
 
-| Feature                      | Description                                                                |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| 🔍 **Intelligent Search**    | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow" |
-| 🔮 **Vector Search**         | Semantic search using Pinecone - find concepts, not just keywords          |
-| 🎯 **Hybrid Search**         | Combined keyword + semantic search for best of both worlds                 |
-| 🧠 **Self-Learning**         | Automatically grows smarter as you add knowledge                           |
-| 🔬 **Beast Mode**            | 5-tier research protocol - docs, GitHub, npm, forums, archives             |
-| 📊 **Analytics Dashboard**   | Visual HTML dashboard at `/dashboard` endpoint                             |
-| 🎨 **Theme Analyzer v2.0**   | Web-focused, follows @imports, CSS custom properties, letter grades        |
-| 🔧 **Auto-Maintenance**      | Scheduled harvesting, validation, staleness detection, cache cleanup       |
-| 📁 **Project Analysis**      | Analyze any `.mpr` file - discover modules, entities, microflows           |
-| 🧩 **Studio Pro Extensions** | Build C# extensions for Studio Pro 11+ with verified patterns              |
-| 🔄 **Zero Config**           | Built-in Pinecone key - works out of the box, no API keys required!        |
+| Feature                        | Description                                                                |
+| ------------------------------ | -------------------------------------------------------------------------- |
+| 🌍 **Universal Self-Learning** | ALL clients (Copilot, Claude, ChatGPT, n8n) get quality signals & learn    |
+| 🧠 **REST `/learn` Endpoint**  | Add knowledge via HTTP - ChatGPT can store what it finds                   |
+| 🔍 **Intelligent Search**      | TF-IDF with fuzzy matching - typos like "micorflow" still find "microflow" |
+| 🔮 **Vector Search**           | Semantic search using Pinecone (253 vectors, 1536 dimensions)              |
+| 🎯 **Hybrid Search**           | Combined keyword + semantic search for best of both worlds                 |
+| 📊 **Quality Assessment**      | Every search returns `answerQuality` and `beastModeNeeded`                 |
+| 🔬 **Beast Mode**              | 5-tier research protocol - docs, GitHub, npm, forums, archives             |
+| 🗄️ **Supabase Storage**        | 242+ entries in PostgreSQL - survives Railway restarts                     |
+| 🎨 **Theme Analyzer v2.0**     | Web-focused, follows @imports, CSS custom properties, letter grades        |
+| 📁 **Project Analysis**        | Analyze any `.mpr` file - discover modules, entities, microflows           |
+| 🧩 **Studio Pro Extensions**   | Build C# extensions for Studio Pro 11+ with verified patterns              |
+| 🔄 **Auto-Deploy**             | Push to GitHub → Railway deploys automatically                             |
 
 ---
 

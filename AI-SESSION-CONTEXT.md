@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 12, 2025  
-**Version:** 3.4.0  
+**Version:** 3.5.1  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -14,13 +14,15 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 
 ### Core Value Proposition
 
-- **241 knowledge entries** in Supabase PostgreSQL database
-- **Supabase-first storage** - No more JSON files, single source of truth (v3.4.0)
-- **Semantic search** via Pinecone (built-in shared index - no user setup!)
-- **Multiple embedding providers** - Azure OpenAI, OpenAI, or local TF-IDF
+- **242+ knowledge entries** in Supabase PostgreSQL database
+- **253 vectors** in Pinecone for semantic search
+- **Universal self-learning** - ALL clients get quality signals (v3.5.1)
+- **REST `/learn` endpoint** - ChatGPT/n8n can add knowledge via HTTP (v3.5.0)
+- **Supabase-first storage** - Single source of truth, no JSON chaos (v3.4.0)
+- **Semantic search** via Pinecone (OpenAI text-embedding-3-small, 1536 dims)
+- **Quality assessment** - Every search returns `answerQuality` and `beastModeNeeded`
 - **Project & theme analysis** - LOCAL MCP ONLY (not available via REST API)
 - **Studio Pro Extensions** - Complete C# extension development guide for Studio Pro 11+
-- **Self-learning** - harvests docs, remembers solutions, persists to Supabase
 - **Beast Mode** - exhaustive multi-step research on demand (MCP + REST)
 - **Automated weekly harvesting** via GitHub Actions (Monday 3AM UTC)
 
@@ -44,57 +46,33 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 ```
 mendix-mcp-server/
 ├── src/
-│   ├── index.js              # Main MCP server (ESM)
-│   ├── rest-proxy.js         # REST API for ChatGPT (15 endpoints)
+│   ├── index.js              # Main MCP server (ESM) - v3.5.1 with universal self-learning
+│   ├── rest-proxy.js         # REST API for ChatGPT (15+ endpoints including /learn)
 │   ├── core/
 │   │   ├── SearchEngine.js   # TF-IDF + fuzzy + semantic
 │   │   ├── SupabaseKnowledgeManager.js  # 🆕 Primary storage (v3.4.0)
 │   │   └── KnowledgeManager.js          # Legacy JSON fallback
 │   ├── storage/
-│   │   └── SupabaseKnowledgeStore.js    # Supabase client
+│   │   └── SupabaseKnowledgeStore.js    # Supabase client (242+ entries)
 │   ├── analyzers/
 │   │   ├── ThemeAnalyzer.js  # LOCAL ONLY - requires filesystem
 │   │   └── ProjectAnalyzer   # LOCAL ONLY - requires .mpr files
 │   ├── vector/
-│   │   ├── VectorStore.js    # Pinecone semantic search (auto-indexes new entries)
+│   │   ├── VectorStore.js    # Pinecone (253 vectors, 1536 dims, auto-indexes)
 │   │   └── HybridSearch.js   # Keyword + semantic fusion
 │   └── utils/
 │       ├── MaintenanceScheduler.js
 │       └── Analytics.js
-├── knowledge/                 # JSON knowledge base (~700KB)
-│   ├── studio-pro-extensions-complete.json  # Studio Pro extension guide
-│   ├── theme-analysis.json   # v1.4.0 - fonts, design-properties, scaffold
-│   ├── platform-sdk.json     # Verified SDK patterns
-│   ├── best-practices.json
-│   ├── knowledge-gaps.json   # User-reported missing knowledge
-│   └── ...
+├── knowledge/                 # JSON knowledge base (~700KB) - LOCAL FALLBACK ONLY
 ├── scripts/
 │   ├── reindex-vectors.js    # Vector reindex utility
-│   ├── supabase-schema.sql   # 🆕 PostgreSQL schema for Supabase
-│   └── migrate-to-supabase.js # 🆕 Migration script
-├── data/
-│   └── embedding-cache.json  # Persistent embedding cache
+│   ├── supabase-schema.sql   # PostgreSQL schema
+│   └── migrate-to-supabase.js # Migration script
 ├── docs/                      # Jekyll site for GitHub Pages
-│   ├── MENDIX-EXPERT-GUIDE.html  # PDF-ready user guide
-│   ├── SUPABASE-SETUP.md     # 🆕 Supabase integration guide
-│   └── ...
-├── .github/
-│   └── workflows/            # CI/CD automation
-│       ├── ci.yml
-│       ├── npm-publish.yml
-│       ├── pages.yml
-│       ├── weekly-stats.yml
-│       └── weekly-harvest.yml  # Automated Monday 3AM UTC harvest (NEW)
-├── START-SERVER.cmd          # 🎯 ONE-CLICK LAUNCHER (double-click this!)
-├── Start-MendixServer.ps1    # PowerShell launcher script
-├── START-SERVER.vbs          # VBScript launcher (fallback)
-├── start-rest-server.bat     # Simple batch launcher
-├── start-ngrok-tunnel.bat    # ngrok for ChatGPT tunnel
-├── start-all.bat             # Server + ngrok combined
-├── check-server-status.bat   # Quick status check
-├── CHANGELOG.md              # Version history
-├── ARCHITECTURE.md           # Full system design
-└── package.json              # v3.1.1
+├── .github/workflows/         # CI/CD automation
+├── openapi.json              # REST API spec for ChatGPT (v3.5.1)
+├── CHANGELOG.md              # Version history (v3.5.1 is latest)
+└── package.json              # v3.5.1
 ```
 
 ---

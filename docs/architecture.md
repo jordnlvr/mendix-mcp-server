@@ -6,9 +6,9 @@ nav_order: 3
 
 # Architecture
 
-## System Overview
+## System Overview (v3.5.1)
 
-The Mendix Expert MCP Server is built as a modular, self-improving system with several interconnected components.
+The Mendix Expert MCP Server is built as a modular, self-improving system with Supabase as the primary storage and Pinecone for semantic search. **As of v3.5.1, all clients (MCP and REST) participate in universal self-learning.**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -16,70 +16,127 @@ The Mendix Expert MCP Server is built as a modular, self-improving system with s
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
 │  │                           Tool Handlers                               │  │
 │  │  query_mendix_knowledge │ analyze_project │ add_to_knowledge_base    │  │
-│  │  hybrid_search │ vector_search │ harvest │ beast_mode │ etc.         │  │
+│  │  get_best_practice │ beast_mode │ harvest │ analyze_theme            │  │
 │  └─────────────────────────────────┬────────────────────────────────────┘  │
+│                                    │                                        │
+│  ┌─────────────────────────────────┼────────────────────────────────────┐  │
+│  │                    QUALITY ASSESSMENT LAYER (v3.5.1)                  │  │
+│  │                                 │                                     │  │
+│  │  ┌──────────────────────────────┴──────────────────────────────────┐ │  │
+│  │  │  assessAnswerQuality()  │  getSelfLearningInstructions()        │ │  │
+│  │  │  Shared logic for MCP + REST - consistent behavior everywhere   │ │  │
+│  │  └─────────────────────────────────────────────────────────────────┘ │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
 │                                    │                                        │
 │  ┌─────────────────────────────────┼────────────────────────────────────┐  │
 │  │                          CORE LAYER                                   │  │
 │  │                                 │                                     │  │
 │  │  ┌─────────────┐  ┌─────────────┴───────────┐  ┌─────────────────┐   │  │
-│  │  │ Knowledge   │  │     Hybrid Search       │  │    Project      │   │  │
-│  │  │ Manager     │  │  ┌───────┐ ┌─────────┐  │  │    Loader       │   │  │
-│  │  │             │  │  │Keyword│ │ Vector  │  │  │                 │   │  │
-│  │  │ • Load/Save │  │  │Engine │ │ Store   │  │  │ • .mpr parsing  │   │  │
-│  │  │ • Validate  │  │  │ 40%   │ │ 60%     │  │  │ • Module disc.  │   │  │
-│  │  │ • Record    │  │  └───────┘ └────┬────┘  │  │ • Entity anal.  │   │  │
+│  │  │ Supabase    │  │     Hybrid Search       │  │    Project      │   │  │
+│  │  │ Knowledge   │  │  ┌───────┐ ┌─────────┐  │  │    Loader       │   │  │
+│  │  │ Manager     │  │  │Keyword│ │ Vector  │  │  │                 │   │  │
+│  │  │             │  │  │Engine │ │ Store   │  │  │ • .mpr parsing  │   │  │
+│  │  │ • Load/Save │  │  │ 40%   │ │ 60%     │  │  │ • Module disc.  │   │  │
+│  │  │ • Validate  │  │  └───────┘ └────┬────┘  │  │ • Entity anal.  │   │  │
 │  │  └──────┬──────┘  └─────────────────┼──────┘  └─────────────────┘   │  │
 │  │         │                           │                                │  │
 │  │         ▼                           ▼                                │  │
-│  │  ┌─────────────┐           ┌─────────────────┐                      │  │
-│  │  │ knowledge/  │           │    Pinecone     │                      │  │
-│  │  │ *.json      │           │  (Cloud Vector  │                      │  │
-│  │  │             │           │   Database)     │                      │  │
-│  │  │ 300+ entries│           │  318 vectors    │                      │  │
-│  │  └─────────────┘           └─────────────────┘                      │  │
+│  │  ┌─────────────────┐       ┌─────────────────────┐                  │  │
+│  │  │    Supabase     │       │      Pinecone       │                  │  │
+│  │  │   PostgreSQL    │       │    (Cloud Vector    │                  │  │
+│  │  │                 │       │     Database)       │                  │  │
+│  │  │  242+ entries   │       │    253 vectors      │                  │  │
+│  │  │  PRIMARY STORE  │       │    1536 dimensions  │                  │  │
+│  │  └─────────────────┘       └─────────────────────┘                  │  │
 │  └──────────────────────────────────────────────────────────────────────┘  │
 │                                                                             │
 │  ┌──────────────────────────────────────────────────────────────────────┐  │
-│  │                        AUTOMATION LAYER                               │  │
+│  │                         REST API LAYER                                │  │
+│  │                       (rest-proxy.js)                                 │  │
 │  │                                                                       │  │
 │  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────┐   │  │
-│  │  │ Knowledge       │  │  Maintenance    │  │    Web Fetcher      │   │  │
-│  │  │ Harvester       │  │  Scheduler      │  │                     │   │  │
-│  │  │                 │  │                 │  │  • docs.mendix.com  │   │  │
-│  │  │ • Weekly crawls │  │ • Validation    │  │  • GitHub repos     │   │  │
-│  │  │ • Priority      │  │ • Staleness     │  │  • Community forums │   │  │
-│  │  │   topics        │  │ • Cache cleanup │  │  • npm packages     │   │  │
-│  │  └────────┬────────┘  └─────────────────┘  └─────────────────────┘   │  │
-│  │           │                                                           │  │
-│  │           └──────► Auto re-indexes vectors after harvest             │  │
+│  │  │ POST /search    │  │ POST /learn     │  │   GET /health       │   │  │
+│  │  │                 │  │   (v3.5.0)      │  │   GET /dashboard    │   │  │
+│  │  │ • Hybrid search │  │ • Add knowledge │  │   POST /analyze     │   │  │
+│  │  │ • Quality assess│  │ • Auto-index    │  │   POST /best-practice│  │  │
+│  │  │ • beastModeNeed │  │ • To Supabase   │  │   GET /analytics    │   │  │
+│  │  └─────────────────┘  └─────────────────┘  └─────────────────────┘   │  │
 │  └──────────────────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        RAILWAY CLOUD DEPLOYMENT                             │
+│                                                                             │
+│  URL: https://mendix-mcp-server-production.up.railway.app                   │
+│  Auto-deploy: Push to GitHub main → Railway builds automatically            │
+│  Environment: SUPABASE_URL, SUPABASE_KEY, OPENAI_API_KEY, PINECONE_*       │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Details
 
-### 1. Knowledge Manager (`src/core/KnowledgeManager.js`)
+### 1. Supabase Knowledge Manager (`src/core/SupabaseKnowledgeManager.js`)
 
-Manages the JSON knowledge base files:
+**PRIMARY STORAGE** (v3.4.0+) - All knowledge lives in PostgreSQL:
 
 | Function        | Purpose                                    |
 | --------------- | ------------------------------------------ |
-| `load()`        | Load all knowledge files from `/knowledge` |
-| `add()`         | Add new knowledge with quality scoring     |
-| `validate()`    | Check for errors, staleness, duplicates    |
-| `recordUsage()` | Track which entries are actually used      |
+| `getAllKnowledge()` | Load all entries from Supabase |
+| `addKnowledge()` | Add new knowledge with quality scoring |
+| `searchByCategory()` | Find entries by category |
+| `recordUsage()` | Track which entries are actually used |
 
-**Knowledge Files:**
+**Database Schema:**
+```sql
+CREATE TABLE knowledge_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  category TEXT,
+  source TEXT,
+  source_url TEXT,
+  mendix_version TEXT,
+  tags TEXT[],
+  quality_score FLOAT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
 
-- `best-practices.json` - Coding patterns and guidelines
-- `studio-pro.json` - Studio Pro features and usage
-- `model-sdk.json` - SDK programming patterns
-- `platform-sdk.json` - Platform SDK operations
-- `troubleshooting.json` - Common issues and fixes
-- `harvested-*.json` - Auto-crawled content
+### 2. Pinecone Vector Store (`src/vector/VectorStore.js`)
 
-### 2. Hybrid Search (`src/vector/HybridSearch.js`)
+**253 vectors** with OpenAI text-embedding-3-small (1536 dimensions):
+
+| Function        | Purpose                                    |
+| --------------- | ------------------------------------------ |
+| `search()` | Semantic search for related concepts |
+| `indexDocuments()` | Batch index all knowledge |
+| `indexSingleDocument()` | Auto-index new entries (v3.4.1) |
+
+**Auto-indexing**: When knowledge is added via `add_to_knowledge_base` or `/learn`, it's automatically indexed to Pinecone.
+
+### 3. Quality Assessment (`assessAnswerQuality()`)
+
+**Shared logic** (v3.5.1) used by both MCP and REST:
+
+```javascript
+function assessAnswerQuality(results, query) {
+  if (!results || results.length === 0) {
+    return { answerQuality: 'none', beastModeNeeded: true };
+  }
+  
+  const topScore = results[0]?.score || 0;
+  const avgScore = results.slice(0, 5).reduce(...) / 5;
+  
+  if (topScore < 0.1)  return { answerQuality: 'weak', beastModeNeeded: true };
+  if (topScore < 0.3)  return { answerQuality: 'partial', beastModeNeeded: true };
+  if (topScore > 0.6)  return { answerQuality: 'strong', beastModeNeeded: false };
+  return { answerQuality: 'good', beastModeNeeded: false };
+}
+```
+
+### 4. Hybrid Search (`src/vector/HybridSearch.js`)
 
 Combines two search strategies:
 
@@ -92,12 +149,15 @@ Query: "how to loop through entities"
         │   • Mendix term expansion
         │
         └─► Vector Search (60% weight)
-            • Azure OpenAI embeddings
+            • OpenAI text-embedding-3-small
             • Semantic understanding
             • Finds related concepts
         │
         └─► Reciprocal Rank Fusion
             • Merges both result sets
+            • De-duplicates
+            • Returns unified scores
+```
             • Deduplicates near-matches
             • Returns best combined results
 ```

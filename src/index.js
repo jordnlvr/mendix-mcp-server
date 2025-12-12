@@ -643,7 +643,8 @@ function assessAnswerQuality(results, query) {
   }
 
   const topScore = results[0]?.score || 0;
-  const avgScore = results.slice(0, 5).reduce((sum, r) => sum + (r.score || 0), 0) / Math.min(5, results.length);
+  const avgScore =
+    results.slice(0, 5).reduce((sum, r) => sum + (r.score || 0), 0) / Math.min(5, results.length);
 
   if (topScore < 0.1 || avgScore < 0.05) {
     return {
@@ -657,7 +658,8 @@ function assessAnswerQuality(results, query) {
     return {
       answerQuality: 'partial',
       beastModeNeeded: true,
-      qualityReason: 'Some relevant info found, but web search could provide more complete answers.',
+      qualityReason:
+        'Some relevant info found, but web search could provide more complete answers.',
     };
   }
 
@@ -743,7 +745,10 @@ server.tool(
           content: [
             {
               type: 'text',
-              text: `No specific knowledge found for "${topic}". Try broader terms like "microflow", "domain modeling", "security", "performance", etc.${suggestionText}\n${getSelfLearningInstructions(topic, 'mcp')}`,
+              text: `No specific knowledge found for "${topic}". Try broader terms like "microflow", "domain modeling", "security", "performance", etc.${suggestionText}\n${getSelfLearningInstructions(
+                topic,
+                'mcp'
+              )}`,
             },
           ],
         };
@@ -752,7 +757,11 @@ server.tool(
       // Format results
       const sections = [];
       sections.push(`# Search Results (${searchResults.length} matches)\n`);
-      sections.push(`**Answer Quality:** ${quality.answerQuality} | **Web Search Recommended:** ${quality.beastModeNeeded ? 'Yes' : 'No'}\n`);
+      sections.push(
+        `**Answer Quality:** ${quality.answerQuality} | **Web Search Recommended:** ${
+          quality.beastModeNeeded ? 'Yes' : 'No'
+        }\n`
+      );
 
       for (const result of searchResults) {
         const { file, category, entry, score } = result;
@@ -782,7 +791,9 @@ server.tool(
       if (quality.beastModeNeeded) {
         sections.push(getSelfLearningInstructions(topic, 'mcp'));
       } else {
-        sections.push('\n💡 **Good results found!** If you discover additional information while helping the user, consider using `add_to_knowledge_base` to enhance future queries.');
+        sections.push(
+          '\n💡 **Good results found!** If you discover additional information while helping the user, consider using `add_to_knowledge_base` to enhance future queries.'
+        );
       }
 
       return {
@@ -895,7 +906,10 @@ server.tool(
           content: [
             {
               type: 'text',
-              text: `No best practice found for: ${scenario}. Try terms like "error handling", "performance", "security", "domain modeling", etc.\n${getSelfLearningInstructions(scenario, 'mcp')}`,
+              text: `No best practice found for: ${scenario}. Try terms like "error handling", "performance", "security", "domain modeling", etc.\n${getSelfLearningInstructions(
+                scenario,
+                'mcp'
+              )}`,
             },
           ],
         };
@@ -903,7 +917,11 @@ server.tool(
 
       const sections = [];
       sections.push(`# Best Practices for: ${scenario}\n`);
-      sections.push(`**Answer Quality:** ${quality.answerQuality} | **Web Search Recommended:** ${quality.beastModeNeeded ? 'Yes' : 'No'}\n`);
+      sections.push(
+        `**Answer Quality:** ${quality.answerQuality} | **Web Search Recommended:** ${
+          quality.beastModeNeeded ? 'Yes' : 'No'
+        }\n`
+      );
 
       const formatted = results
         .map(
@@ -920,7 +938,9 @@ server.tool(
       if (quality.beastModeNeeded) {
         sections.push(getSelfLearningInstructions(scenario, 'mcp'));
       } else {
-        sections.push('\n💡 **Good results found!** If you discover additional best practices while helping the user, use `add_to_knowledge_base` to share them with future users.');
+        sections.push(
+          '\n💡 **Good results found!** If you discover additional best practices while helping the user, use `add_to_knowledge_base` to share them with future users.'
+        );
       }
 
       return {

@@ -6,217 +6,178 @@ nav_order: 6
 
 # Self-Learning
 
-The Mendix Expert server is designed to grow smarter with every interaction. Here's how the self-learning system works.
+The Mendix Expert server is designed to grow smarter with every interaction. **As of v3.5.1, ALL clients (GitHub Copilot, Claude, ChatGPT, n8n, etc.) participate in the learning loop automatically.**
 
-## How It Works
+## Universal Self-Learning Architecture (v3.5.1)
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                    UNIVERSAL SELF-LEARNING ARCHITECTURE                       │
+├───────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐           │
+│  │  GitHub Copilot │    │  Claude Desktop │    │     Cursor      │           │
+│  │  (VS Code)      │    │  (macOS/Win)    │    │    (Editor)     │           │
+│  └────────┬────────┘    └────────┬────────┘    └────────┬────────┘           │
+│           │                      │                      │                     │
+│           └──────────────────────┼──────────────────────┘                     │
+│                                  │                                            │
+│                         ┌────────▼────────┐                                   │
+│                         │   MCP Protocol  │                                   │
+│                         │   (stdio/JSONRPC)│                                  │
+│                         │                  │                                  │
+│                         │  Tools:          │                                  │
+│                         │  • query_mendix_knowledge                           │
+│                         │  • add_to_knowledge_base                            │
+│                         │  • get_best_practice                                │
+│                         └────────┬────────┘                                   │
+│                                  │                                            │
+│  ┌───────────────────────────────┼───────────────────────────────┐           │
+│  │                               │                               │           │
+│  │        ┌──────────────────────▼──────────────────────┐       │           │
+│  │        │          MENDIX-EXPERT MCP SERVER           │       │           │
+│  │        │                  v3.5.1                     │       │           │
+│  │        ├─────────────────────────────────────────────┤       │           │
+│  │        │  assessAnswerQuality() ◀── SHARED LOGIC     │       │           │
+│  │        │  getSelfLearningInstructions() ◀── SHARED   │       │           │
+│  │        └──────────────────────┬──────────────────────┘       │           │
+│  │                               │                               │           │
+│  │           ┌───────────────────┴───────────────────┐          │           │
+│  │           │                                       │          │           │
+│  │   ┌───────▼───────┐                     ┌─────────▼────────┐ │           │
+│  │   │   Supabase    │                     │    Pinecone      │ │           │
+│  │   │  PostgreSQL   │                     │   Vector DB      │ │           │
+│  │   │  242+ entries │                     │  253 vectors     │ │           │
+│  │   │  (primary)    │                     │  1536 dims       │ │           │
+│  │   └───────────────┘                     └──────────────────┘ │           │
+│  │                                                               │           │
+│  └───────────────────────────────┼───────────────────────────────┘           │
+│                                  │                                            │
+│                         ┌────────▼────────┐                                   │
+│                         │   REST API      │                                   │
+│                         │   (HTTP/JSON)   │                                   │
+│                         │                  │                                  │
+│                         │  Endpoints:      │                                  │
+│                         │  • POST /search  │                                  │
+│                         │  • POST /learn   │                                  │
+│                         └────────┬────────┘                                   │
+│                                  │                                            │
+│           ┌──────────────────────┼──────────────────────┐                     │
+│           │                      │                      │                     │
+│  ┌────────▼────────┐    ┌────────▼────────┐    ┌────────▼────────┐           │
+│  │    ChatGPT      │    │      n8n        │    │  Make/Zapier/   │           │
+│  │  (Custom GPT)   │    │  (Automation)   │    │  Custom Apps    │           │
+│  └─────────────────┘    └─────────────────┘    └─────────────────┘           │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+## How Self-Learning Works
+
+### 1. Quality Assessment
+
+Every search (MCP or REST) now returns quality signals:
+
+```json
+{
+  "query": "quantum computing integration",
+  "resultCount": 5,
+  "answerQuality": "partial",     // none | weak | partial | good | strong
+  "beastModeNeeded": true,        // Should AI do web research?
+  "beastModeInstructions": "...", // What to do next
+  "results": [...]
+}
+```
+
+### 2. The Learning Loop
+
+```
+User asks question
+       ↓
+AI calls search (MCP tool or REST /search)
+       ↓
+Response includes:
+  • results (knowledge found)
+  • answerQuality (how good?)
+  • beastModeNeeded (should research more?)
+       ↓
+IF beastModeNeeded: true
+  → AI does web research (docs, GitHub, forums)
+  → AI calls add tool:
+      - MCP: add_to_knowledge_base
+      - REST: POST /learn
+  → Knowledge stored in Supabase
+  → Auto-indexed in Pinecone
+       ↓
+Future queries find it automatically! 🧠
+```
+
+### 3. Two Ways to Add Knowledge
+
+**MCP Tool (for Copilot, Claude, Cursor):**
+
+```javascript
+add_to_knowledge_base({
+  knowledge_file: 'best-practices',
+  content: '{"practice": "...", "description": "..."}',
+  source: 'docs.mendix.com',
+  verified: true,
+});
+```
+
+**REST API (for ChatGPT, n8n, automation):**
+
+```bash
+POST /learn
+{
+  "title": "AggregateListAction Pattern",
+  "content": "Use AggregateListAction for counting...",
+  "category": "sdk-patterns",
+  "source": "docs.mendix.com"
+}
+```
+
+## Storage Architecture (v3.4.0+)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    DISCOVERY SOURCES                        │
+│                    PERSISTENCE LAYER                        │
 ├─────────────────────────────────────────────────────────────┤
-│  🔍 Beast Mode Research  │  User discovers new patterns    │
-│  🌾 Auto-Harvest         │  Weekly doc crawls              │
-│  💬 User Contributions   │  Manual additions               │
-│  🐛 Problem Solving      │  Solutions to issues            │
-└────────────────────────────────┬────────────────────────────┘
-                                 │
-                                 ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  add_to_knowledge_base                      │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
-│  │ Parse JSON  │→ │ Quality     │→ │ Duplicate Detection │ │
-│  │             │  │ Scoring     │  │                     │ │
-│  └─────────────┘  └─────────────┘  └──────────┬──────────┘ │
-└───────────────────────────────────────────────┼─────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    PERSISTENCE                              │
-│  ┌─────────────────┐  ┌─────────────────────────────────┐  │
-│  │ knowledge/*.json│  │ Pinecone (vector embeddings)    │  │
-│  │ (source of truth)│  │ (semantic search index)         │  │
-│  └─────────────────┘  └─────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-                                                │
-                                                ▼
-┌─────────────────────────────────────────────────────────────┐
-│               IMMEDIATELY SEARCHABLE                        │
-│  • Keyword search (TF-IDF re-indexed)                      │
-│  • Vector search (embeddings generated)                     │
-│  • Hybrid search (both combined)                           │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              SUPABASE (PostgreSQL)                  │   │
+│  │                   PRIMARY STORAGE                   │   │
+│  │                                                     │   │
+│  │  • 242+ knowledge entries                          │   │
+│  │  • Full-text search indexes                        │   │
+│  │  • Metadata (source, version, quality score)       │   │
+│  │  • Survives Railway container restarts!            │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                           │                                 │
+│                           ▼ (auto-sync)                     │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │                PINECONE (Vector DB)                 │   │
+│  │                 SEMANTIC SEARCH                     │   │
+│  │                                                     │   │
+│  │  • 253 vectors indexed                             │   │
+│  │  • OpenAI text-embedding-3-small (1536 dims)       │   │
+│  │  • Auto-indexed when knowledge added               │   │
+│  │  • Finds related concepts, not just keywords       │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## The Learning Loop
+## Client-Specific Behavior
 
-### 1. Discovery
-
-Knowledge is discovered through:
-
-- **Beast Mode Research** - AI exhaustively searches official docs, GitHub, forums
-- **Auto-Harvest** - Weekly crawls of docs.mendix.com
-- **Problem Solving** - When fixing issues, solutions are saved
-- **User Contributions** - Manual additions via tool
-
-### 2. Quality Assessment
-
-Every entry is automatically scored:
-
-```javascript
-QualityScore = weighted_sum(
-  completeness, // Has required fields?
-  source_quality, // Official docs = higher
-  verification, // Manually verified?
-  content_depth, // Detailed explanation?
-  examples // Has code examples?
-);
-```
-
-Low-quality entries are flagged for review.
-
-### 3. Duplicate Detection
-
-Before adding, the system checks:
-
-- Exact title matches
-- Semantic similarity (if vectors enabled)
-- Content overlap
-
-Duplicates are merged or rejected.
-
-### 4. Persistence
-
-New knowledge is saved to:
-
-1. **JSON files** - `knowledge/*.json` (source of truth)
-2. **Keyword index** - In-memory TF-IDF
-3. **Vector index** - Pinecone embeddings
-
-### 5. Immediate Availability
-
-After adding knowledge:
-
-```
-✅ Successfully added knowledge to best-practices.json
-📋 Entry ID: a1b2c3d4
-⭐ Quality Score: 87%
-🔄 Status: Knowledge base reloaded and re-indexed
-🧠 Semantic: Vector embeddings updated ✓
-
-The new information is now available for queries!
-```
-
-## Self-Learning in Action
-
-### Example: Beast Mode Discovery
-
-````
-User: @mendix-expert How do I use AggregateListAction in the SDK?
-
-AI: [Searches knowledge base - no specific results]
-    [Enables Beast Mode research]
-    [Searches docs.mendix.com]
-    [Finds pattern in SDK demos on GitHub]
-
-    Found it! Here's how to use AggregateListAction:
-
-    ```javascript
-    const aggregateAction = microflows.AggregateListAction.createIn(activity);
-    aggregateAction.aggregateFunction = microflows.AggregateFunctionEnum.Count;
-    // ... more details
-    ```
-
-    Let me save this to the knowledge base so I remember it next time...
-
-    @mendix-expert add_to_knowledge_base
-      knowledge_file="model-sdk"
-      content='{"title": "AggregateListAction Pattern", ...}'
-      source="github.com/mendix/sdk-demo"
-````
-
-### Example: Auto-Harvest
-
-```
-[Weekly harvest runs]
-
-🌾 Starting Knowledge Harvest...
-   Sources: releaseNotes, refGuide, mxsdk
-
-📖 Harvesting: Studio Pro Release Notes...
-   ✅ Harvested 15 entries from Studio Pro Release Notes
-
-📖 Harvesting: Reference Guide...
-   ✅ Harvested 8 entries from Reference Guide
-
-🎯 Harvesting Priority Topics...
-   ✅ Maia AI Assistant - 3 new entries
-   ✅ Page Variables - 2 new entries
-
-🧠 Updating semantic search vectors...
-   ✅ Vector embeddings updated with new knowledge
-
-📊 Harvest Complete!
-   New entries: 28
-   Updated entries: 5
-```
-
-### Example: Problem-Solution Learning
-
-````
-User: I'm getting "Cannot read property 'id' of undefined" when
-      creating a microflow parameter
-
-AI: [Researches the issue]
-
-    Found the fix! You need to create the MicroflowParameterObject
-    AFTER the entity is committed:
-
-    ```javascript
-    // Wrong - entity not committed yet
-    const param = microflows.MicroflowParameterObject.createIn(mf);
-    param.entityRef = entity;  // ❌ entity.id is undefined
-
-    // Right - flush first
-    await model.flushChanges();
-    const param = microflows.MicroflowParameterObject.createIn(mf);
-    param.entityRef = entity;  // ✅ entity now has id
-    ```
-
-    Saving this to troubleshooting...
-````
-
-## Configuring Self-Learning
-
-### Enable/Disable Auto-Save
-
-The server always supports self-learning, but you control when to save:
-
-```
-# AI automatically saves after research (default behavior when using Beast Mode)
-# Or manually trigger:
-@mendix-expert add_to_knowledge_base ...
-```
-
-### Harvest Schedule
-
-Default: Every 7 days
-
-To change (in code):
-
-```javascript
-// In HarvestScheduler.js
-this.harvestIntervalDays = 7; // Change this value
-```
-
-### Manual Harvest
-
-```
-@mendix-expert harvest
-# Runs full harvest now
-
-@mendix-expert harvest sources=["mxsdk"] dryRun=true
-# Preview what would be harvested from SDK docs only
-```
+| Client             | Interface | Search Tool              | Add Tool                | Quality Signals |
+| ------------------ | --------- | ------------------------ | ----------------------- | --------------- |
+| **GitHub Copilot** | MCP       | `query_mendix_knowledge` | `add_to_knowledge_base` | ✅ v3.5.1       |
+| **Claude Desktop** | MCP       | `query_mendix_knowledge` | `add_to_knowledge_base` | ✅ v3.5.1       |
+| **Cursor**         | MCP       | `query_mendix_knowledge` | `add_to_knowledge_base` | ✅ v3.5.1       |
+| **ChatGPT**        | REST      | `POST /search`           | `POST /learn`           | ✅ v3.5.0       |
+| **n8n**            | REST      | `POST /search`           | `POST /learn`           | ✅ v3.5.0       |
+| **Make/Zapier**    | REST      | `POST /search`           | `POST /learn`           | ✅ v3.5.0       |
 
 ## Knowledge Quality Maintenance
 

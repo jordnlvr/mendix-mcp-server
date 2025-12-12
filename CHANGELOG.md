@@ -22,8 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Single entry: `{title: "...", content: "..."}`
   - Array: `[{title: "...", content: "..."}, ...]`
   - Wrapped: `{entries: [...]}`, `{items: [...]}`, `{data: [...]}`, `{knowledge: [...]}`
-  
 - **🔄 Flexible Field Name Detection**
+
   - title: accepts `title`, `name`, `topic`, `subject`, `heading`, `label`
   - content: accepts `content`, `text`, `body`, `description`, `knowledge`, `info`
   - category: accepts `category`, `type`, `section`, `group`, `tag`
@@ -42,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Why This Matters
 
-When testing the self-learning loop, the AI had to figure out the correct format through trial and error. 
+When testing the self-learning loop, the AI had to figure out the correct format through trial and error.
 Now the API is smart enough to accept whatever format makes sense to the caller, just like a helpful human would.
 
 ---

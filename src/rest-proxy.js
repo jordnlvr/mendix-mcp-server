@@ -179,8 +179,10 @@ app.get('/tools', (req, res) => {
           source: ['source', 'from', 'url', 'origin', 'reference', 'ref'],
         },
         parameters: {
-          title: 'string (required) - Title for this knowledge entry. Also accepts: name, topic, subject, heading, label',
-          content: 'string (required, min 50 chars) - The knowledge content. Also accepts: text, body, description, knowledge, info',
+          title:
+            'string (required) - Title for this knowledge entry. Also accepts: name, topic, subject, heading, label',
+          content:
+            'string (required, min 50 chars) - The knowledge content. Also accepts: text, body, description, knowledge, info',
           category: 'string (optional) - Category. Also accepts: type, section, group',
           source: 'string (optional) - Source name. Also accepts: from, url, origin, reference',
           sourceUrl: 'string (optional) - Full URL of source',
@@ -903,7 +905,7 @@ app.post('/knowledge-gap', async (req, res) => {
 function normalizeLearnInput(body) {
   // Handle array input: [{...}, {...}] or {entries: [{...}, {...}]}
   let entries = [];
-  
+
   if (Array.isArray(body)) {
     // Direct array: [{title, content}, ...]
     entries = body;
@@ -925,23 +927,23 @@ function normalizeLearnInput(body) {
   }
 
   // Normalize each entry to standard format
-  return entries.map(entry => {
+  return entries.map((entry) => {
     // Extract title from various field names
-    const title = 
-      entry.title || 
-      entry.name || 
-      entry.topic || 
-      entry.subject || 
+    const title =
+      entry.title ||
+      entry.name ||
+      entry.topic ||
+      entry.subject ||
       entry.heading ||
       entry.label ||
       null;
 
-    // Extract content from various field names  
-    const content = 
-      entry.content || 
-      entry.text || 
-      entry.body || 
-      entry.description || 
+    // Extract content from various field names
+    const content =
+      entry.content ||
+      entry.text ||
+      entry.body ||
+      entry.description ||
       entry.knowledge ||
       entry.info ||
       entry.data ||
@@ -949,20 +951,20 @@ function normalizeLearnInput(body) {
       null;
 
     // Extract category from various field names
-    const category = 
-      entry.category || 
-      entry.type || 
-      entry.topic || 
+    const category =
+      entry.category ||
+      entry.type ||
+      entry.topic ||
       entry.section ||
       entry.group ||
-      entry.tag ||  // single tag as category
+      entry.tag || // single tag as category
       'general';
 
     // Extract source from various field names
-    const source = 
-      entry.source || 
-      entry.from || 
-      entry.url || 
+    const source =
+      entry.source ||
+      entry.from ||
+      entry.url ||
       entry.sourceUrl ||
       entry.origin ||
       entry.reference ||
@@ -993,7 +995,7 @@ app.post('/learn', async (req, res) => {
 
     // Smart normalization - figure out the format and extract properly
     const normalizedEntries = normalizeLearnInput(req.body);
-    
+
     // Check if we have any entries
     if (normalizedEntries.length === 0) {
       return res.status(400).json({
@@ -1107,7 +1109,10 @@ app.post('/learn', async (req, res) => {
       results,
       errors: errors.length > 0 ? errors : undefined,
       searchableNow: true,
-      tip: results.length > 0 ? 'All successful entries are now permanently stored and searchable.' : undefined,
+      tip:
+        results.length > 0
+          ? 'All successful entries are now permanently stored and searchable.'
+          : undefined,
     });
   } catch (error) {
     logger.error('Learn failed', { error: error.message });

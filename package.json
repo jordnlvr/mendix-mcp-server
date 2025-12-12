@@ -1,6 +1,6 @@
 {
   "name": "@jordnlvr/mendix-mcp-server",
-  "version": "3.5.2",
+  "version": "3.5.3",
   "description": "Self-learning MCP server for Mendix development with semantic vector search, auto-harvesting, project & theme analysis, and Beast Mode research. Now with Supabase cloud persistence!",
   "type": "module",
   "main": "src/index.js",
@@ -69,6 +69,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.2.1",
     "fs-extra": "^11.2.0",
     "glob": "^10.3.10",
     "node-fetch": "^3.3.2",

@@ -665,13 +665,33 @@ export default class VectorStore {
       skipped: documents.length - vectors.length,
     });
 
-    // Upsert in batches of 100
+    // Upsert in batches of 100 with retry logic
     let indexed = 0;
     const upsertBatchSize = 100;
+    const maxRetries = 3;
+    const baseDelay = 1000;
 
     for (let i = 0; i < vectors.length; i += upsertBatchSize) {
       const batch = vectors.slice(i, i + upsertBatchSize);
-      await this.index.namespace(this.namespace).upsert(batch);
+
+      // Retry logic for batch upsert
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          await this.index.namespace(this.namespace).upsert(batch);
+          break; // Success
+        } catch (retryError) {
+          if (attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
+            logger.warn(`Pinecone upsert failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
+              error: retryError.message,
+            });
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          } else {
+            throw retryError;
+          }
+        }
+      }
+
       indexed += batch.length;
 
       logger.info('Indexed batch', {
@@ -752,7 +772,27 @@ export default class VectorStore {
         queryOptions.filter = filter;
       }
 
-      const results = await this.index.namespace(this.namespace).query(queryOptions);
+      // Retry logic for Pinecone queries
+      let results;
+      const maxRetries = 3;
+      const baseDelay = 1000;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          results = await this.index.namespace(this.namespace).query(queryOptions);
+          break; // Success - exit retry loop
+        } catch (retryError) {
+          if (attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
+            logger.warn(`Pinecone query failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
+              error: retryError.message,
+            });
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          } else {
+            throw retryError; // Rethrow on last attempt
+          }
+        }
+      }
 
       return (results.matches || [])
         .filter((match) => match.score >= minScore)
@@ -846,8 +886,26 @@ export default class VectorStore {
         },
       };
 
-      // Upsert single vector
-      await this.index.namespace(this.namespace).upsert([vector]);
+      // Upsert single vector with retry logic
+      const maxRetries = 3;
+      const baseDelay = 1000;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          await this.index.namespace(this.namespace).upsert([vector]);
+          break; // Success
+        } catch (retryError) {
+          if (attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
+            logger.warn(`Pinecone single upsert failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
+              error: retryError.message,
+            });
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          } else {
+            throw retryError;
+          }
+        }
+      }
 
       logger.info('Single document indexed', { id, title: doc.title });
       return { success: true, id };

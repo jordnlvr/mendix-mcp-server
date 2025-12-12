@@ -29,6 +29,7 @@ config({ path: join(__dirname, '..', '.env') });
 
 import cors from 'cors';
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import KnowledgeManager from './core/KnowledgeManager.js';
 import ProjectLoader from './core/ProjectLoader.js';
 import SearchEngine from './core/SearchEngine.js';
@@ -41,9 +42,67 @@ const logger = new Logger('REST-Proxy');
 const app = express();
 const PORT = process.env.PORT || 5050;
 
+// ============================================
+// RATE LIMITING - Prevent abuse
+// ============================================
+
+// General rate limiter - 100 requests per minute per IP
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,
+  message: { error: 'Too many requests, please slow down', retryAfter: '60 seconds' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Strict rate limiter for /learn - 20 per minute (prevents spam)
+const learnLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 20,
+  message: { error: 'Too many learn requests, please slow down', retryAfter: '60 seconds' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// ============================================
+// RETRY LOGIC - Self-healing connections
+// ============================================
+
+/**
+ * Retry a function with exponential backoff
+ * @param {Function} fn - Async function to retry
+ * @param {Object} options - Retry options
+ * @returns {Promise} - Result of the function
+ */
+async function withRetry(fn, options = {}) {
+  const { maxRetries = 3, baseDelayMs = 1000, maxDelayMs = 10000, context = 'operation' } = options;
+
+  let lastError;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxRetries) {
+        logger.error(`${context} failed after ${maxRetries} attempts`, { error: error.message });
+        throw error;
+      }
+
+      // Exponential backoff with jitter
+      const delay = Math.min(baseDelayMs * Math.pow(2, attempt - 1) + Math.random() * 500, maxDelayMs);
+      logger.warn(`${context} failed (attempt ${attempt}/${maxRetries}), retrying in ${Math.round(delay)}ms`, {
+        error: error.message,
+      });
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw lastError;
+}
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(generalLimiter); // Apply general rate limit to all routes
 
 // Initialize components
 let knowledgeManager;
@@ -989,7 +1048,7 @@ function normalizeLearnInput(body) {
   });
 }
 
-app.post('/learn', async (req, res) => {
+app.post('/learn', learnLimiter, async (req, res) => {
   try {
     await initialize();
 

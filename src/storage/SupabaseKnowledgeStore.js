@@ -58,7 +58,7 @@ class SupabaseKnowledgeStore {
   }
 
   /**
-   * Internal fetch wrapper for Supabase REST API
+   * Internal fetch wrapper for Supabase REST API with retry logic
    */
   async _fetch(path, method = 'GET', body = null, headers = {}) {
     const url = `${this.supabaseUrl}/rest/v1${path}`;
@@ -78,7 +78,40 @@ class SupabaseKnowledgeStore {
       options.body = JSON.stringify(body);
     }
 
-    return fetch(url, options);
+    // Retry logic with exponential backoff
+    const maxRetries = 3;
+    const baseDelay = 1000;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(url, options);
+
+        // Don't retry on client errors (4xx), only on server errors (5xx) or network issues
+        if (response.ok || (response.status >= 400 && response.status < 500)) {
+          return response;
+        }
+
+        // Server error - retry
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
+          logger.warn(`Supabase request failed (${response.status}), retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          return response; // Return the failed response on last attempt
+        }
+      } catch (error) {
+        // Network error - retry
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
+          logger.warn(`Supabase network error, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
+            error: error.message,
+          });
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          throw error; // Rethrow on last attempt
+        }
+      }
+    }
   }
 
   /**

@@ -13,6 +13,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.5.3] - 2025-12-12
+
+### Added
+
+- **🛡️ Production Hardening - Self-Healing & Protection**
+
+  - **Rate Limiting**: General API (100 req/min), /learn endpoint (20 req/min)
+  - **Retry Logic with Exponential Backoff**: All Supabase and Pinecone operations
+  - **Railway Health Checks**: Configured in railway.toml
+  - **Graceful Error Recovery**: Server stays up even when dependencies hiccup
+
+- **railway.toml Configuration**
+  - Health check path: `/health`
+  - Auto-restart on failure with max 3 retries
+  - 30-second health check timeout
+
+### Changed
+
+- Supabase `_fetch` wrapper now retries 3x with exponential backoff (1s, 2s, 4s + jitter)
+- Pinecone queries retry 3x before failing
+- Pinecone upserts (batch and single) retry 3x before failing
+- All retry delays include random jitter to prevent thundering herd
+
+### Why This Matters
+
+Production systems experience hiccups - network blips, rate limits, transient errors.
+Now when Supabase or Pinecone has a moment, the server retries gracefully instead of failing.
+Combined with Railway's health checks and auto-restart, the system self-heals.
+
+**Result**: It just fucking works. ✅
+
+---
+
 ## [3.5.2] - 2025-12-12
 
 ### Added

@@ -32,7 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated Node.js engine requirement from `>=18.0.0` to `>=20.0.0`
   - Fixes `ReferenceError: File is not defined` crash on Railway
   - The `undici` dependency (used for fetch/HTTP) requires the `File` global which only exists in Node 20+
-  - Railway and other PaaS providers will now use correct Node version
+  - Added `Procfile` to run REST proxy on Railway (not stdio MCP server)
+  - Railway and other PaaS providers will now use correct Node version and start command
 
 ---
 

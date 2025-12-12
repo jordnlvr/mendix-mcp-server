@@ -597,7 +597,7 @@ export default class VectorStore {
 
       let embeddings;
       let embeddingDimension = this.dimension; // Track dimension of embeddings produced
-      
+
       if (isCloudEmbedding) {
         // Batch embedding for OpenAI/Azure (faster)
         try {
@@ -796,14 +796,18 @@ export default class VectorStore {
       // Truncate to avoid token limits (6000 chars ≈ 1500 tokens, safe for 8192 limit)
       const MAX_CHARS = 6000;
       const fullText = `${doc.title || ''} ${text}`.trim();
-      const textToEmbed = fullText.length > MAX_CHARS ? fullText.slice(0, MAX_CHARS) + '...' : fullText;
+      const textToEmbed =
+        fullText.length > MAX_CHARS ? fullText.slice(0, MAX_CHARS) + '...' : fullText;
 
       const isCloudEmbedding =
         this.embeddingMode === 'openai' || this.embeddingMode === 'azure-openai';
 
       // Only use cloud embeddings for indexing (to match Pinecone's 1536 dimension)
       if (!isCloudEmbedding) {
-        return { success: false, error: 'Cloud embeddings required for indexing (dimension mismatch with local)' };
+        return {
+          success: false,
+          error: 'Cloud embeddings required for indexing (dimension mismatch with local)',
+        };
       }
 
       let embedding;

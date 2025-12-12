@@ -149,11 +149,31 @@ app.get('/tools', (req, res) => {
         name: 'search',
         method: 'POST',
         path: '/search',
-        description: 'Hybrid search combining keyword and semantic vector search',
+        description: 'Hybrid search combining keyword and semantic vector search. Returns answerQuality and beastModeNeeded flags to indicate if web search is recommended.',
         parameters: {
           query: 'string (required) - Search query',
           limit: 'number (optional) - Max results (default 10)',
         },
+        response_fields: {
+          answerQuality: 'none|weak|partial|good|strong - Quality of results found',
+          beastModeNeeded: 'boolean - If true, GPT should search the web for better answers',
+          beastModeInstructions: 'string - Instructions for GPT when beast mode is needed'
+        }
+      },
+      {
+        name: 'learn',
+        method: 'POST',
+        path: '/learn',
+        description: 'Add new knowledge to the knowledge base. Use this after finding good information via web search to permanently store it.',
+        parameters: {
+          title: 'string (required) - Title for this knowledge entry',
+          content: 'string (required) - The knowledge content (min 50 chars)',
+          category: 'string (optional) - Category like best-practices, troubleshooting, sdk-patterns',
+          source: 'string (optional) - Source name like docs.mendix.com',
+          sourceUrl: 'string (optional) - Full URL of source',
+          mendixVersion: 'string (optional) - Mendix version this applies to',
+          tags: 'array (optional) - Tags for categorization'
+        }
       },
       {
         name: 'analyze',
@@ -281,6 +301,8 @@ app.post('/query', async (req, res) => {
 
 /**
  * Hybrid search (keyword + vector)
+ * 
+ * Returns quality assessment to help GPT know if it should do beast mode research
  */
 app.post('/search', async (req, res) => {
   try {
@@ -300,10 +322,54 @@ app.post('/search', async (req, res) => {
       results = searchEngine.search(query, { limit });
     }
 
+    // Calculate answer quality to help GPT decide if beast mode is needed
+    const topScore = results[0]?.fusedScore || results[0]?.score || 0;
+    const resultCount = results.length;
+    const hasStrongMatch = topScore > 0.1;
+    const hasSufficientResults = resultCount >= 3;
+    const hasVectorMatches = results.some(r => r.matchType === 'vector' || r.matchType === 'both');
+    
+    // Quality assessment
+    let answerQuality, beastModeNeeded, qualityReason;
+    if (resultCount === 0) {
+      answerQuality = 'none';
+      beastModeNeeded = true;
+      qualityReason = 'No results found - this is a knowledge gap. Please search the web and add findings.';
+    } else if (!hasStrongMatch && !hasSufficientResults) {
+      answerQuality = 'weak';
+      beastModeNeeded = true;
+      qualityReason = 'Only weak matches found. Web search recommended for better answers.';
+    } else if (!hasStrongMatch || !hasSufficientResults) {
+      answerQuality = 'partial';
+      beastModeNeeded = true;
+      qualityReason = 'Some relevant info found, but web search could provide more complete answers.';
+    } else if (hasVectorMatches && hasStrongMatch) {
+      answerQuality = 'strong';
+      beastModeNeeded = false;
+      qualityReason = 'Good semantic and keyword matches found.';
+    } else {
+      answerQuality = 'good';
+      beastModeNeeded = false;
+      qualityReason = 'Reasonable matches found.';
+    }
+
     res.json({
       query,
       resultCount: results.length,
       vectorSearchUsed: !!hybridSearch,
+      
+      // NEW: Quality assessment for GPT
+      answerQuality,      // 'none', 'weak', 'partial', 'good', 'strong'
+      beastModeNeeded,    // true = GPT should do web search
+      qualityReason,      // Human-readable explanation
+      
+      // Instructions for GPT when beastModeNeeded is true
+      ...(beastModeNeeded && {
+        beastModeInstructions: `The knowledge base doesn't have a strong answer for "${query}". ` +
+          `Please search the web using the Beast Mode protocol (check official Mendix docs, GitHub, community forums). ` +
+          `After finding good information, call POST /learn to add it to the knowledge base so it's available next time.`
+      }),
+      
       results: results.map((r) => ({
         id: r.id,
         title: r.title || r.id,
@@ -796,6 +862,93 @@ app.post('/knowledge-gap', async (req, res) => {
     });
   } catch (error) {
     logger.error('Knowledge gap tracking failed', { error: error.message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * Learn - Add new knowledge to the knowledge base
+ * 
+ * This is the self-learning endpoint! When GPT searches the web and finds
+ * good information, it can call this to permanently add it to the knowledge base.
+ * 
+ * The knowledge is:
+ * 1. Saved to Supabase (permanent cloud storage)
+ * 2. Auto-indexed to Pinecone (semantic search)
+ * 3. Available immediately for future queries
+ */
+app.post('/learn', async (req, res) => {
+  try {
+    await initialize();
+
+    const { 
+      title,           // Required: Entry title
+      content,         // Required: The knowledge content
+      category,        // Optional: Category (e.g., 'best-practices', 'troubleshooting')
+      source,          // Optional: Where this came from (e.g., 'docs.mendix.com')
+      sourceUrl,       // Optional: URL of the source
+      mendixVersion,   // Optional: Mendix version this applies to
+      tags             // Optional: Array of tags
+    } = req.body;
+
+    // Validation
+    if (!title) {
+      return res.status(400).json({ 
+        error: 'title is required',
+        example: { title: 'Microflow Error Handling', content: 'Use error handlers...', category: 'best-practices' }
+      });
+    }
+
+    if (!content) {
+      return res.status(400).json({ 
+        error: 'content is required - provide the knowledge to add',
+        example: { title: 'Microflow Error Handling', content: 'Use error handlers...', category: 'best-practices' }
+      });
+    }
+
+    // Minimum content length for quality
+    if (content.length < 50) {
+      return res.status(400).json({ 
+        error: 'content too short - provide at least 50 characters of useful information',
+        contentLength: content.length
+      });
+    }
+
+    // Add to knowledge base (Supabase + auto-index to Pinecone)
+    const result = await knowledgeManager.add(
+      category || 'learned',           // fileName for legacy compatibility
+      category || 'general',           // category
+      { title, content },              // content object
+      source || 'gpt-learned',         // source
+      { 
+        sourceUrl, 
+        mendixVersion,
+        tags: tags || [],
+        learnedFrom: 'api-learn-endpoint'
+      }
+    );
+
+    logger.info('New knowledge learned via /learn endpoint', {
+      title,
+      category: category || 'general',
+      source: source || 'gpt-learned',
+      id: result.id,
+      vectorIndexed: result.vectorIndexed
+    });
+
+    res.json({
+      success: true,
+      message: `Knowledge "${title}" has been added to the knowledge base!`,
+      id: result.id,
+      duplicate: result.duplicate || false,
+      qualityScore: result.qualityScore,
+      vectorIndexed: result.vectorIndexed || false,
+      searchableNow: true,
+      tip: 'This knowledge is now permanently stored and will be found in future /search queries.'
+    });
+
+  } catch (error) {
+    logger.error('Learn failed', { error: error.message });
     res.status(500).json({ error: error.message });
   }
 });

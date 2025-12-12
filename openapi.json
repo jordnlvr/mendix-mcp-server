@@ -3,7 +3,7 @@
   "info": {
     "title": "Mendix Expert API",
     "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol. Now with Supabase cloud persistence for knowledge that survives container restarts!",
-    "version": "3.4.2"
+    "version": "3.5.0"
   },
   "servers": [
     {
@@ -77,7 +77,7 @@
       "post": {
         "operationId": "hybridSearch",
         "summary": "Hybrid Search (Keyword + Vector)",
-        "description": "Performs advanced hybrid search combining TF-IDF keyword matching with semantic vector search (Pinecone + Azure OpenAI embeddings). Best for finding conceptually related content even when exact keywords don't match.",
+        "description": "Performs advanced hybrid search combining TF-IDF keyword matching with semantic vector search. Returns answerQuality and beastModeNeeded flags - when beastModeNeeded is true, GPT should search the web for better answers and then call /learn to add them.",
         "requestBody": {
           "required": true,
           "content": {
@@ -102,7 +102,7 @@
         },
         "responses": {
           "200": {
-            "description": "Search results with match type indicators",
+            "description": "Search results with match type indicators and quality assessment",
             "content": {
               "application/json": {
                 "schema": {
@@ -110,6 +110,23 @@
                   "properties": {
                     "query": { "type": "string" },
                     "resultCount": { "type": "integer" },
+                    "answerQuality": { 
+                      "type": "string",
+                      "enum": ["none", "weak", "partial", "good", "strong"],
+                      "description": "Quality of results found. If 'none', 'weak', or 'partial', consider searching the web."
+                    },
+                    "beastModeNeeded": {
+                      "type": "boolean",
+                      "description": "If true, the knowledge base doesn't have a strong answer. GPT should search the web and call /learn to add findings."
+                    },
+                    "qualityReason": {
+                      "type": "string",
+                      "description": "Human-readable explanation of the quality assessment"
+                    },
+                    "beastModeInstructions": {
+                      "type": "string",
+                      "description": "Instructions for GPT when beastModeNeeded is true"
+                    },
                     "results": {
                       "type": "array",
                       "items": {
@@ -128,6 +145,76 @@
                         }
                       }
                     }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/learn": {
+      "post": {
+        "operationId": "learnKnowledge",
+        "summary": "Add New Knowledge (Self-Learning)",
+        "description": "Add new knowledge to the knowledge base. Call this after searching the web and finding good Mendix information. The knowledge is permanently stored in Supabase and indexed in Pinecone for semantic search.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Title for this knowledge entry"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "The knowledge content (minimum 50 characters)"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Category like best-practices, troubleshooting, sdk-patterns, studio-pro"
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "Source name like docs.mendix.com, community.mendix.com"
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "description": "Full URL of the source"
+                  },
+                  "mendixVersion": {
+                    "type": "string",
+                    "description": "Mendix version this applies to, e.g., '11.5.0'"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Tags for categorization"
+                  }
+                },
+                "required": ["title", "content"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Knowledge added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "id": { "type": "string" },
+                    "duplicate": { "type": "boolean" },
+                    "qualityScore": { "type": "number" },
+                    "vectorIndexed": { "type": "boolean" },
+                    "searchableNow": { "type": "boolean" }
                   }
                 }
               }

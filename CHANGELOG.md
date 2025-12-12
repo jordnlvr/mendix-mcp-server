@@ -13,11 +13,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.5.0] - 2025-12-12
+
+### Added
+
+- **🧠 Self-Learning API - GPT can now add knowledge!**
+
+  - NEW: `POST /learn` endpoint - Add new knowledge to the knowledge base
+  - Accepts: title, content, category, source, sourceUrl, mendixVersion, tags
+  - Auto-stores to Supabase + auto-indexes to Pinecone
+  - Enables GPT to permanently store findings from web searches
+
+- **📊 Smart Answer Quality Assessment**
+
+  - `/search` now returns `answerQuality`: none | weak | partial | good | strong
+  - `/search` now returns `beastModeNeeded`: true when web search is recommended
+  - `/search` includes `beastModeInstructions` when quality is low
+  - Helps GPT know automatically when to do Beast Mode research
+
+### Changed
+
+- Updated OpenAPI spec with `/learn` endpoint and quality assessment fields
+- Custom GPT can now complete the full learn-search-learn loop automatically
+
+---
+
 ## [3.4.2] - 2025-12-12
 
 ### Fixed
 
 - **🐛 Pinecone Dimension Mismatch Resolved**
+
   - Root cause: OpenAI embedding token limit (8192) exceeded on large docs
   - Documents now truncated to 6000 chars before embedding (~1500 tokens)
   - No longer falls back to local embeddings (384 dims) when Pinecone expects 1536

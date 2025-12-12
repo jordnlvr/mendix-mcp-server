@@ -108,11 +108,11 @@ The server uses `SupabaseKnowledgeManager` as the primary storage:
 
 ### Storage Priority
 
-| Environment             | Storage         | Vector Search |
-| ----------------------- | --------------- | ------------- |
-| Railway (with Supabase) | Supabase        | Pinecone      |
-| Local (with Supabase)   | Supabase        | Pinecone      |
-| Local (no Supabase)     | JSON files      | Optional      |
+| Environment             | Storage    | Vector Search |
+| ----------------------- | ---------- | ------------- |
+| Railway (with Supabase) | Supabase   | Pinecone      |
+| Local (with Supabase)   | Supabase   | Pinecone      |
+| Local (no Supabase)     | JSON files | Optional      |
 
 ### Self-Learning Flow
 

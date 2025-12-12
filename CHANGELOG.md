@@ -13,6 +13,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.5.2] - 2025-12-12
+
+### Added
+
+- **🧠 Smart Input Normalizer for /learn endpoint**
+  - Automatically detects and handles multiple input formats
+  - Single entry: `{title: "...", content: "..."}`
+  - Array: `[{title: "...", content: "..."}, ...]`
+  - Wrapped: `{entries: [...]}`, `{items: [...]}`, `{data: [...]}`, `{knowledge: [...]}`
+  
+- **🔄 Flexible Field Name Detection**
+  - title: accepts `title`, `name`, `topic`, `subject`, `heading`, `label`
+  - content: accepts `content`, `text`, `body`, `description`, `knowledge`, `info`
+  - category: accepts `category`, `type`, `section`, `group`, `tag`
+  - source: accepts `source`, `from`, `url`, `origin`, `reference`, `ref`
+
+- **📦 Batch Processing Support**
+  - Send multiple knowledge entries in one request
+  - Get individual success/failure results for each entry
+  - Backwards compatible - single entries still work exactly the same
+
+### Changed
+
+- `/docs` endpoint now shows all accepted formats and field aliases
+- Error messages now include helpful hints about accepted field names
+- AI agents no longer need to guess the correct format - the API figures it out
+
+### Why This Matters
+
+When testing the self-learning loop, the AI had to figure out the correct format through trial and error. 
+Now the API is smart enough to accept whatever format makes sense to the caller, just like a helpful human would.
+
+---
+
 ## [3.5.1] - 2025-12-12
 
 ### Added

@@ -80,14 +80,15 @@ The Mendix Expert MCP Server is built as a modular, self-improving system with S
 
 **PRIMARY STORAGE** (v3.4.0+) - All knowledge lives in PostgreSQL:
 
-| Function        | Purpose                                    |
-| --------------- | ------------------------------------------ |
-| `getAllKnowledge()` | Load all entries from Supabase |
-| `addKnowledge()` | Add new knowledge with quality scoring |
-| `searchByCategory()` | Find entries by category |
-| `recordUsage()` | Track which entries are actually used |
+| Function             | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `getAllKnowledge()`  | Load all entries from Supabase         |
+| `addKnowledge()`     | Add new knowledge with quality scoring |
+| `searchByCategory()` | Find entries by category               |
+| `recordUsage()`      | Track which entries are actually used  |
 
 **Database Schema:**
+
 ```sql
 CREATE TABLE knowledge_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -108,11 +109,11 @@ CREATE TABLE knowledge_entries (
 
 **253 vectors** with OpenAI text-embedding-3-small (1536 dimensions):
 
-| Function        | Purpose                                    |
-| --------------- | ------------------------------------------ |
-| `search()` | Semantic search for related concepts |
-| `indexDocuments()` | Batch index all knowledge |
-| `indexSingleDocument()` | Auto-index new entries (v3.4.1) |
+| Function                | Purpose                              |
+| ----------------------- | ------------------------------------ |
+| `search()`              | Semantic search for related concepts |
+| `indexDocuments()`      | Batch index all knowledge            |
+| `indexSingleDocument()` | Auto-index new entries (v3.4.1)      |
 
 **Auto-indexing**: When knowledge is added via `add_to_knowledge_base` or `/learn`, it's automatically indexed to Pinecone.
 
@@ -125,10 +126,10 @@ function assessAnswerQuality(results, query) {
   if (!results || results.length === 0) {
     return { answerQuality: 'none', beastModeNeeded: true };
   }
-  
+
   const topScore = results[0]?.score || 0;
   const avgScore = results.slice(0, 5).reduce(...) / 5;
-  
+
   if (topScore < 0.1)  return { answerQuality: 'weak', beastModeNeeded: true };
   if (topScore < 0.3)  return { answerQuality: 'partial', beastModeNeeded: true };
   if (topScore > 0.6)  return { answerQuality: 'strong', beastModeNeeded: false };
@@ -158,9 +159,11 @@ Query: "how to loop through entities"
             • De-duplicates
             • Returns unified scores
 ```
+
             • Deduplicates near-matches
             • Returns best combined results
-```
+
+````
 
 **Query Expansion:**
 The system automatically expands Mendix acronyms:
@@ -231,7 +234,7 @@ await projectLoader.loadProject("D:/MyApp/MyApp.mpr");
     }
   ]
 }
-```
+````
 
 ## Data Flow
 

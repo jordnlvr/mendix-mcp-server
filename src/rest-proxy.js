@@ -166,17 +166,28 @@ app.get('/tools', (req, res) => {
         method: 'POST',
         path: '/learn',
         description:
-          'Add new knowledge to the knowledge base. Use this after finding good information via web search to permanently store it.',
+          'Add new knowledge to the knowledge base. Accepts flexible input formats - single entries, arrays, or wrapped objects. Smart field detection extracts title/content from various field names.',
+        acceptedFormats: [
+          'Single: {title: "...", content: "..."}',
+          'Array: [{title: "...", content: "..."}, ...]',
+          'Wrapped: {entries: [{...}]} or {items: [{...}]} or {data: [{...}]}',
+        ],
+        fieldAliases: {
+          title: ['title', 'name', 'topic', 'subject', 'heading', 'label'],
+          content: ['content', 'text', 'body', 'description', 'knowledge', 'info'],
+          category: ['category', 'type', 'section', 'group', 'tag'],
+          source: ['source', 'from', 'url', 'origin', 'reference', 'ref'],
+        },
         parameters: {
-          title: 'string (required) - Title for this knowledge entry',
-          content: 'string (required) - The knowledge content (min 50 chars)',
-          category:
-            'string (optional) - Category like best-practices, troubleshooting, sdk-patterns',
-          source: 'string (optional) - Source name like docs.mendix.com',
+          title: 'string (required) - Title for this knowledge entry. Also accepts: name, topic, subject, heading, label',
+          content: 'string (required, min 50 chars) - The knowledge content. Also accepts: text, body, description, knowledge, info',
+          category: 'string (optional) - Category. Also accepts: type, section, group',
+          source: 'string (optional) - Source name. Also accepts: from, url, origin, reference',
           sourceUrl: 'string (optional) - Full URL of source',
           mendixVersion: 'string (optional) - Mendix version this applies to',
-          tags: 'array (optional) - Tags for categorization',
+          tags: 'array (optional) - Tags for categorization. Also accepts: keywords, labels',
         },
+        batchSupport: 'Yes - send multiple entries in one request, get individual results for each',
       },
       {
         name: 'analyze',
@@ -885,82 +896,218 @@ app.post('/knowledge-gap', async (req, res) => {
  * 2. Auto-indexed to Pinecone (semantic search)
  * 3. Available immediately for future queries
  */
+/**
+ * Smart Input Normalizer for /learn endpoint
+ * Accepts multiple input formats and extracts knowledge properly
+ */
+function normalizeLearnInput(body) {
+  // Handle array input: [{...}, {...}] or {entries: [{...}, {...}]}
+  let entries = [];
+  
+  if (Array.isArray(body)) {
+    // Direct array: [{title, content}, ...]
+    entries = body;
+  } else if (body.entries && Array.isArray(body.entries)) {
+    // Wrapped array: {entries: [{title, content}, ...]}
+    entries = body.entries;
+  } else if (body.items && Array.isArray(body.items)) {
+    // Alternative: {items: [{title, content}, ...]}
+    entries = body.items;
+  } else if (body.knowledge && Array.isArray(body.knowledge)) {
+    // Alternative: {knowledge: [{title, content}, ...]}
+    entries = body.knowledge;
+  } else if (body.data && Array.isArray(body.data)) {
+    // Alternative: {data: [{title, content}, ...]}
+    entries = body.data;
+  } else {
+    // Single entry object - normalize field names
+    entries = [body];
+  }
+
+  // Normalize each entry to standard format
+  return entries.map(entry => {
+    // Extract title from various field names
+    const title = 
+      entry.title || 
+      entry.name || 
+      entry.topic || 
+      entry.subject || 
+      entry.heading ||
+      entry.label ||
+      null;
+
+    // Extract content from various field names  
+    const content = 
+      entry.content || 
+      entry.text || 
+      entry.body || 
+      entry.description || 
+      entry.knowledge ||
+      entry.info ||
+      entry.data ||
+      (typeof entry.value === 'string' ? entry.value : null) ||
+      null;
+
+    // Extract category from various field names
+    const category = 
+      entry.category || 
+      entry.type || 
+      entry.topic || 
+      entry.section ||
+      entry.group ||
+      entry.tag ||  // single tag as category
+      'general';
+
+    // Extract source from various field names
+    const source = 
+      entry.source || 
+      entry.from || 
+      entry.url || 
+      entry.sourceUrl ||
+      entry.origin ||
+      entry.reference ||
+      entry.ref ||
+      'api-learned';
+
+    // Extract optional fields
+    const sourceUrl = entry.sourceUrl || entry.url || entry.link || null;
+    const mendixVersion = entry.mendixVersion || entry.version || null;
+    const tags = entry.tags || entry.keywords || entry.labels || [];
+
+    return {
+      title,
+      content,
+      category,
+      source,
+      sourceUrl,
+      mendixVersion,
+      tags: Array.isArray(tags) ? tags : [tags].filter(Boolean),
+      _original: entry, // Keep original for debugging
+    };
+  });
+}
+
 app.post('/learn', async (req, res) => {
   try {
     await initialize();
 
-    const {
-      title, // Required: Entry title
-      content, // Required: The knowledge content
-      category, // Optional: Category (e.g., 'best-practices', 'troubleshooting')
-      source, // Optional: Where this came from (e.g., 'docs.mendix.com')
-      sourceUrl, // Optional: URL of the source
-      mendixVersion, // Optional: Mendix version this applies to
-      tags, // Optional: Array of tags
-    } = req.body;
-
-    // Validation
-    if (!title) {
+    // Smart normalization - figure out the format and extract properly
+    const normalizedEntries = normalizeLearnInput(req.body);
+    
+    // Check if we have any entries
+    if (normalizedEntries.length === 0) {
       return res.status(400).json({
-        error: 'title is required',
-        example: {
-          title: 'Microflow Error Handling',
-          content: 'Use error handlers...',
-          category: 'best-practices',
+        error: 'No knowledge entries found in request',
+        acceptedFormats: [
+          'Single: {title: "...", content: "..."}',
+          'Array: [{title: "...", content: "..."}, ...]',
+          'Wrapped: {entries: [{title: "...", content: "..."}, ...]}',
+        ],
+        fieldAliases: {
+          title: ['title', 'name', 'topic', 'subject', 'heading', 'label'],
+          content: ['content', 'text', 'body', 'description', 'knowledge', 'info'],
+          category: ['category', 'type', 'topic', 'section', 'group'],
+          source: ['source', 'from', 'url', 'origin', 'reference'],
         },
       });
     }
 
-    if (!content) {
-      return res.status(400).json({
-        error: 'content is required - provide the knowledge to add',
-        example: {
-          title: 'Microflow Error Handling',
-          content: 'Use error handlers...',
-          category: 'best-practices',
-        },
-      });
-    }
+    const results = [];
+    const errors = [];
 
-    // Minimum content length for quality
-    if (content.length < 50) {
-      return res.status(400).json({
-        error: 'content too short - provide at least 50 characters of useful information',
-        contentLength: content.length,
-      });
-    }
-
-    // Add to knowledge base (Supabase + auto-index to Pinecone)
-    const result = await knowledgeManager.add(
-      category || 'learned', // fileName for legacy compatibility
-      category || 'general', // category
-      { title, content }, // content object
-      source || 'gpt-learned', // source
-      {
-        sourceUrl,
-        mendixVersion,
-        tags: tags || [],
-        learnedFrom: 'api-learn-endpoint',
+    for (const entry of normalizedEntries) {
+      // Validation for this entry
+      if (!entry.title) {
+        errors.push({
+          error: 'Could not find title',
+          received: Object.keys(entry._original || {}),
+          hint: 'Use one of: title, name, topic, subject, heading, label',
+        });
+        continue;
       }
-    );
 
-    logger.info('New knowledge learned via /learn endpoint', {
-      title,
-      category: category || 'general',
-      source: source || 'gpt-learned',
-      id: result.id,
-      vectorIndexed: result.vectorIndexed,
-    });
+      if (!entry.content) {
+        errors.push({
+          entry: entry.title,
+          error: 'Could not find content',
+          received: Object.keys(entry._original || {}),
+          hint: 'Use one of: content, text, body, description, knowledge, info',
+        });
+        continue;
+      }
 
+      // Minimum content length for quality
+      if (entry.content.length < 50) {
+        errors.push({
+          entry: entry.title,
+          error: 'Content too short (min 50 chars)',
+          contentLength: entry.content.length,
+        });
+        continue;
+      }
+
+      try {
+        // Add to knowledge base (Supabase + auto-index to Pinecone)
+        const result = await knowledgeManager.add(
+          entry.category, // fileName for legacy compatibility
+          entry.category, // category
+          { title: entry.title, content: entry.content }, // content object
+          entry.source, // source
+          {
+            sourceUrl: entry.sourceUrl,
+            mendixVersion: entry.mendixVersion,
+            tags: entry.tags,
+            learnedFrom: 'api-learn-endpoint',
+          }
+        );
+
+        logger.info('New knowledge learned via /learn endpoint', {
+          title: entry.title,
+          category: entry.category,
+          source: entry.source,
+          id: result.id,
+          vectorIndexed: result.vectorIndexed,
+        });
+
+        results.push({
+          success: true,
+          title: entry.title,
+          id: result.id,
+          duplicate: result.duplicate || false,
+          qualityScore: result.qualityScore,
+          vectorIndexed: result.vectorIndexed || false,
+        });
+      } catch (entryError) {
+        errors.push({
+          entry: entry.title,
+          error: entryError.message,
+        });
+      }
+    }
+
+    // Single entry response (backwards compatible)
+    if (normalizedEntries.length === 1 && results.length === 1) {
+      const r = results[0];
+      return res.json({
+        success: true,
+        message: `Knowledge "${r.title}" has been added to the knowledge base!`,
+        id: r.id,
+        duplicate: r.duplicate,
+        qualityScore: r.qualityScore,
+        vectorIndexed: r.vectorIndexed,
+        searchableNow: true,
+        tip: 'This knowledge is now permanently stored and will be found in future /search queries.',
+      });
+    }
+
+    // Batch response
     res.json({
-      success: true,
-      message: `Knowledge "${title}" has been added to the knowledge base!`,
-      id: result.id,
-      duplicate: result.duplicate || false,
-      qualityScore: result.qualityScore,
-      vectorIndexed: result.vectorIndexed || false,
+      success: errors.length === 0,
+      message: `Processed ${normalizedEntries.length} entries: ${results.length} added, ${errors.length} failed`,
+      results,
+      errors: errors.length > 0 ? errors : undefined,
       searchableNow: true,
-      tip: 'This knowledge is now permanently stored and will be found in future /search queries.',
+      tip: results.length > 0 ? 'All successful entries are now permanently stored and searchable.' : undefined,
     });
   } catch (error) {
     logger.error('Learn failed', { error: error.message });

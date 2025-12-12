@@ -13,6 +13,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.4.0] - 2025-12-12
+
+### Added
+
+- **🗄️ Supabase-First Architecture**
+
+  - NEW: `src/core/SupabaseKnowledgeManager.js` - Drop-in replacement for KnowledgeManager
+  - Supabase is now the PRIMARY storage, not hybrid - simpler and more reliable
+  - All 241 knowledge entries loaded directly from Supabase on startup
+  - Automatic fallback to JSON only if Supabase env vars not configured
+
+- **📖 Branded User Guide**
+
+  - NEW: `docs/USER-GUIDE.html` - Beautiful branded HTML guide for end users
+  - Purple/violet theme matching PersistentAIMemory branding
+  - Sections: Quick Start, ChatGPT Custom GPT setup, n8n integration, API reference
+  - Designed for non-developers who just want to use the API
+
+- **🔧 Analyzers Made Local-Only**
+  - `/analyze` and `/analyze-theme` REST endpoints now return helpful error in cloud
+  - These require local filesystem access, can't work on Railway
+  - Clear message directing users to local MCP via Claude Desktop or VS Code
+
+### Changed
+
+- **REST API `/health` endpoint** now includes:
+  - `storage`: shows "supabase" or "json" based on active mode
+  - `entries`: count of loaded knowledge entries
+- **index.js and rest-proxy.js** now check for `SUPABASE_URL` env var
+  - If set: Uses SupabaseKnowledgeManager (cloud-first)
+  - If not: Falls back to KnowledgeManager (local JSON)
+- Updated package version to 3.4.0
+- Railway deployment now shows `"storage": "supabase"` in health check
+
+### Technical
+
+- SupabaseKnowledgeManager maintains same interface as KnowledgeManager
+- SearchEngine still indexes `knowledgeBase` object - no changes needed
+- Legacy JSON files in `knowledge/` still work for local development
+
+---
+
 ## [3.3.0] - 2025-12-12
 
 ### Added

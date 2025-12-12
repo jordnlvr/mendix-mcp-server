@@ -15,7 +15,6 @@
 import SupabaseKnowledgeStore from '../storage/SupabaseKnowledgeStore.js';
 import Logger from '../utils/logger.js';
 import QualityScorer from './QualityScorer.js';
-import { v4 as uuidv4 } from 'uuid';
 
 class SupabaseKnowledgeManager {
   constructor() {
@@ -181,8 +180,7 @@ class SupabaseKnowledgeManager {
       // Build entry for Supabase
       const entry = {
         title: content.title || `${category} entry`,
-        content:
-          typeof content === 'string' ? content : content.content || JSON.stringify(content),
+        content: typeof content === 'string' ? content : content.content || JSON.stringify(content),
         category: category || fileName,
         source: source,
         sourceUrl: options.sourceUrl,

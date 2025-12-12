@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mendix Expert User Guide | AI-Powered Mendix Knowledge</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-primary: #0D1117;
@@ -32,9 +35,15 @@
             --radius-lg: 12px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-        html { scroll-behavior: smooth; }
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -43,13 +52,34 @@
             line-height: 1.6;
         }
 
-        h1, h2, h3, h4, h5, h6 { font-weight: 600; line-height: 1.3; }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-weight: 600;
+            line-height: 1.3;
+        }
 
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-primary);
+        }
 
         /* Header */
         .header {
@@ -91,7 +121,9 @@
             color: var(--text-primary);
         }
 
-        .logo-text span { color: var(--accent-secondary); }
+        .logo-text span {
+            color: var(--accent-secondary);
+        }
 
         .header-meta {
             display: flex;
@@ -122,7 +154,9 @@
             overflow-y: auto;
         }
 
-        .nav-section { margin-bottom: 24px; }
+        .nav-section {
+            margin-bottom: 24px;
+        }
 
         .nav-section-title {
             font-size: 0.7rem;
@@ -146,9 +180,21 @@
             transition: all 0.2s;
         }
 
-        .nav-link:hover { background: var(--bg-tertiary); color: var(--text-primary); }
-        .nav-link.active { background: rgba(124, 58, 237, 0.2); color: var(--accent-secondary); }
-        .nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+        .nav-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            background: rgba(124, 58, 237, 0.2);
+            color: var(--accent-secondary);
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
 
         /* Main Content */
         .main {
@@ -203,8 +249,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .hero h1 {
@@ -315,7 +368,10 @@
             color: var(--accent-secondary);
         }
 
-        p { margin-bottom: 16px; color: var(--text-secondary); }
+        p {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+        }
 
         /* Cards */
         .card {
@@ -344,7 +400,10 @@
             font-size: 20px;
         }
 
-        .card-title { font-size: 1.1rem; font-weight: 600; }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
 
         /* Info/Warning/Success Boxes */
         .info-box {
@@ -412,7 +471,9 @@
             font-size: 0.875rem;
         }
 
-        thead { background: var(--bg-tertiary); }
+        thead {
+            background: var(--bg-tertiary);
+        }
 
         th {
             text-align: left;
@@ -428,8 +489,13 @@
             color: var(--text-secondary);
         }
 
-        tr:last-child td { border-bottom: none; }
-        tbody tr:hover { background: var(--bg-tertiary); }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
 
         /* Code Blocks */
         .code-block {
@@ -469,7 +535,9 @@
         }
 
         /* Inline code */
-        p code, li code, td code {
+        p code,
+        li code,
+        td code {
             background: var(--bg-tertiary);
             padding: 2px 8px;
             border-radius: 4px;
@@ -478,21 +546,45 @@
         }
 
         /* Syntax Highlighting */
-        .token-keyword { color: #C792EA; }
-        .token-string { color: #C3E88D; }
-        .token-comment { color: #64748B; }
-        .token-number { color: #F78C6C; }
-        .token-property { color: #82AAFF; }
-        .token-url { color: #89DDFF; }
+        .token-keyword {
+            color: #C792EA;
+        }
+
+        .token-string {
+            color: #C3E88D;
+        }
+
+        .token-comment {
+            color: #64748B;
+        }
+
+        .token-number {
+            color: #F78C6C;
+        }
+
+        .token-property {
+            color: #82AAFF;
+        }
+
+        .token-url {
+            color: #89DDFF;
+        }
 
         /* Lists */
-        ul, ol {
+        ul,
+        ol {
             margin: 16px 0;
             padding-left: 24px;
         }
 
-        li { margin-bottom: 8px; color: var(--text-secondary); }
-        li::marker { color: var(--accent-primary); }
+        li {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        li::marker {
+            color: var(--accent-primary);
+        }
 
         /* Steps */
         .step {
@@ -514,12 +606,27 @@
             flex-shrink: 0;
         }
 
-        .step-content { flex: 1; }
-        .step-title { font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
 
         /* Links */
-        a { color: var(--accent-secondary); text-decoration: none; transition: color 0.2s; }
-        a:hover { color: var(--accent-tertiary); text-decoration: underline; }
+        a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--accent-tertiary);
+            text-decoration: underline;
+        }
 
         /* API Endpoint */
         .endpoint {
@@ -540,10 +647,20 @@
             font-weight: 700;
         }
 
-        .method-get { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .method-post { background: rgba(59, 130, 246, 0.2); color: var(--info); }
+        .method-get {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
 
-        .endpoint-path { color: var(--text-primary); font-size: 0.9rem; }
+        .method-post {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+
+        .endpoint-path {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
 
         /* Footer */
         .footer {
@@ -556,17 +673,31 @@
 
         /* Responsive */
         @media (max-width: 1024px) {
-            .sidebar { display: none; }
-            .main { margin-left: 0; }
+            .sidebar {
+                display: none;
+            }
+
+            .main {
+                margin-left: 0;
+            }
         }
 
         @media (max-width: 768px) {
-            .content { padding: 24px 16px; }
-            .hero h1 { font-size: 2rem; }
-            .quick-start-grid { grid-template-columns: 1fr; }
+            .content {
+                padding: 24px 16px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .quick-start-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
     <!-- Header -->
     <header class="header">
@@ -613,7 +744,7 @@
                 </div>
                 <h1>Mendix Expert User Guide</h1>
                 <p class="hero-subtitle">
-                    Connect your AI assistant to 700KB+ of curated Mendix knowledge. 
+                    Connect your AI assistant to 700KB+ of curated Mendix knowledge.
                     Works with ChatGPT, Claude, n8n, VS Code, and any MCP-compatible tool.
                 </p>
             </section>
@@ -664,7 +795,8 @@
                     <div class="step-number">1</div>
                     <div class="step-content">
                         <div class="step-title">Go to ChatGPT</div>
-                        <p>Navigate to <a href="https://chat.openai.com" target="_blank">chat.openai.com</a> and click "Create a GPT" (requires ChatGPT Plus)</p>
+                        <p>Navigate to <a href="https://chat.openai.com" target="_blank">chat.openai.com</a> and click
+                            "Create a GPT" (requires ChatGPT Plus)</p>
                     </div>
                 </div>
 
@@ -704,7 +836,8 @@ Be specific, include code examples, and cite your sources.</code></pre>
                     <div class="step-number">4</div>
                     <div class="step-content">
                         <div class="step-title">Save and Use!</div>
-                        <p>Click "Save" and start asking Mendix questions. Your GPT now has access to 700KB+ of expert knowledge!</p>
+                        <p>Click "Save" and start asking Mendix questions. Your GPT now has access to 700KB+ of expert
+                            knowledge!</p>
                     </div>
                 </div>
 
@@ -759,7 +892,8 @@ Be specific, include code examples, and cite your sources.</code></pre>
                     <div class="step-number">2</div>
                     <div class="step-content">
                         <div class="step-title">Configure SSE Endpoint</div>
-                        <p>Note: SSE mode requires running the server locally. For cloud-only, use HTTP Request nodes.</p>
+                        <p>Note: SSE mode requires running the server locally. For cloud-only, use HTTP Request nodes.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -845,7 +979,8 @@ Be specific, include code examples, and cite your sources.</code></pre>
 
                 <div class="warning-box">
                     <div class="warning-box-title">⚠️ Local Server Required</div>
-                    <p>Claude Desktop uses stdio transport, which requires running the MCP server locally. This enables project and theme analysis features that aren't available in cloud mode.</p>
+                    <p>Claude Desktop uses stdio transport, which requires running the MCP server locally. This enables
+                        project and theme analysis features that aren't available in cloud mode.</p>
                 </div>
 
                 <h3>Configuration</h3>
@@ -866,15 +1001,36 @@ Be specific, include code examples, and cite your sources.</code></pre>
                 <div class="table-wrapper">
                     <table>
                         <thead>
-                            <tr><th>Tool</th><th>Description</th></tr>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Description</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            <tr><td><code>query_mendix_knowledge</code></td><td>Search the knowledge base</td></tr>
-                            <tr><td><code>get_best_practice</code></td><td>Get best practice recommendations</td></tr>
-                            <tr><td><code>beast_mode</code></td><td>Exhaustive research protocol</td></tr>
-                            <tr><td><code>analyze_project</code></td><td>Analyze a .mpr file (local only)</td></tr>
-                            <tr><td><code>analyze_theme</code></td><td>Deep theme analysis (local only)</td></tr>
-                            <tr><td><code>add_to_knowledge_base</code></td><td>Contribute new knowledge</td></tr>
+                            <tr>
+                                <td><code>query_mendix_knowledge</code></td>
+                                <td>Search the knowledge base</td>
+                            </tr>
+                            <tr>
+                                <td><code>get_best_practice</code></td>
+                                <td>Get best practice recommendations</td>
+                            </tr>
+                            <tr>
+                                <td><code>beast_mode</code></td>
+                                <td>Exhaustive research protocol</td>
+                            </tr>
+                            <tr>
+                                <td><code>analyze_project</code></td>
+                                <td>Analyze a .mpr file (local only)</td>
+                            </tr>
+                            <tr>
+                                <td><code>analyze_theme</code></td>
+                                <td>Deep theme analysis (local only)</td>
+                            </tr>
+                            <tr>
+                                <td><code>add_to_knowledge_base</code></td>
+                                <td>Contribute new knowledge</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -1016,8 +1172,8 @@ results = response.json()
             <footer class="footer">
                 <p>Mendix Expert MCP Server v3.3.0 | Built with ❤️ by Kelly Seale</p>
                 <p style="margin-top: 8px;">
-                    <a href="https://github.com/jordnlvr/mendix-mcp-server">GitHub</a> · 
-                    <a href="https://npmjs.com/package/@jordnlvr/mendix-mcp-server">npm</a> · 
+                    <a href="https://github.com/jordnlvr/mendix-mcp-server">GitHub</a> ·
+                    <a href="https://npmjs.com/package/@jordnlvr/mendix-mcp-server">npm</a> ·
                     <a href="https://mendix-mcp-server-production.up.railway.app/openapi.json">API Spec</a>
                 </p>
             </footer>
@@ -1045,4 +1201,5 @@ results = response.json()
         sections.forEach(section => observer.observe(section));
     </script>
 </body>
+
 </html>

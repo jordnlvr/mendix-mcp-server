@@ -27,10 +27,10 @@ import { z } from 'zod';
 // Core components
 import CacheManager from './core/CacheManager.js';
 import KnowledgeManager from './core/KnowledgeManager.js';
-import SupabaseKnowledgeManager from './core/SupabaseKnowledgeManager.js';
 import ProjectLoader from './core/ProjectLoader.js';
 import QualityScorer from './core/QualityScorer.js';
 import SearchEngine from './core/SearchEngine.js';
+import SupabaseKnowledgeManager from './core/SupabaseKnowledgeManager.js';
 import { getConfig } from './utils/config.js';
 import Logger from './utils/logger.js';
 import MaintenanceScheduler from './utils/MaintenanceScheduler.js';

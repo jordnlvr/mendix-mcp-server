@@ -30,9 +30,9 @@ config({ path: join(__dirname, '..', '.env') });
 import cors from 'cors';
 import express from 'express';
 import KnowledgeManager from './core/KnowledgeManager.js';
-import SupabaseKnowledgeManager from './core/SupabaseKnowledgeManager.js';
 import ProjectLoader from './core/ProjectLoader.js';
 import SearchEngine from './core/SearchEngine.js';
+import SupabaseKnowledgeManager from './core/SupabaseKnowledgeManager.js';
 import Analytics from './utils/Analytics.js';
 import Logger from './utils/logger.js';
 import HybridSearch from './vector/HybridSearch.js';
@@ -320,15 +320,17 @@ app.post('/search', async (req, res) => {
  */
 app.post('/analyze', async (req, res) => {
   // Cloud mode detection - Railway/cloud deployments can't access local files
-  const isCloudMode = process.env.RAILWAY_ENVIRONMENT || process.env.RENDER || process.env.FLY_APP_NAME;
-  
+  const isCloudMode =
+    process.env.RAILWAY_ENVIRONMENT || process.env.RENDER || process.env.FLY_APP_NAME;
+
   if (isCloudMode) {
     return res.status(501).json({
       error: 'Project analysis requires local filesystem access',
-      message: 'This endpoint is only available when running the MCP server locally. ' +
-               'Use Claude Desktop, VS Code, or Cursor with the local MCP server to analyze .mpr files.',
+      message:
+        'This endpoint is only available when running the MCP server locally. ' +
+        'Use Claude Desktop, VS Code, or Cursor with the local MCP server to analyze .mpr files.',
       suggestion: 'For cloud users, try the /search or /best-practice endpoints instead.',
-      docs: 'https://jordnlvr.github.io/mendix-mcp-server/user-guide'
+      docs: 'https://jordnlvr.github.io/mendix-mcp-server/user-guide',
     });
   }
 
@@ -792,15 +794,18 @@ app.post('/knowledge-gap', async (req, res) => {
  */
 app.post('/analyze-theme', async (req, res) => {
   // Cloud mode detection - Railway/cloud deployments can't access local files
-  const isCloudMode = process.env.RAILWAY_ENVIRONMENT || process.env.RENDER || process.env.FLY_APP_NAME;
-  
+  const isCloudMode =
+    process.env.RAILWAY_ENVIRONMENT || process.env.RENDER || process.env.FLY_APP_NAME;
+
   if (isCloudMode) {
     return res.status(501).json({
       error: 'Theme analysis requires local filesystem access',
-      message: 'This endpoint is only available when running the MCP server locally. ' +
-               'Use Claude Desktop, VS Code, or Cursor with the local MCP server to analyze themes.',
-      suggestion: 'For cloud users, try searching for theme best practices: /search with query "theme styling"',
-      docs: 'https://jordnlvr.github.io/mendix-mcp-server/user-guide'
+      message:
+        'This endpoint is only available when running the MCP server locally. ' +
+        'Use Claude Desktop, VS Code, or Cursor with the local MCP server to analyze themes.',
+      suggestion:
+        'For cloud users, try searching for theme best practices: /search with query "theme styling"',
+      docs: 'https://jordnlvr.github.io/mendix-mcp-server/user-guide',
     });
   }
 

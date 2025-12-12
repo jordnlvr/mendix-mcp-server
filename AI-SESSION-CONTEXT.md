@@ -2,8 +2,8 @@
 
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
-**Last Updated:** December 9, 2025  
-**Version:** 3.2.0  
+**Last Updated:** December 12, 2025  
+**Version:** 3.2.1  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -36,6 +36,7 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 | **GitHub**        | `jordnlvr/mendix-mcp-server` - [github.com/jordnlvr/mendix-mcp-server](https://github.com/jordnlvr/mendix-mcp-server)                  |
 | **Documentation** | [jordnlvr.github.io/mendix-mcp-server](https://jordnlvr.github.io/mendix-mcp-server/)                                                  |
 | **Smithery**      | [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)                               |
+| **Railway (Cloud)** | `https://mendix-mcp-server-production.up.railway.app` - 24/7 REST API                                                                |
 
 ### Key Files & Folders
 

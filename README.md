@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/@jordnlvr/mendix-mcp-server"><img src="https://img.shields.io/npm/v/@jordnlvr/mendix-mcp-server.svg?style=flat-square" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/@jordnlvr/mendix-mcp-server"><img src="https://img.shields.io/npm/dm/@jordnlvr/mendix-mcp-server.svg?style=flat-square" alt="npm downloads"></a>
-  <img src="https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg?style=flat-square" alt="Node >= 18">
+  <img src="https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg?style=flat-square" alt="Node >= 20">
   <img src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square" alt="MIT License">
   <img src="https://img.shields.io/badge/MCP-compatible-purple.svg?style=flat-square" alt="MCP Compatible">
 </p>
@@ -271,6 +271,56 @@ Quick steps:
 5. Copy the system prompt from [docs/CHATGPT-SETUP.md](docs/CHATGPT-SETUP.md)
 
 **Note:** Free ngrok URLs change on restart. Keep the script running or consider ngrok's paid tier for a stable URL.
+
+---
+
+## ☁️ Cloud Deployment (Railway)
+
+**No local server needed!** The Mendix Expert API is available 24/7 at:
+
+```
+https://mendix-mcp-server-production.up.railway.app
+```
+
+### Using the Cloud API
+
+```bash
+# Health check
+curl https://mendix-mcp-server-production.up.railway.app/health
+
+# Search the knowledge base
+curl -X POST https://mendix-mcp-server-production.up.railway.app/search \
+  -H "Content-Type: application/json" \
+  -d '{"query":"microflow creation SDK"}'
+
+# Get best practices
+curl -X POST https://mendix-mcp-server-production.up.railway.app/best-practice \
+  -H "Content-Type: application/json" \
+  -d '{"scenario":"error handling"}'
+```
+
+### ChatGPT Custom GPT (Cloud)
+
+Use the cloud API for ChatGPT Custom GPTs - no ngrok needed!
+
+1. Create a Custom GPT at chat.openai.com
+2. Go to Configure → Actions → Import from URL
+3. Enter: `https://mendix-mcp-server-production.up.railway.app/openapi.json`
+4. Save and use!
+
+### n8n Integration
+
+Add an HTTP Request node with:
+
+```
+URL: https://mendix-mcp-server-production.up.railway.app/search
+Method: POST
+Body: { "query": "your search term" }
+```
+
+### Deploy Your Own Instance
+
+Want your own Railway instance? See [docs/RAILWAY-DEPLOYMENT.md](docs/RAILWAY-DEPLOYMENT.md).
 
 ---
 

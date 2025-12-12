@@ -7,6 +7,10 @@
   },
   "servers": [
     {
+      "url": "https://mendix-mcp-server-production.up.railway.app",
+      "description": "Production cloud server (Railway)"
+    },
+    {
       "url": "http://localhost:5050",
       "description": "Local development server"
     }

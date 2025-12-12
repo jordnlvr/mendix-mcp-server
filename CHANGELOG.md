@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **🗄️ Supabase Cloud Persistence**
+
   - NEW: `src/storage/SupabaseKnowledgeStore.js` - Complete Supabase client for knowledge storage
   - NEW: `src/core/HybridKnowledgeManager.js` - Combines Supabase (cloud) and JSON (local) storage
   - NEW: `scripts/supabase-schema.sql` - PostgreSQL schema with full-text search, indexes, RLS

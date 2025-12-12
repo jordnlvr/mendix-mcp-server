@@ -27,6 +27,7 @@ import { z } from 'zod';
 // Core components
 import CacheManager from './core/CacheManager.js';
 import KnowledgeManager from './core/KnowledgeManager.js';
+import SupabaseKnowledgeManager from './core/SupabaseKnowledgeManager.js';
 import ProjectLoader from './core/ProjectLoader.js';
 import QualityScorer from './core/QualityScorer.js';
 import SearchEngine from './core/SearchEngine.js';
@@ -68,7 +69,19 @@ const server = new McpServer({
 // Initialize core components
 const cacheManager = new CacheManager();
 const projectLoader = new ProjectLoader(cacheManager);
-const knowledgeManager = new KnowledgeManager();
+
+// Use Supabase if configured, otherwise fall back to JSON
+let knowledgeManager;
+const useSupabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY;
+
+if (useSupabase) {
+  logger.info('Using Supabase for knowledge storage');
+  knowledgeManager = new SupabaseKnowledgeManager();
+} else {
+  logger.info('Using local JSON for knowledge storage');
+  knowledgeManager = new KnowledgeManager();
+}
+
 const webFetcher = new WebFetcher({ enabled: true });
 const searchEngine = new SearchEngine();
 const qualityScorer = new QualityScorer();

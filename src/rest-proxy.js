@@ -30,6 +30,7 @@ config({ path: join(__dirname, '..', '.env') });
 import cors from 'cors';
 import express from 'express';
 import KnowledgeManager from './core/KnowledgeManager.js';
+import SupabaseKnowledgeManager from './core/SupabaseKnowledgeManager.js';
 import ProjectLoader from './core/ProjectLoader.js';
 import SearchEngine from './core/SearchEngine.js';
 import Analytics from './utils/Analytics.js';
@@ -52,13 +53,26 @@ let projectLoader;
 let analytics;
 let initialized = false;
 let vectorSearchAvailable = false;
+let storageMode = 'unknown';
 
 async function initialize() {
   if (initialized) return;
 
   logger.info('Initializing REST proxy...');
 
-  knowledgeManager = new KnowledgeManager();
+  // Use Supabase if configured (should always be configured on Railway)
+  const useSupabase = process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY;
+
+  if (useSupabase) {
+    logger.info('Using Supabase for knowledge storage');
+    knowledgeManager = new SupabaseKnowledgeManager();
+    storageMode = 'supabase';
+  } else {
+    logger.info('Using local JSON for knowledge storage');
+    knowledgeManager = new KnowledgeManager();
+    storageMode = 'json';
+  }
+
   await knowledgeManager.load();
 
   searchEngine = new SearchEngine();
@@ -86,6 +100,7 @@ async function initialize() {
   logger.info('REST proxy initialized', {
     entries: knowledgeManager.getStats().totalEntries,
     terms: searchEngine.getStats().uniqueTerms,
+    storage: storageMode,
   });
 }
 
@@ -101,6 +116,8 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     initialized,
     vectorSearchAvailable,
+    storage: storageMode,
+    entries: initialized ? knowledgeManager.getStats().totalEntries : 0,
     timestamp: new Date().toISOString(),
   });
 });
@@ -298,8 +315,23 @@ app.post('/search', async (req, res) => {
 
 /**
  * Analyze Mendix project
+ * NOTE: This endpoint requires local filesystem access and is disabled in cloud mode.
+ * Use the MCP server locally (via Claude Desktop or VS Code) for project analysis.
  */
 app.post('/analyze', async (req, res) => {
+  // Cloud mode detection - Railway/cloud deployments can't access local files
+  const isCloudMode = process.env.RAILWAY_ENVIRONMENT || process.env.RENDER || process.env.FLY_APP_NAME;
+  
+  if (isCloudMode) {
+    return res.status(501).json({
+      error: 'Project analysis requires local filesystem access',
+      message: 'This endpoint is only available when running the MCP server locally. ' +
+               'Use Claude Desktop, VS Code, or Cursor with the local MCP server to analyze .mpr files.',
+      suggestion: 'For cloud users, try the /search or /best-practice endpoints instead.',
+      docs: 'https://jordnlvr.github.io/mendix-mcp-server/user-guide'
+    });
+  }
+
   try {
     await initialize();
 
@@ -755,8 +787,23 @@ app.post('/knowledge-gap', async (req, res) => {
 
 /**
  * Analyze theme - deep analysis of Mendix custom theme
+ * NOTE: This endpoint requires local filesystem access and is disabled in cloud mode.
+ * Use the MCP server locally (via Claude Desktop or VS Code) for theme analysis.
  */
 app.post('/analyze-theme', async (req, res) => {
+  // Cloud mode detection - Railway/cloud deployments can't access local files
+  const isCloudMode = process.env.RAILWAY_ENVIRONMENT || process.env.RENDER || process.env.FLY_APP_NAME;
+  
+  if (isCloudMode) {
+    return res.status(501).json({
+      error: 'Theme analysis requires local filesystem access',
+      message: 'This endpoint is only available when running the MCP server locally. ' +
+               'Use Claude Desktop, VS Code, or Cursor with the local MCP server to analyze themes.',
+      suggestion: 'For cloud users, try searching for theme best practices: /search with query "theme styling"',
+      docs: 'https://jordnlvr.github.io/mendix-mcp-server/user-guide'
+    });
+  }
+
   try {
     await initialize();
 

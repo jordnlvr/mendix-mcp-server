@@ -72,6 +72,7 @@ npm run migrate:supabase
 ```
 
 This will:
+
 - Read all JSON files from `knowledge/`
 - Transform entries to the Supabase schema
 - Insert with duplicate detection
@@ -81,11 +82,11 @@ This will:
 
 ### Tables
 
-| Table | Purpose |
-|-------|---------|
+| Table               | Purpose                                      |
+| ------------------- | -------------------------------------------- |
 | `knowledge_entries` | Main knowledge storage with full-text search |
-| `learning_events` | Tracks what was learned and when |
-| `analytics` | Usage tracking for popular queries |
+| `learning_events`   | Tracks what was learned and when             |
+| `analytics`         | Usage tracking for popular queries           |
 
 ### Key Features
 
@@ -107,11 +108,11 @@ The server uses a `HybridKnowledgeManager` that:
 
 ### Storage Priority
 
-| Environment | Primary Storage | Backup |
-|-------------|-----------------|--------|
-| Railway (with Supabase) | Supabase | None (JSON resets) |
-| Local (with Supabase) | Supabase | JSON files |
-| Local (no Supabase) | JSON files | None |
+| Environment             | Primary Storage | Backup             |
+| ----------------------- | --------------- | ------------------ |
+| Railway (with Supabase) | Supabase        | None (JSON resets) |
+| Local (with Supabase)   | Supabase        | JSON files         |
+| Local (no Supabase)     | JSON files      | None               |
 
 ### Self-Learning Flow
 
@@ -126,6 +127,7 @@ User adds knowledge → HybridManager → Supabase (cloud)
 ### "Missing environment variables"
 
 Make sure all three variables are set:
+
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_KEY`
@@ -147,6 +149,7 @@ The schema includes Row Level Security (RLS) policies. If you get permission err
 ### "Table not found"
 
 Run the schema SQL in the Supabase SQL Editor:
+
 1. Go to SQL Editor
 2. Paste contents of `scripts/supabase-schema.sql`
 3. Click "Run"
@@ -160,6 +163,7 @@ curl https://your-railway-url.up.railway.app/health
 ```
 
 Response includes storage stats:
+
 ```json
 {
   "status": "healthy",
@@ -182,14 +186,15 @@ Response includes storage stats:
 Query the `learning_events` table to see what's being learned:
 
 ```sql
-SELECT * FROM learning_events 
-ORDER BY learned_at DESC 
+SELECT * FROM learning_events
+ORDER BY learned_at DESC
 LIMIT 20;
 ```
 
 ## Cost
 
 Supabase free tier includes:
+
 - 500MB database storage
 - Unlimited API requests
 - 2 projects

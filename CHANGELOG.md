@@ -13,6 +13,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.5.4] - 2025-12-12
+
+### Added
+
+- **🎯 Relevance Checking for /learn endpoint**
+  - Content must be related to Mendix or relevant development topics
+  - Off-topic/spam content is rejected with helpful error messages
+  - Liberal matching allows Mendix-adjacent technologies
+
+- **Accepted Topic Categories** (weighted scoring):
+  - **Mendix Core** (weight 10): mendix, microflow, nanoflow, domain model, xpath, pluggable widget, etc.
+  - **Low-Code** (weight 8): low-code, no-code, rapid application, citizen developer, siemens
+  - **Dev Technologies** (weight 3): react, typescript, javascript, java, npm, webpack, etc.
+  - **Cloud/Deployment** (weight 3): kubernetes, docker, azure, aws, ci/cd, devops, git
+  - **Data/Integration** (weight 3): database, postgresql, rest api, soap, sso, oauth, ldap
+  - **Architecture** (weight 4): best practices, patterns, security, performance, testing
+  - **UI/UX** (weight 3): design system, responsive, mobile, accessibility, theme
+
+- **Scoring Logic**:
+  - Score ≥ 10: Definitely relevant (has Mendix terms or multiple category matches)
+  - Score ≥ 3: Probably relevant (has some development terms) → Accepted
+  - Score < 3: Not relevant → Rejected with helpful error
+
+### Changed
+
+- `/docs` endpoint now shows relevance requirements and accepted topics
+- Relevance score and matched categories stored with each entry for analysis
+
+### Why This Matters
+
+Prevents the knowledge base from being polluted with off-topic content.
+A recipe for chocolate cake? Rejected. 
+React performance optimization patterns? Accepted (useful for widgets).
+Mendix microflow error handling? Definitely accepted.
+
+---
+
 ## [3.5.3] - 2025-12-12
 
 ### Added

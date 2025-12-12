@@ -94,7 +94,11 @@ class SupabaseKnowledgeStore {
         // Server error - retry
         if (attempt < maxRetries) {
           const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
-          logger.warn(`Supabase request failed (${response.status}), retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`);
+          logger.warn(
+            `Supabase request failed (${
+              response.status
+            }), retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`
+          );
           await new Promise((resolve) => setTimeout(resolve, delay));
         } else {
           return response; // Return the failed response on last attempt
@@ -103,9 +107,12 @@ class SupabaseKnowledgeStore {
         // Network error - retry
         if (attempt < maxRetries) {
           const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
-          logger.warn(`Supabase network error, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
-            error: error.message,
-          });
+          logger.warn(
+            `Supabase network error, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`,
+            {
+              error: error.message,
+            }
+          );
           await new Promise((resolve) => setTimeout(resolve, delay));
         } else {
           throw error; // Rethrow on last attempt

@@ -89,10 +89,16 @@ async function withRetry(fn, options = {}) {
       }
 
       // Exponential backoff with jitter
-      const delay = Math.min(baseDelayMs * Math.pow(2, attempt - 1) + Math.random() * 500, maxDelayMs);
-      logger.warn(`${context} failed (attempt ${attempt}/${maxRetries}), retrying in ${Math.round(delay)}ms`, {
-        error: error.message,
-      });
+      const delay = Math.min(
+        baseDelayMs * Math.pow(2, attempt - 1) + Math.random() * 500,
+        maxDelayMs
+      );
+      logger.warn(
+        `${context} failed (attempt ${attempt}/${maxRetries}), retrying in ${Math.round(delay)}ms`,
+        {
+          error: error.message,
+        }
+      );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -249,6 +255,17 @@ app.get('/tools', (req, res) => {
           tags: 'array (optional) - Tags for categorization. Also accepts: keywords, labels',
         },
         batchSupport: 'Yes - send multiple entries in one request, get individual results for each',
+        relevanceCheck:
+          'Content must be about Mendix or related topics (React, cloud deployment, integrations, etc.). Off-topic content is rejected.',
+        relevantTopics: [
+          'Mendix (microflows, nanoflows, domain models, widgets, etc.)',
+          'Low-code/no-code development',
+          'React, TypeScript, JavaScript development',
+          'Cloud deployment (Azure, AWS, Kubernetes, Docker)',
+          'Integrations (REST, SOAP, OData, SSO)',
+          'Architecture, best practices, patterns',
+          'UI/UX, themes, styling',
+        ],
       },
       {
         name: 'analyze',
@@ -957,6 +974,215 @@ app.post('/knowledge-gap', async (req, res) => {
  * 2. Auto-indexed to Pinecone (semantic search)
  * 3. Available immediately for future queries
  */
+
+/**
+ * Relevance Checker for /learn endpoint
+ * Validates that content is related to Mendix or relevant development topics
+ * Liberal matching - allows Mendix-adjacent technologies that could be useful
+ */
+function checkRelevance(title, content) {
+  const text = `${title} ${content}`.toLowerCase();
+
+  // Core Mendix terms - if any of these match, definitely relevant
+  const mendixCore = [
+    'mendix',
+    'studio pro',
+    'studiopro',
+    'microflow',
+    'nanoflow',
+    'domain model',
+    'xpath',
+    'oql',
+    'mendix cloud',
+    'sprintr',
+    'app store',
+    'marketplace',
+    'mendix runtime',
+    'mx.',
+    'mxmodelreflection',
+    'pluggable widget',
+    'atlas ui',
+    'atlas core',
+    'mendix sdk',
+    'mdk',
+    'make it native',
+    'native mobile',
+    'mx assistant',
+  ];
+
+  // Mendix-adjacent - low-code/platform terms
+  const lowCodePlatform = [
+    'low-code',
+    'lowcode',
+    'low code',
+    'no-code',
+    'nocode',
+    'rapid application',
+    'citizen developer',
+    'model-driven',
+    'visual development',
+    'siemens',
+  ];
+
+  // Development technologies commonly used with Mendix
+  const devTechnologies = [
+    'react',
+    'typescript',
+    'javascript',
+    'java',
+    'rest api',
+    'graphql',
+    'odata',
+    'json',
+    'xml',
+    'scss',
+    'sass',
+    'css',
+    'html',
+    'widget',
+    'component',
+    'npm',
+    'node.js',
+    'nodejs',
+    'webpack',
+    'babel',
+    'rollup',
+  ];
+
+  // Cloud/deployment terms relevant to Mendix
+  const cloudDeployment = [
+    'cloud',
+    'deployment',
+    'deploy',
+    'kubernetes',
+    'k8s',
+    'docker',
+    'container',
+    'azure',
+    'aws',
+    'sap',
+    'cloud foundry',
+    'private cloud',
+    'on-premise',
+    'on-prem',
+    'ci/cd',
+    'pipeline',
+    'devops',
+    'git',
+    'version control',
+  ];
+
+  // Database/integration terms
+  const dataIntegration = [
+    'database',
+    'postgresql',
+    'postgres',
+    'sql server',
+    'mysql',
+    'oracle',
+    'integration',
+    'api',
+    'web service',
+    'soap',
+    'sso',
+    'saml',
+    'oauth',
+    'oidc',
+    'ldap',
+    'active directory',
+  ];
+
+  // Architecture/best practices
+  const architecture = [
+    'architecture',
+    'best practice',
+    'pattern',
+    'anti-pattern',
+    'security',
+    'performance',
+    'optimization',
+    'scalability',
+    'modular',
+    'module',
+    'domain',
+    'entity',
+    'association',
+    'inheritance',
+    'enumeration',
+    'validation',
+    'error handling',
+    'logging',
+    'debugging',
+    'testing',
+    'unit test',
+    'e2e test',
+  ];
+
+  // UI/UX terms
+  const uiUx = [
+    'user interface',
+    'ui',
+    'ux',
+    'design system',
+    'responsive',
+    'mobile',
+    'accessibility',
+    'a11y',
+    'theme',
+    'styling',
+    'layout',
+    'page',
+    'snippet',
+    'building block',
+  ];
+
+  // All term categories with weights
+  const categories = [
+    { terms: mendixCore, weight: 10, name: 'mendix-core' },
+    { terms: lowCodePlatform, weight: 8, name: 'low-code' },
+    { terms: devTechnologies, weight: 3, name: 'dev-tech' },
+    { terms: cloudDeployment, weight: 3, name: 'cloud' },
+    { terms: dataIntegration, weight: 3, name: 'data' },
+    { terms: architecture, weight: 4, name: 'architecture' },
+    { terms: uiUx, weight: 3, name: 'ui-ux' },
+  ];
+
+  let totalScore = 0;
+  const matchedCategories = [];
+  const matchedTerms = [];
+
+  for (const category of categories) {
+    for (const term of category.terms) {
+      if (text.includes(term)) {
+        totalScore += category.weight;
+        if (!matchedCategories.includes(category.name)) {
+          matchedCategories.push(category.name);
+        }
+        matchedTerms.push(term);
+      }
+    }
+  }
+
+  // Determine relevance level
+  // Score >= 10: Definitely relevant (has mendix term or multiple other matches)
+  // Score >= 3: Probably relevant (has some dev/cloud terms)
+  // Score < 3: Probably not relevant
+
+  return {
+    isRelevant: totalScore >= 3,
+    isDefinitelyRelevant: totalScore >= 10,
+    score: totalScore,
+    matchedCategories,
+    matchedTerms: matchedTerms.slice(0, 5), // Top 5 matches
+    reason:
+      totalScore >= 10
+        ? 'Directly Mendix-related'
+        : totalScore >= 3
+          ? 'Development-related, potentially useful for Mendix'
+          : 'Does not appear to be related to Mendix or relevant development topics',
+  };
+}
+
 /**
  * Smart Input Normalizer for /learn endpoint
  * Accepts multiple input formats and extracts knowledge properly
@@ -1107,6 +1333,24 @@ app.post('/learn', learnLimiter, async (req, res) => {
         continue;
       }
 
+      // Relevance check - is this about Mendix or related development?
+      const relevance = checkRelevance(entry.title, entry.content);
+      if (!relevance.isRelevant) {
+        errors.push({
+          entry: entry.title,
+          error: 'Content does not appear to be related to Mendix or relevant development topics',
+          reason: relevance.reason,
+          score: relevance.score,
+          hint: 'Content should be about Mendix, low-code development, React widgets, cloud deployment, integrations, or related development practices',
+        });
+        logger.warn('Rejected off-topic knowledge submission', {
+          title: entry.title,
+          score: relevance.score,
+          matchedTerms: relevance.matchedTerms,
+        });
+        continue;
+      }
+
       try {
         // Add to knowledge base (Supabase + auto-index to Pinecone)
         const result = await knowledgeManager.add(
@@ -1119,6 +1363,8 @@ app.post('/learn', learnLimiter, async (req, res) => {
             mendixVersion: entry.mendixVersion,
             tags: entry.tags,
             learnedFrom: 'api-learn-endpoint',
+            relevanceScore: relevance.score,
+            relevanceCategories: relevance.matchedCategories,
           }
         );
 

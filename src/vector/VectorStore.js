@@ -682,9 +682,12 @@ export default class VectorStore {
         } catch (retryError) {
           if (attempt < maxRetries) {
             const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
-            logger.warn(`Pinecone upsert failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
-              error: retryError.message,
-            });
+            logger.warn(
+              `Pinecone upsert failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`,
+              {
+                error: retryError.message,
+              }
+            );
             await new Promise((resolve) => setTimeout(resolve, delay));
           } else {
             throw retryError;
@@ -784,9 +787,12 @@ export default class VectorStore {
         } catch (retryError) {
           if (attempt < maxRetries) {
             const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
-            logger.warn(`Pinecone query failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
-              error: retryError.message,
-            });
+            logger.warn(
+              `Pinecone query failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`,
+              {
+                error: retryError.message,
+              }
+            );
             await new Promise((resolve) => setTimeout(resolve, delay));
           } else {
             throw retryError; // Rethrow on last attempt
@@ -897,9 +903,14 @@ export default class VectorStore {
         } catch (retryError) {
           if (attempt < maxRetries) {
             const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 500;
-            logger.warn(`Pinecone single upsert failed, retry ${attempt}/${maxRetries} in ${Math.round(delay)}ms`, {
-              error: retryError.message,
-            });
+            logger.warn(
+              `Pinecone single upsert failed, retry ${attempt}/${maxRetries} in ${Math.round(
+                delay
+              )}ms`,
+              {
+                error: retryError.message,
+              }
+            );
             await new Promise((resolve) => setTimeout(resolve, delay));
           } else {
             throw retryError;

@@ -760,6 +760,485 @@
         },
         "source": "Mendix Best Practices and Community Standards"
       }
+    ],
+    "companion_architecture": [
+      {
+        "title": "Mendix Companion Development Architecture",
+        "description": "Mandatory architectural principles and patterns for developing the Mendix Companion VS Code extension",
+        "core_philosophy": "Build capabilities, not features. Build systems, not solutions.",
+        "principles": {
+          "abstracted": "Every piece of functionality must be reusable across different contexts",
+          "discoverable": "The system must know what it can do - capabilities self-register with metadata",
+          "configurable": "Behavior must be driven by data and knowledge base, not hardcoded logic",
+          "extensible": "New capabilities must plug in without rewriting existing code",
+          "knowledge_driven": "Patterns come from the MCP knowledge base, not inline code"
+        },
+        "capability_pattern": {
+          "description": "A Capability is a self-contained, reusable unit of functionality",
+          "interface": {
+            "id": "Unique identifier",
+            "name": "Human-readable name",
+            "description": "What this capability does",
+            "category": "Grouping (domain-model, microflow, security, etc.)",
+            "requiredContext": "What it needs to execute",
+            "optionalContext": "What enhances execution",
+            "tags": "For discovery and search",
+            "execute": "Function that performs the capability",
+            "validate": "Function that validates context before execution"
+          },
+          "execution_flow": [
+            "1. Query MCP knowledge base for relevant pattern",
+            "2. Parse pattern to extract code templates",
+            "3. Apply pattern with current context",
+            "4. Handle errors based on known gotchas from knowledge base",
+            "5. Return structured CapabilityResult"
+          ]
+        },
+        "anti_patterns": {
+          "never_hardcode": [
+            "File paths",
+            "Entity/module names",
+            "SDK method calls directly (use patterns)",
+            "Business logic that could vary",
+            "UI text that could be localized"
+          ],
+          "instead": [
+            "Query configuration/knowledge at runtime",
+            "Accept parameters",
+            "Use pattern templates from MCP",
+            "Store in appropriate service/knowledge layer"
+          ]
+        },
+        "composition_principle": {
+          "description": "Complex operations should compose simple capabilities",
+          "example": "CRUD microflow generator composes 4 separate create-microflow capabilities with different operation params"
+        },
+        "before_commit_checklist": [
+          "Is this functionality abstracted into a capability?",
+          "Does it query the knowledge base instead of hardcoding?",
+          "Is it registered in the capability registry?",
+          "Can it be composed with other capabilities?",
+          "Does it validate its context?",
+          "Does it provide clear error messages?",
+          "Is it discoverable (good name, description, tags)?",
+          "Does it log its execution?",
+          "Are there any hardcoded values that should be parameters?"
+        ],
+        "_metadata": {
+          "id": "9f4e24c5-e52c-4c17-bab5-93cef4ce521a",
+          "added_at": "2025-12-10T19:31:16.010Z",
+          "source": "Mendix Companion project architecture definition",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      }
+    ],
+    "companion_patterns": [
+      {
+        "title": "Capability-Based Architecture Pattern",
+        "description": "Design pattern for building modular, discoverable, and extensible features in Mendix Companion",
+        "patterns": {
+          "capability_interface": {
+            "description": "All capabilities implement a standard interface for consistency",
+            "properties": [
+              "id",
+              "name",
+              "description",
+              "category",
+              "requiredContext",
+              "optionalContext",
+              "tags",
+              "enabled",
+              "execute",
+              "validate",
+              "estimateComplexity"
+            ],
+            "example": "interface Capability { id: string; execute: (context) => Promise<CapabilityResult>; }"
+          },
+          "capability_registry": {
+            "description": "Central registry for discovering and managing capabilities",
+            "features": [
+              "register",
+              "unregister",
+              "getByCategory",
+              "getByTag",
+              "search",
+              "execute"
+            ],
+            "usage": "capabilityRegistry.register(myCapability); capabilityRegistry.execute('capability.id', context);"
+          },
+          "context_injection": {
+            "description": "Capabilities receive context at runtime including services, project info, and parameters",
+            "context_properties": [
+              "project",
+              "target",
+              "params",
+              "services"
+            ]
+          }
+        },
+        "benefits": [
+          "Loose coupling between features",
+          "Easy to add new capabilities",
+          "Consistent API across features",
+          "Discoverable through registry",
+          "Testable in isolation"
+        ],
+        "_metadata": {
+          "id": "fc0c3562-1dc1-4a70-b0e4-cd43477f36ba",
+          "added_at": "2025-12-10T20:08:34.045Z",
+          "source": "Mendix Companion Architecture",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      },
+      {
+        "title": "Conversation Persistence Pattern",
+        "description": "Pattern for persisting chat conversations with auto-save and recovery",
+        "implementation": {
+          "storage_service": {
+            "description": "Abstracted storage backend supporting localStorage and VS Code state",
+            "methods": [
+              "get",
+              "set",
+              "delete",
+              "list",
+              "clear"
+            ],
+            "features": [
+              "automatic versioning",
+              "metadata tracking",
+              "graceful fallbacks"
+            ]
+          },
+          "conversation_structure": {
+            "properties": [
+              "id",
+              "title",
+              "messages",
+              "createdAt",
+              "updatedAt",
+              "projectContext",
+              "metadata",
+              "pinned",
+              "tags"
+            ],
+            "metadata": [
+              "messageCount",
+              "tokensUsed",
+              "providers",
+              "models",
+              "topics"
+            ]
+          },
+          "auto_save": {
+            "trigger": "5 seconds after last change",
+            "manual": "Ctrl+S keyboard shortcut",
+            "indicator": "Cloud icon showing save status"
+          }
+        },
+        "ui_components": [
+          "ConversationList sidebar",
+          "Save status indicator",
+          "Title editor",
+          "Pin/delete actions"
+        ],
+        "events": [
+          "created",
+          "updated",
+          "deleted",
+          "messageAdded",
+          "cleared"
+        ],
+        "_metadata": {
+          "id": "00a131b2-7ace-4274-b824-d92aee4c1c84",
+          "added_at": "2025-12-10T20:08:48.162Z",
+          "source": "Mendix Companion Implementation",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      },
+      {
+        "title": "Knowledge Enhancement Pattern",
+        "description": "Pattern for enriching LLM queries with verified knowledge from MCP",
+        "workflow": [
+          "1. User submits query",
+          "2. Query MCP knowledge base for relevant sources",
+          "3. Build enhanced query with context injection",
+          "4. Send to LLM with knowledge context",
+          "5. Display response with source attribution",
+          "6. Collect user feedback on source quality"
+        ],
+        "components": {
+          "knowledge_enhancer": {
+            "methods": [
+              "enhanceQuery",
+              "getLastSources",
+              "submitFeedback",
+              "searchTopic"
+            ],
+            "returns": [
+              "enhancedQuery",
+              "sources",
+              "confidence",
+              "contextString"
+            ]
+          },
+          "source_attribution": {
+            "displays": [
+              "file",
+              "category",
+              "title",
+              "relevance",
+              "excerpt"
+            ],
+            "confidence_levels": [
+              "high",
+              "medium",
+              "low",
+              "none"
+            ],
+            "actions": [
+              "expand/collapse",
+              "view documentation",
+              "rate helpful/unhelpful"
+            ]
+          }
+        },
+        "confidence_calculation": {
+          "high": "Top relevance >= 80% AND average >= 60%",
+          "medium": "Top relevance >= 60% AND average >= 40%",
+          "low": "Any sources found below threshold",
+          "none": "No relevant sources"
+        },
+        "_metadata": {
+          "id": "0642ac8f-1302-4037-9d63-e3aff2dab888",
+          "added_at": "2025-12-10T20:09:37.556Z",
+          "source": "Mendix Companion Implementation",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      },
+      {
+        "title": "Smart Suggestion Chips Pattern",
+        "description": "Pattern for generating contextual suggestions based on conversation and knowledge",
+        "suggestion_structure": {
+          "properties": [
+            "id",
+            "label",
+            "icon",
+            "action",
+            "priority",
+            "context",
+            "category"
+          ],
+          "action_types": [
+            "query",
+            "capability",
+            "navigate",
+            "external"
+          ],
+          "categories": [
+            "workflow",
+            "knowledge",
+            "action",
+            "explore"
+          ]
+        },
+        "generation_algorithm": [
+          "1. Extract topics from recent messages (last 3)",
+          "2. Match against topic-based suggestion templates",
+          "3. Query MCP for related knowledge",
+          "4. Add MCP-based suggestions",
+          "5. Fill remaining slots with defaults",
+          "6. Sort by priority and return top N"
+        ],
+        "topic_patterns": {
+          "microflow": [
+            "microflow",
+            "flow",
+            "activity",
+            "sequence"
+          ],
+          "entity": [
+            "entity",
+            "attribute",
+            "domain model"
+          ],
+          "security": [
+            "security",
+            "access rule",
+            "role",
+            "permission"
+          ],
+          "sdk": [
+            "sdk",
+            "model sdk",
+            "platform sdk"
+          ],
+          "widget": [
+            "widget",
+            "pluggable",
+            "react component"
+          ],
+          "page": [
+            "page",
+            "layout",
+            "snippet",
+            "navigation"
+          ]
+        },
+        "ui_features": [
+          "dismissable chips",
+          "animated appearance",
+          "category grouping",
+          "hover context"
+        ],
+        "_metadata": {
+          "id": "0543c17d-0aea-4558-b1f0-53fb9f34fe43",
+          "added_at": "2025-12-10T20:10:14.806Z",
+          "source": "Mendix Companion Implementation",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      },
+      {
+        "title": "Code Artifact Display Pattern",
+        "description": "Pattern for rich display of generated code with syntax highlighting and actions",
+        "artifact_structure": {
+          "properties": [
+            "id",
+            "language",
+            "filename",
+            "content",
+            "description",
+            "category",
+            "source"
+          ],
+          "languages": [
+            "typescript",
+            "javascript",
+            "json",
+            "xml",
+            "scss",
+            "css",
+            "csharp",
+            "html",
+            "markdown"
+          ],
+          "categories": [
+            "sdk-script",
+            "widget",
+            "config",
+            "snippet",
+            "example"
+          ]
+        },
+        "parsing": {
+          "regex": "```(language)?(?:\\s+filename=[\"']?([^\"'\\n]+)[\"']?)?\\n([\\s\\S]*?)```",
+          "auto_detection": {
+            "sdk-script": "content includes MendixPlatformClient or Model SDK",
+            "widget": "filename includes widget or content includes pluggable",
+            "config": "language is json or filename ends with .json",
+            "example": "content includes example keyword"
+          }
+        },
+        "syntax_highlighting": {
+          "approach": "Regex-based highlighting without external library",
+          "features": [
+            "keywords",
+            "strings",
+            "comments",
+            "numbers",
+            "types"
+          ],
+          "language_specific": [
+            "TypeScript/JavaScript",
+            "JSON",
+            "XML/HTML",
+            "C#"
+          ]
+        },
+        "actions": [
+          "copy to clipboard",
+          "save to file",
+          "run in terminal",
+          "explain code"
+        ],
+        "ui_features": [
+          "line numbers",
+          "collapsible",
+          "max height with scroll",
+          "category badges"
+        ],
+        "_metadata": {
+          "id": "82ef781e-8612-4c6b-aaa5-83cb52043539",
+          "added_at": "2025-12-10T20:11:08.007Z",
+          "source": "Mendix Companion Implementation",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.7
+        }
+      }
     ]
   },
   "expert_tips": [

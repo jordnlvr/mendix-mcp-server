@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Planned
+
+- Design Properties Gap Analysis - suggest where design properties would benefit widgets
+
+---
+
+## [3.3.0] - 2025-12-12
+
 ### Added
+
+- **🗄️ Supabase Cloud Persistence**
+  - NEW: `src/storage/SupabaseKnowledgeStore.js` - Complete Supabase client for knowledge storage
+  - NEW: `src/core/HybridKnowledgeManager.js` - Combines Supabase (cloud) and JSON (local) storage
+  - NEW: `scripts/supabase-schema.sql` - PostgreSQL schema with full-text search, indexes, RLS
+  - NEW: `scripts/migrate-to-supabase.js` - Migration script to load JSON into Supabase
+  - NEW: `docs/SUPABASE-SETUP.md` - Complete setup guide for Supabase integration
+  - NEW: `npm run migrate:supabase` script command
+  - Persistent knowledge storage that survives Railway container restarts
+  - Full-text search with PostgreSQL `tsvector` for fast, typo-tolerant queries
+  - Learning event tracking to see what's being learned and when
+  - Analytics logging for usage patterns
+  - Content hashing for automatic duplicate detection
+  - Graceful fallback to JSON when Supabase is unavailable
 
 - **🚀 Desktop Launcher Scripts**
   - `START-SERVER.cmd` - One-click launcher (main entry point)
@@ -18,9 +40,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `start-all.bat` - Combined server + ngrok launcher
   - `check-server-status.bat` - Quick health check script
 
-### Planned
+### Changed
 
-- Design Properties Gap Analysis - suggest where design properties would benefit widgets
+- Updated package version to 3.3.0
+- Updated README with Supabase integration documentation
+- Updated `.env.example` with Supabase configuration section
+- Cloud Deployment section now includes Supabase persistent storage info
+
+### Dependencies
+
+- Added `@supabase/supabase-js` ^2.49.10
 
 ---
 

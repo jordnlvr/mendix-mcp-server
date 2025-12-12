@@ -678,7 +678,7 @@
           "version": 1,
           "verified": true,
           "mendix_version": null,
-          "usage_count": 1,
+          "usage_count": 2,
           "access_count": 0,
           "feedback": {
             "positive": 0,
@@ -686,7 +686,7 @@
             "total": 0
           },
           "quality_score": 0.67,
-          "last_used_at": "2025-12-08T00:39:31.405Z"
+          "last_used_at": "2025-12-10T00:35:38.293Z"
         }
       }
     ],

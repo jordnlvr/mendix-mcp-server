@@ -1,7 +1,7 @@
 {
   "name": "@jordnlvr/mendix-mcp-server",
-  "version": "3.2.1",
-  "description": "Self-learning MCP server for Mendix development with semantic vector search, auto-harvesting, project & theme analysis, and Beast Mode research",
+  "version": "3.3.0",
+  "description": "Self-learning MCP server for Mendix development with semantic vector search, auto-harvesting, project & theme analysis, and Beast Mode research. Now with Supabase cloud persistence!",
   "type": "module",
   "main": "src/index.js",
   "module": "src/smithery.js",
@@ -19,6 +19,7 @@
     "reindex:force": "node scripts/reindex-vectors.js --force",
     "vector-status": "node -e \"import('./src/vector/VectorStore.js').then(m => new m.default().getStats().then(console.log))\"",
     "maintenance": "node -e \"import('./src/utils/MaintenanceScheduler.js').then(m => new m.default({}).runFullMaintenance())\"",
+    "migrate:supabase": "node scripts/migrate-to-supabase.js",
     "legacy": "node server.js",
     "prepublishOnly": "node -e \"console.log('Publishing @jordnlvr/mendix-mcp-server v' + require('./package.json').version)\""
   },
@@ -63,6 +64,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.23.0",
     "@pinecone-database/pinecone": "^6.1.3",
+    "@supabase/supabase-js": "^2.87.1",
     "cheerio": "^1.1.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -81,4 +83,3 @@
     "node": ">=20.0.0"
   }
 }
-

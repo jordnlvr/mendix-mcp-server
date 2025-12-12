@@ -28,7 +28,15 @@ npx @jordnlvr/mendix-mcp-server
 
 ---
 
-## 🆕 What's New in v3.1.0
+## 🆕 What's New in v3.3.0
+
+### 🗄️ Supabase Cloud Persistence
+
+- **Persistent knowledge storage** - No more lost knowledge on Railway container restarts!
+- **Hybrid storage mode** - Supabase for cloud, JSON for local backup
+- **Full-text search** - PostgreSQL-powered search with indexes for faster queries
+- **Shared knowledge** - Same knowledge base across local dev and cloud deployments
+- **Migration script** - `npm run migrate:supabase` to load existing JSON knowledge
 
 ### 🌾 Automated Weekly Harvesting
 
@@ -274,13 +282,24 @@ Quick steps:
 
 ---
 
-## ☁️ Cloud Deployment (Railway)
+## ☁️ Cloud Deployment (Railway + Supabase)
 
 **No local server needed!** The Mendix Expert API is available 24/7 at:
 
 ```
 https://mendix-mcp-server-production.up.railway.app
 ```
+
+### 🗄️ Persistent Knowledge with Supabase
+
+**NEW in v3.3.0:** The server uses Supabase for persistent cloud storage. This means:
+
+- ✅ **Knowledge persists across container restarts** (Railway's ephemeral filesystem is no longer a problem)
+- ✅ **Self-learning works in the cloud** - knowledge added via the API is permanently saved
+- ✅ **Shared knowledge base** - Local and cloud instances share the same knowledge
+- ✅ **Faster searches** - PostgreSQL full-text search with indexes
+
+To enable Supabase on your own deployment, see [docs/SUPABASE-SETUP.md](docs/SUPABASE-SETUP.md).
 
 ### Using the Cloud API
 

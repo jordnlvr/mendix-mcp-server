@@ -43,6 +43,7 @@ In Railway → Your Service → **Variables**, add:
 ### Step 3: Verify Configuration
 
 Railway will automatically:
+
 - Detect Node.js project
 - Use the `Procfile` to run `npm run rest` (REST API)
 - Assign a public URL
@@ -60,6 +61,7 @@ Railway will automatically:
 ### Why Procfile?
 
 The MCP server has two modes:
+
 - `npm start` → MCP stdio server (for local Claude/VS Code)
 - `npm run rest` → REST API server (for HTTP access)
 
@@ -145,6 +147,7 @@ Body: {"query": "your search"}
 **Cause:** App crashed or not responding.
 
 **Fix:**
+
 1. Check logs: `railway logs -n 100`
 2. Verify `Procfile` exists with `web: npm run rest`
 3. Ensure `engines.node` is `>=20.0.0` in package.json
@@ -154,6 +157,7 @@ Body: {"query": "your search"}
 **Cause:** Running on Node 18 (needs Node 20+).
 
 **Fix:** Ensure `package.json` has:
+
 ```json
 "engines": {
   "node": ">=20.0.0"
@@ -186,6 +190,7 @@ railway redeploy -y
 ## Cost
 
 Railway offers:
+
 - **Free tier:** 500 hours/month, $5 credit
 - **Hobby:** $5/month for always-on
 - **Pro:** Pay per usage

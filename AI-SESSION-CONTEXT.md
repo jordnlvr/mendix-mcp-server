@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 12, 2025  
-**Version:** 3.2.1  
+**Version:** 3.3.0  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -15,11 +15,12 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 ### Core Value Proposition
 
 - **700KB+ verified Mendix knowledge** across 20+ JSON files
+- **Supabase cloud persistence** - Knowledge survives container restarts (NEW in v3.3.0)
 - **Semantic search** via Pinecone (built-in shared index - no user setup!)
 - **Multiple embedding providers** - Azure OpenAI, OpenAI, or local TF-IDF
 - **Project & theme analysis** for actual .mpr files (web-focused, best practices based)
 - **Studio Pro Extensions** - Complete C# extension development guide for Studio Pro 11+
-- **Self-learning** - harvests docs, remembers solutions
+- **Self-learning** - harvests docs, remembers solutions, persists to cloud
 - **Beast Mode** - exhaustive multi-step research on demand (MCP + REST)
 - **Automated weekly harvesting** via GitHub Actions (Monday 3AM UTC)
 - **Disk-cached embeddings** for 3-5x faster server restarts
@@ -30,13 +31,14 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 
 ### Publishing & Distribution
 
-| Platform          | Location                                                                                                                               |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **npm**           | `@jordnlvr/mendix-mcp-server` - [npmjs.com/package/@jordnlvr/mendix-mcp-server](https://npmjs.com/package/@jordnlvr/mendix-mcp-server) |
-| **GitHub**        | `jordnlvr/mendix-mcp-server` - [github.com/jordnlvr/mendix-mcp-server](https://github.com/jordnlvr/mendix-mcp-server)                  |
-| **Documentation** | [jordnlvr.github.io/mendix-mcp-server](https://jordnlvr.github.io/mendix-mcp-server/)                                                  |
-| **Smithery**      | [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)                               |
-| **Railway (Cloud)** | `https://mendix-mcp-server-production.up.railway.app` - 24/7 REST API                                                                |
+| Platform            | Location                                                                                                                               |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **npm**             | `@jordnlvr/mendix-mcp-server` - [npmjs.com/package/@jordnlvr/mendix-mcp-server](https://npmjs.com/package/@jordnlvr/mendix-mcp-server) |
+| **GitHub**          | `jordnlvr/mendix-mcp-server` - [github.com/jordnlvr/mendix-mcp-server](https://github.com/jordnlvr/mendix-mcp-server)                  |
+| **Documentation**   | [jordnlvr.github.io/mendix-mcp-server](https://jordnlvr.github.io/mendix-mcp-server/)                                                  |
+| **Smithery**        | [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)                               |
+| **Railway (Cloud)** | `https://mendix-mcp-server-production.up.railway.app` - 24/7 REST API                                                                  |
+| **Supabase**        | PostgreSQL database for persistent knowledge storage                                                                                   |
 
 ### Key Files & Folders
 
@@ -48,7 +50,9 @@ mendix-mcp-server/
 │   ├── core/
 │   │   ├── SearchEngine.js   # TF-IDF + fuzzy + semantic
 │   │   ├── KnowledgeManager.js
-│   │   └── ...
+│   │   └── HybridKnowledgeManager.js  # 🆕 Supabase + JSON hybrid
+│   ├── storage/
+│   │   └── SupabaseKnowledgeStore.js  # 🆕 Supabase client
 │   ├── analyzers/
 │   │   ├── ThemeAnalyzer.js  # v2.0 Web-focused, follows @imports
 │   │   └── ThemeAnalyzer.v1.js.bak  # Old version backup
@@ -59,18 +63,21 @@ mendix-mcp-server/
 │       ├── MaintenanceScheduler.js
 │       └── Analytics.js
 ├── knowledge/                 # JSON knowledge base (~700KB)
-│   ├── studio-pro-extensions-complete.json  # 🆕 Studio Pro extension guide
+│   ├── studio-pro-extensions-complete.json  # Studio Pro extension guide
 │   ├── theme-analysis.json   # v1.4.0 - fonts, design-properties, scaffold
 │   ├── platform-sdk.json     # Verified SDK patterns
 │   ├── best-practices.json
 │   ├── knowledge-gaps.json   # User-reported missing knowledge
 │   └── ...
-├── data/
-│   └── embedding-cache.json  # Persistent embedding cache (NEW in v3.1.0)
 ├── scripts/
-│   └── reindex-vectors.js    # Vector reindex utility (fixed in v3.2.0)
+│   ├── reindex-vectors.js    # Vector reindex utility
+│   ├── supabase-schema.sql   # 🆕 PostgreSQL schema for Supabase
+│   └── migrate-to-supabase.js # 🆕 Migration script
+├── data/
+│   └── embedding-cache.json  # Persistent embedding cache
 ├── docs/                      # Jekyll site for GitHub Pages
 │   ├── MENDIX-EXPERT-GUIDE.html  # PDF-ready user guide
+│   ├── SUPABASE-SETUP.md     # 🆕 Supabase integration guide
 │   └── ...
 ├── .github/
 │   └── workflows/            # CI/CD automation

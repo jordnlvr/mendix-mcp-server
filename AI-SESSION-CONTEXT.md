@@ -3,7 +3,7 @@
 ## For GitHub Copilot, Claude, or Any AI Assistant
 
 **Last Updated:** December 12, 2025  
-**Version:** 3.3.0  
+**Version:** 3.4.0  
 **Owner:** Kelly Seale (kelly.seale@siemens.com)
 
 ---
@@ -14,16 +14,15 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 
 ### Core Value Proposition
 
-- **700KB+ verified Mendix knowledge** across 20+ JSON files
-- **Supabase cloud persistence** - Knowledge survives container restarts (NEW in v3.3.0)
+- **241 knowledge entries** in Supabase PostgreSQL database
+- **Supabase-first storage** - No more JSON files, single source of truth (v3.4.0)
 - **Semantic search** via Pinecone (built-in shared index - no user setup!)
 - **Multiple embedding providers** - Azure OpenAI, OpenAI, or local TF-IDF
-- **Project & theme analysis** for actual .mpr files (web-focused, best practices based)
+- **Project & theme analysis** - LOCAL MCP ONLY (not available via REST API)
 - **Studio Pro Extensions** - Complete C# extension development guide for Studio Pro 11+
-- **Self-learning** - harvests docs, remembers solutions, persists to cloud
+- **Self-learning** - harvests docs, remembers solutions, persists to Supabase
 - **Beast Mode** - exhaustive multi-step research on demand (MCP + REST)
 - **Automated weekly harvesting** via GitHub Actions (Monday 3AM UTC)
-- **Disk-cached embeddings** for 3-5x faster server restarts
 
 ---
 
@@ -35,10 +34,10 @@ This is **@jordnlvr/mendix-mcp-server** - an enterprise-grade, self-learning AI 
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | **npm**             | `@jordnlvr/mendix-mcp-server` - [npmjs.com/package/@jordnlvr/mendix-mcp-server](https://npmjs.com/package/@jordnlvr/mendix-mcp-server) |
 | **GitHub**          | `jordnlvr/mendix-mcp-server` - [github.com/jordnlvr/mendix-mcp-server](https://github.com/jordnlvr/mendix-mcp-server)                  |
-| **Documentation**   | [jordnlvr.github.io/mendix-mcp-server](https://jordnlvr.github.io/mendix-mcp-server/)                                                  |
+| **User Guide**      | [jordnlvr.github.io/mendix-mcp-server/USER-GUIDE.html](https://jordnlvr.github.io/mendix-mcp-server/docs/USER-GUIDE.html)              |
 | **Smithery**        | [smithery.ai/server/@jordnlvr/mendix-mcp-server](https://smithery.ai/server/@jordnlvr/mendix-mcp-server)                               |
 | **Railway (Cloud)** | `https://mendix-mcp-server-production.up.railway.app` - 24/7 REST API                                                                  |
-| **Supabase**        | PostgreSQL database for persistent knowledge storage                                                                                   |
+| **Supabase**        | `https://uqiricziudqmwuyaeisj.supabase.co` - PostgreSQL knowledge storage                                                              |
 
 ### Key Files & Folders
 
@@ -49,15 +48,16 @@ mendix-mcp-server/
 │   ├── rest-proxy.js         # REST API for ChatGPT (15 endpoints)
 │   ├── core/
 │   │   ├── SearchEngine.js   # TF-IDF + fuzzy + semantic
-│   │   ├── KnowledgeManager.js
-│   │   └── HybridKnowledgeManager.js  # 🆕 Supabase + JSON hybrid
+│   │   ├── SupabaseKnowledgeManager.js  # 🆕 Primary storage (v3.4.0)
+│   │   ├── KnowledgeManager.js          # Legacy JSON (deprecated)
+│   │   └── HybridKnowledgeManager.js    # Deprecated
 │   ├── storage/
-│   │   └── SupabaseKnowledgeStore.js  # 🆕 Supabase client
+│   │   └── SupabaseKnowledgeStore.js    # Supabase client
 │   ├── analyzers/
-│   │   ├── ThemeAnalyzer.js  # v2.0 Web-focused, follows @imports
-│   │   └── ThemeAnalyzer.v1.js.bak  # Old version backup
+│   │   ├── ThemeAnalyzer.js  # LOCAL ONLY - requires filesystem
+│   │   └── ProjectAnalyzer   # LOCAL ONLY - requires .mpr files
 │   ├── vector/
-│   │   ├── VectorStore.js    # Pinecone + disk-cached embeddings
+│   │   ├── VectorStore.js    # Pinecone semantic search
 │   │   └── HybridSearch.js   # Keyword + semantic fusion
 │   └── utils/
 │       ├── MaintenanceScheduler.js

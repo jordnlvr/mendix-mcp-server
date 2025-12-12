@@ -376,8 +376,14 @@ app.post('/best-practice', async (req, res) => {
       return res.status(400).json({ error: 'scenario is required' });
     }
 
-    // Search for best practices related to the scenario
-    const results = await hybridSearch.search(`best practice ${scenario}`, { limit: 5 });
+    // Search for best practices - use hybrid if available, else keyword search
+    let results = [];
+    if (hybridSearch && vectorSearchAvailable) {
+      results = await hybridSearch.search(`best practice ${scenario}`, { limit: 5 });
+    } else {
+      // Fallback to keyword search
+      results = searchEngine.search(`best practice ${scenario}`, { limit: 5 });
+    }
 
     // Also search the best-practices knowledge file specifically
     const bpKnowledge = knowledgeManager.knowledgeBase['best-practices'];

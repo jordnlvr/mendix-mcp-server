@@ -1,6 +1,6 @@
 {
   "name": "@jordnlvr/mendix-mcp-server",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Self-learning MCP server for Mendix development with semantic vector search, auto-harvesting, project & theme analysis, and Beast Mode research",
   "type": "module",
   "main": "src/index.js",
@@ -78,7 +78,7 @@
     "nodemon": "^3.0.2"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }
 

@@ -24,11 +24,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.2.1] - 2025-12-12
+
+### Fixed
+
+- **🚂 Railway Deployment Compatibility**
+  - Updated Node.js engine requirement from `>=18.0.0` to `>=20.0.0`
+  - Fixes `ReferenceError: File is not defined` crash on Railway
+  - The `undici` dependency (used for fetch/HTTP) requires the `File` global which only exists in Node 20+
+  - Railway and other PaaS providers will now use correct Node version
+
+---
+
 ## [3.2.0] - 2025-12-09
 
 ### Added
 
 - **🧩 Studio Pro Extensions Complete Guide**
+
   - New knowledge file: `studio-pro-extensions-complete.json` with 56 entries
   - **COMPLETE_WORKING_EXAMPLE** - All files (csproj, cs, manifest) in one entry for first-time success
   - Quick start guide: Create a working extension in 10 minutes

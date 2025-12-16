@@ -1,10 +1,10 @@
 {
   "metadata": {
     "category": "pluggable-widgets",
-    "lastUpdated": "2025-12-08",
+    "lastUpdated": "2025-12-16",
     "verifiedWith": "mendix@11.5.0",
     "source": "Live verification testing - December 2025",
-    "totalEntries": 6
+    "totalEntries": 9
   },
   "verified_patterns": {
     "note": "ALL patterns below have been verified through TypeScript compilation with mendix@11.5.0",
@@ -39,13 +39,21 @@
           },
           "DynamicValue<T>": {
             "purpose": "One-way binding for computed/expression values",
-            "properties": ["value: T | undefined", "status: ValueStatus"],
+            "properties": [
+              "value: T | undefined",
+              "status: ValueStatus"
+            ],
             "usage_example": "const label: DynamicValue<string> = props.labelExpression;\nif (label.status === 'available') {\n    return <span>{label.value}</span>;\n}"
           },
           "ActionValue": {
             "purpose": "Execute microflows, nanoflows, or other actions",
-            "properties": ["canExecute: boolean", "isExecuting: boolean"],
-            "methods": ["execute(): void"],
+            "properties": [
+              "canExecute: boolean",
+              "isExecuting: boolean"
+            ],
+            "methods": [
+              "execute(): void"
+            ],
             "usage_example": "const action: ActionValue = props.onClickAction;\nif (action?.canExecute) {\n    action.execute();\n}"
           },
           "ListValue": {
@@ -67,28 +75,41 @@
           },
           "ListAttributeValue<T>": {
             "purpose": "Access attribute values for list items",
-            "methods": ["get(item: ObjectItem): DynamicValue<T>"],
+            "methods": [
+              "get(item: ObjectItem): DynamicValue<T>"
+            ],
             "usage_example": "const nameAttr: ListAttributeValue<string> = props.nameAttribute;\nconst name = nameAttr.get(item);\nif (name.status === 'available') {\n    return name.value;\n}"
           },
           "ListActionValue": {
             "purpose": "Execute actions for specific list items",
-            "methods": ["get(item: ObjectItem): ActionValue | undefined"],
+            "methods": [
+              "get(item: ObjectItem): ActionValue | undefined"
+            ],
             "usage_example": "const itemAction: ListActionValue = props.onItemClick;\nconst action = itemAction?.get(item);\nif (action?.canExecute) {\n    action.execute();\n}"
           },
           "SelectionSingleValue": {
             "purpose": "Single item selection from a list",
-            "properties": ["type: 'Single'", "selection: ObjectItem | undefined"],
-            "methods": ["setSelection(item: ObjectItem | undefined): void"],
+            "properties": [
+              "type: 'Single'",
+              "selection: ObjectItem | undefined"
+            ],
+            "methods": [
+              "setSelection(item: ObjectItem | undefined): void"
+            ],
             "usage_example": "const selection: SelectionSingleValue = props.selection;\nif (selection.selection) {\n    // Item is selected\n}"
           },
           "ListExpressionValue<T>": {
             "purpose": "Evaluate expression for each list item",
-            "methods": ["get(item: ObjectItem): DynamicValue<T>"],
+            "methods": [
+              "get(item: ObjectItem): DynamicValue<T>"
+            ],
             "usage_example": "const expr: ListExpressionValue<boolean> = props.visibilityExpression;\nconst isVisible = expr.get(item);\nif (isVisible.value === true) { ... }"
           },
           "ListWidgetValue": {
             "purpose": "Render widget content for each list item",
-            "methods": ["get(item: ObjectItem): ReactNode"],
+            "methods": [
+              "get(item: ObjectItem): ReactNode"
+            ],
             "usage_example": "const content: ListWidgetValue = props.itemContent;\nreturn list.items.map(item => (\n    <div key={item.id}>{content.get(item)}</div>\n));"
           }
         }
@@ -248,6 +269,78 @@
         },
         "package_json_example": "{\n  \"name\": \"my-widget\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"start\": \"pluggable-widgets-tools start:server\",\n    \"build\": \"pluggable-widgets-tools build:ts\",\n    \"lint\": \"pluggable-widgets-tools lint\"\n  },\n  \"dependencies\": {\n    \"classnames\": \"^2.3.0\"\n  },\n  \"devDependencies\": {\n    \"@mendix/pluggable-widgets-tools\": \"^10.0.0\"\n  }\n}"
       }
+    },
+    {
+      "id": "widget_toolbox_category",
+      "verified": true,
+      "description": "How to place widgets in specific Studio Pro toolbox categories",
+      "content": {
+        "supported_since": "Studio Pro 10.0+",
+        "placement": "After <description>, before <icon>",
+        "element_name": "studioProCategory",
+        "verified_in": "11.5.0",
+        "notes": [
+          "Default category is 'Add-ons' if not specified",
+          "studioCategory is deprecated (was for Mendix Studio web)",
+          "Category names are case-sensitive"
+        ],
+        "example": "<widget id=\"mycompany.mywidget.MyWidget\" ...>\n  <name>My Widget</name>\n  <description>What it does</description>\n  <studioProCategory>Buttons</studioProCategory>\n  <icon>...</icon>",
+        "available_categories": [
+          "Buttons",
+          "Input elements",
+          "Display",
+          "Data containers",
+          "Menus",
+          "Add-ons"
+        ]
+      },
+      "verification_date": "2025-12-16",
+      "title": "Widget Toolbox Category (studioProCategory)",
+      "category": "configuration"
+    },
+    {
+      "id": "widget_css_patterns",
+      "verified": true,
+      "description": "CSS patterns to avoid common widget styling issues",
+      "content": {
+        "tooltip_positioning": {
+          "problem": "Tooltip appears far from element",
+          "solution": "Use calc() not margin for positioning",
+          "example": ".tooltip--right { left: calc(100% + 8px); }"
+        },
+        "hover_overlay": {
+          "problem": "::before overlay hides button text on hover",
+          "solution": "Set z-index: 0 on ::before, z-index: 1 on text elements",
+          "example": ".button::before { z-index: 0; } .button span { position: relative; z-index: 1; }"
+        },
+        "tooltip_wrapping": {
+          "problem": "Long tooltip text gets cut off",
+          "solution": "white-space: normal; max-width: 280px;"
+        }
+      },
+      "verification_date": "2025-12-16",
+      "title": "Widget CSS Best Practices",
+      "category": "styling"
+    },
+    {
+      "id": "widget_icon_best_practices",
+      "verified": true,
+      "description": "Best practices for widget icons in Studio Pro toolbox",
+      "content": {
+        "why_not_larger": "64x64 images get scaled down and appear blurry",
+        "format": "PNG with transparent background",
+        "recommended_size": "16x16 or 32x32 pixels",
+        "design_tips": [
+          "Simple shapes, not detailed artwork",
+          "High contrast colors",
+          "Minimal gradients at small sizes",
+          "Abstract representation, not realistic image"
+        ],
+        "conversion": "Convert PNG to base64 for <icon> element in widget XML"
+      },
+      "verification_date": "2025-12-16",
+      "title": "Widget Toolbox Icon Guidelines",
+      "category": "configuration"
     }
   ]
 }

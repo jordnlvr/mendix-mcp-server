@@ -1,7 +1,7 @@
 {
   "metadata": {
     "category": "studio_pro",
-    "lastHarvest": "2025-12-22T03:38:14.740Z",
+    "lastHarvest": "2025-12-29T03:39:57.188Z",
     "totalEntries": 17,
     "source": "KnowledgeHarvester"
   },
@@ -12,13 +12,13 @@
       "content": "This document provides a general introduction to workflows, including the reasons why organizations adopt workflow processes, when and when not to use workflows, and a few Mendix workflow business use cases. For instructions on how to perform Mendix workflow basic functions, see Performing Workflow Basic Functions.\n\nWorkflow is a visual language that allows you to build extendable processes. In Mendix Studio Pro, it is fully integrated with other visual editors, such as the microflow editor and page editor. Implementing workflow processes is beneficial for organizations that would like to enhance operational efficiency, ensure compliance with regulations, and mitigate risks.\n\nBelow are the key reasons why organizations adopt workflow processes:\n\nCompliance management:\n\nEnsuring adherence to local rules, regulations, and laws.\nHelping to document any available data, including actions taken and decisions made. This helps to provide a clear audit trail.\n\n\n\nPerformance improvement:\n\nImproving key performance indicators (KPIs) by identifying and addressing bottlenecks.\nReducing the time to complete tasks and minimizing overdue penalties.\nEnhancing the quality and efficiency of operations, which improves work satisfaction.\n\n\n\nRisk reduction:\n\nPreventing overdue penalties by streamlining processes.\nAnticipating potential bottlenecks that could impact KPIs or introduce additional risks.\nAvoiding overwork and stress among users and teams, thus maintaining compliance and productivity.\n\nFor more information on when and when not to use workflows, see the When to Use Workflows? and When Not to Use Workflows sections below.\n\nFor information on Mendix workflow use cases, see the Mendix Workflow Use Cases section below.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.647Z",
+      "harvested": "2025-12-29T03:39:52.036Z",
       "tags": [
         "microflows",
         "pages",
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_when_to_use_workflows",
@@ -26,11 +26,11 @@
       "content": "Automating a process with workflows is the most effective when the process meets specific criteria, ensuring smooth execution and optimization.\n\nBelow are the criteria that a process should meet to be successfully implemented with workflows:\n\nWell-defined and known – the process is clearly understood and documented.\nRepeatable nature – the process involves tasks that are performed regularly or in a cyclical manner.\nHigh frequency of execution – the process occurs frequently, requiring consistent handling.\nInvolvement of multiple participants – the process requires collaboration among different individuals or departments.\nCombination of human and automated tasks – the process involves a mix of activities that can be performed both by humans and automated systems.\nStability – the process remains relatively unchanged over time, with minimal variations.\nSeries of activities – it comprises a sequence of interconnected steps or actions.\nLonger duration – the process spans a significant period, ranging from hours to months.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.647Z",
+      "harvested": "2025-12-29T03:39:52.036Z",
       "tags": [
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_when_not_to_use_workflows",
@@ -38,11 +38,11 @@
       "content": "While workflow processes offer numerous benefits, they may not always be the ideal solution for every scenario.\n\nBelow are situations where the use of workflows might not be appropriate:\n\nLack of applicability – if not MOST of the criteria outlined in the section above are met, it may not be a suitable use case for workflow implementation.\nHigh degree of collaboration and interaction – processes characterized by extensive collaboration and interaction among individuals, where no clear path can be defined, may not align well with workflow structures.\nDynamic or unpredictable work – processes that involve dynamic or unknown elements, or where individuals require a high degree of freedom to decide their next actions, may not fit within the constraints of a workflow.\nOutcome-driven processes – processes focused more on achieving specific outcomes rather than following a predefined series of steps may not be best suited for workflow implementation. It might be beneficial to consider alternative approaches, such as utilizing multiple smaller workflows that are loosely coupled with other logic.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.647Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_mendix_workflow_use_cases",
@@ -50,14 +50,14 @@
       "content": "Mendix provides a development platform which supports multiple editors. This enables the integration of workflows into broader application design. With Mendix, you can keep workflows focused on representing your business processes, while using the other logic (such as microflows and nanoflows) for more technical implementations.\n\nThe table below presents a few use cases that are a good fit for Mendix workflows:\n\nUse case\nDescription\n\n\n\n\nSupply chain management in regulated industries\nCompanies in highly regulated process industries can use Mendix workflows to manage supply chain changes, such as changes in packaging, weight, and other conditions. Mendix workflows validate and assess the impact of these changes at each stage, ensuring smooth adaptation to evolving requirements.\n\n\nMigration from dedicated BPM platforms\nCustomers can transition from dedicated BPM platforms to Mendix to reduce cost, simplify maintenance, enhance user experience, and accelerate time-to-value.\n\n\nMaintenance plan approval\nFor customers who have migrated their industrial equipment maintenance plans from spreadsheets to Mendix, workflows provide a structured review and approval process for changes of predefined maintenance plans.\n\n\nDynamic business process support for a new product launch\nFor companies needing rapid application development to support end-to-end business processes for new product launches, Mendix workflows can be integrated for the subsequent legal and financial review and approval.\n\n\nAutomated customer onboarding process\nOrganizations that need to streamline customer onboarding can use Mendix workflows to automate the process across multiple systems and involve user intervention for invalid situations. This ensures a smooth onboarding experience.\n\nFor more information on a concrete use case, see Configuring a Workflow in Studio Pro for the Employee Onboarding Process.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "microflows",
         "nanoflows",
         "workflows",
         "integration"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_workflow_elements",
@@ -65,11 +65,11 @@
       "content": "A workflow is composed of elements that you can use in the workflow editor: you can either see them in the working area (start and end events, a parameter), or drag them from Toolbox to the flow. For more information, see Workflow Elements.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_workflow_variables",
@@ -77,13 +77,13 @@
       "content": "Workflows have dedicated variables that can be used in an XPath and Expressions inside the Workflow editor.\n\nThe list of variables is described below:\n\n$WorkflowContext – an instance of the business-related entity that travels through the workflow\n$WorkflowInstance – an instance of a currently running workflow (System.Workflow)\n\nFor example, you can use these variables as parameters in the Task name and Task description properties of a user task. For more information, see User Task.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "entities",
         "workflows",
         "xpath"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_workflow_specific_activities_in_microflows",
@@ -91,12 +91,12 @@
       "content": "You can add workflow-related activities to your microflows. For more information on these activities, see Workflow Activities.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "microflows",
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_workflow_specific_on_click_events_on_pages",
@@ -104,13 +104,13 @@
       "content": "You can trigger workflows or user tasks from pages via specific on-click events configured on widgets. For more details, see On Click Event and Events Section.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "pages",
         "widgets",
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_workflow_commons_module",
@@ -118,12 +118,12 @@
       "content": "The Workflow Commons module is a workflow specific module that has preconfigured page templates, pages, dashboards, etc. It can save you a lot of time during development. You can either download it from the Marketplace or use one of the app templates when creating a new app in Apps. These templates already contain the Workflows Commons module.\n\nFor more information on how to configure the Workflow Commons in an existing app, see Adding a Workflow to an Existing App with Workflow Commons.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "pages",
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_workflow_engine",
@@ -131,11 +131,11 @@
       "content": "The Workflow Engine is the Mendix Runtime engine for executing workflows. For information on how the engine works, how you can interact with the engine, and what information it stores, see Workflow Engine.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_keyboard_support",
@@ -143,25 +143,24 @@
       "content": "For information on the supported shortcut keys in the workflow editor, see the Workflow Editor Shortcut Keys and the Editors Only  sections in Keyboard Shortcuts.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
         "workflows"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_read_more",
       "title": "Workflows - Read More",
-      "content": "Performing Workflow Basic Functions\nConfiguring a Workflow in Studio Pro for the Employee Onboarding Process\nConfiguring Security for a Workflow Process\n\n.feedback--footer {\n    margin-top: 3rem;\n    padding: 2rem;\n    border-top-width: 0.15rem;\n    border-top-style: solid;\n    border-top-color: #146FF4;\n    width: 100%;\n  }\n  .feedback-container {\n    margin-right: 2rem;\n  }\n  .feedback--answer {\n    display: inline-block;\n  }\n  .feedback--answer-no {\n    margin-left: 1em;\n  }\n  .feedback--response {\n    display: none;\n    margin-top: 1em;\n  }\n  .feedback--response__visible {\n    display: block;\n  }\n    .feedback--footer,\n    .get-started-container {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: space-between;\n    }\n    .get-started-container {\n      width:fit-content;\n    }\n    .get-started svg {\n      max-width: 100%;\n      max-height: 100%;\n    }\n\nFeedback\n    Was this page helpful?\n    Yes\n    No\n    \n      Glad to hear it! Thank you for your response.\n    \n    \n      Sorry to hear that. Please tell us how we can improve.\n\ndocument.querySelector('.feedback--link').href = document.querySelector('a.feedback-issue').href;\n  const yesButton = document.querySelector('.feedback--answer-yes');\n  const noButton = document.querySelector('.feedback--answer-no');\n  const yesResponse = document.querySelector('.feedback--response-yes');\n  const noResponse = document.querySelector('.feedback--response-no');\n  const disableButtons = () => {\n    yesButton.disabled = true;\n    noButton.disabled = true;\n  };\n  const sendFeedback = (value) => {\n    if (typeof ga !== 'function') return;\n    const args = {\n      command: 'send',\n      hitType: 'event',\n      category: 'Helpful',\n      action: 'click',\n      label: window.location.pathname,\n      value: value\n    };\n    ga(args.command, args.hitType, args.category, args.action, args.label, args.value);\n  };\n  yesButton.addEventListener('click', () => {\n    yesResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(1);\n  });\n  noButton.addEventListener('click', () => {\n    noResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(0);\n  });",
+      "content": "Performing Workflow Basic Functions\nConfiguring a Workflow in Studio Pro for the Employee Onboarding Process\nConfiguring Security for a Workflow Process",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/workflows",
-      "harvested": "2025-12-22T03:38:09.648Z",
+      "harvested": "2025-12-29T03:39:52.037Z",
       "tags": [
-        "pages",
         "workflows",
         "security"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "workflows_feedback",
@@ -181,11 +180,11 @@
       "content": "Data containers display contents of one object or a list of objects.\n\nThe Data containers category contains the following widgets:\n\nData view – This widget shows the contents of exactly one object. If, for example, you want to show details of a single program item, you would use a data view for this:\n\n    \n        \n         \n        \n    \n\n\n\nData grid – This widget shows a list of objects in a table format. For example, a data grid can show all the orders a customer has placed. Using controls provided by the data grid you can browse, search, and edit those objects.\n\n    \n        \n         \n        \n    \n\n\n\nTemplate grid – This widget shows a list of objects in a tile view. For example, a template grid can show a list of employees with their profile pictures. Using controls provided by the template grid you can browse, search, and manipulate those objects.\n\n    \n        \n         \n        \n    \n\n\n\nList view – This widget shows a list of objects. For example, you can display list of all profiles using a list view.\n\nA snippet can also function as a data container when it has at least one snippet parameter. Unlike other data containers, a snippet never exposes a $currentObject variable because it can represent multiple independent objects.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/data-widgets",
-      "harvested": "2025-12-22T03:38:12.495Z",
+      "harvested": "2025-12-29T03:39:54.944Z",
       "tags": [
         "widgets"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "data_containers_performing_basic_functions",
@@ -193,24 +192,24 @@
       "content": "For more information on how to add widgets to a page, view their properties, and arrange them, see Adding Elements on a Page, Viewing Element Properties, and Arranging Elements on a Page sections in Page.",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/data-widgets",
-      "harvested": "2025-12-22T03:38:12.495Z",
+      "harvested": "2025-12-29T03:39:54.944Z",
       "tags": [
         "pages",
         "widgets"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "data_containers_read_more",
       "title": "Data Containers - Read More",
-      "content": "Page\nPages\nSnippet\n\n.feedback--footer {\n    margin-top: 3rem;\n    padding: 2rem;\n    border-top-width: 0.15rem;\n    border-top-style: solid;\n    border-top-color: #146FF4;\n    width: 100%;\n  }\n  .feedback-container {\n    margin-right: 2rem;\n  }\n  .feedback--answer {\n    display: inline-block;\n  }\n  .feedback--answer-no {\n    margin-left: 1em;\n  }\n  .feedback--response {\n    display: none;\n    margin-top: 1em;\n  }\n  .feedback--response__visible {\n    display: block;\n  }\n    .feedback--footer,\n    .get-started-container {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: space-between;\n    }\n    .get-started-container {\n      width:fit-content;\n    }\n    .get-started svg {\n      max-width: 100%;\n      max-height: 100%;\n    }\n\nFeedback\n    Was this page helpful?\n    Yes\n    No\n    \n      Glad to hear it! Thank you for your response.\n    \n    \n      Sorry to hear that. Please tell us how we can improve.\n\ndocument.querySelector('.feedback--link').href = document.querySelector('a.feedback-issue').href;\n  const yesButton = document.querySelector('.feedback--answer-yes');\n  const noButton = document.querySelector('.feedback--answer-no');\n  const yesResponse = document.querySelector('.feedback--response-yes');\n  const noResponse = document.querySelector('.feedback--response-no');\n  const disableButtons = () => {\n    yesButton.disabled = true;\n    noButton.disabled = true;\n  };\n  const sendFeedback = (value) => {\n    if (typeof ga !== 'function') return;\n    const args = {\n      command: 'send',\n      hitType: 'event',\n      category: 'Helpful',\n      action: 'click',\n      label: window.location.pathname,\n      value: value\n    };\n    ga(args.command, args.hitType, args.category, args.action, args.label, args.value);\n  };\n  yesButton.addEventListener('click', () => {\n    yesResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(1);\n  });\n  noButton.addEventListener('click', () => {\n    noResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(0);\n  });",
+      "content": "Page\nPages\nSnippet",
       "category": "studio_pro",
       "source": "https://docs.mendix.com/refguide/data-widgets",
-      "harvested": "2025-12-22T03:38:12.495Z",
+      "harvested": "2025-12-29T03:39:54.944Z",
       "tags": [
         "pages"
       ],
-      "updated": "2025-12-22T03:38:14.740Z"
+      "updated": "2025-12-29T03:39:57.188Z"
     },
     {
       "id": "data_containers_feedback",

@@ -1,10 +1,10 @@
 {
   "metadata": {
     "category": "pluggable-widgets",
-    "lastUpdated": "2025-12-16",
+    "lastUpdated": "2025-12-17",
     "verifiedWith": "mendix@11.5.0",
     "source": "Live verification testing - December 2025",
-    "totalEntries": 9
+    "totalEntries": 10
   },
   "verified_patterns": {
     "note": "ALL patterns below have been verified through TypeScript compilation with mendix@11.5.0",
@@ -39,21 +39,13 @@
           },
           "DynamicValue<T>": {
             "purpose": "One-way binding for computed/expression values",
-            "properties": [
-              "value: T | undefined",
-              "status: ValueStatus"
-            ],
+            "properties": ["value: T | undefined", "status: ValueStatus"],
             "usage_example": "const label: DynamicValue<string> = props.labelExpression;\nif (label.status === 'available') {\n    return <span>{label.value}</span>;\n}"
           },
           "ActionValue": {
             "purpose": "Execute microflows, nanoflows, or other actions",
-            "properties": [
-              "canExecute: boolean",
-              "isExecuting: boolean"
-            ],
-            "methods": [
-              "execute(): void"
-            ],
+            "properties": ["canExecute: boolean", "isExecuting: boolean"],
+            "methods": ["execute(): void"],
             "usage_example": "const action: ActionValue = props.onClickAction;\nif (action?.canExecute) {\n    action.execute();\n}"
           },
           "ListValue": {
@@ -75,41 +67,28 @@
           },
           "ListAttributeValue<T>": {
             "purpose": "Access attribute values for list items",
-            "methods": [
-              "get(item: ObjectItem): DynamicValue<T>"
-            ],
+            "methods": ["get(item: ObjectItem): DynamicValue<T>"],
             "usage_example": "const nameAttr: ListAttributeValue<string> = props.nameAttribute;\nconst name = nameAttr.get(item);\nif (name.status === 'available') {\n    return name.value;\n}"
           },
           "ListActionValue": {
             "purpose": "Execute actions for specific list items",
-            "methods": [
-              "get(item: ObjectItem): ActionValue | undefined"
-            ],
+            "methods": ["get(item: ObjectItem): ActionValue | undefined"],
             "usage_example": "const itemAction: ListActionValue = props.onItemClick;\nconst action = itemAction?.get(item);\nif (action?.canExecute) {\n    action.execute();\n}"
           },
           "SelectionSingleValue": {
             "purpose": "Single item selection from a list",
-            "properties": [
-              "type: 'Single'",
-              "selection: ObjectItem | undefined"
-            ],
-            "methods": [
-              "setSelection(item: ObjectItem | undefined): void"
-            ],
+            "properties": ["type: 'Single'", "selection: ObjectItem | undefined"],
+            "methods": ["setSelection(item: ObjectItem | undefined): void"],
             "usage_example": "const selection: SelectionSingleValue = props.selection;\nif (selection.selection) {\n    // Item is selected\n}"
           },
           "ListExpressionValue<T>": {
             "purpose": "Evaluate expression for each list item",
-            "methods": [
-              "get(item: ObjectItem): DynamicValue<T>"
-            ],
+            "methods": ["get(item: ObjectItem): DynamicValue<T>"],
             "usage_example": "const expr: ListExpressionValue<boolean> = props.visibilityExpression;\nconst isVisible = expr.get(item);\nif (isVisible.value === true) { ... }"
           },
           "ListWidgetValue": {
             "purpose": "Render widget content for each list item",
-            "methods": [
-              "get(item: ObjectItem): ReactNode"
-            ],
+            "methods": ["get(item: ObjectItem): ReactNode"],
             "usage_example": "const content: ListWidgetValue = props.itemContent;\nreturn list.items.map(item => (\n    <div key={item.id}>{content.get(item)}</div>\n));"
           }
         }
@@ -325,22 +304,84 @@
     {
       "id": "widget_icon_best_practices",
       "verified": true,
-      "description": "Best practices for widget icons in Studio Pro toolbox",
+      "description": "UPDATED: Correct method for large, visible widget icons in Studio Pro toolbox",
       "content": {
-        "why_not_larger": "64x64 images get scaled down and appear blurry",
-        "format": "PNG with transparent background",
-        "recommended_size": "16x16 or 32x32 pixels",
-        "design_tips": [
-          "Simple shapes, not detailed artwork",
-          "High contrast colors",
-          "Minimal gradients at small sizes",
-          "Abstract representation, not realistic image"
+        "important_update": "Use EXTERNAL icon files, NOT base64 in XML!",
+        "recommended_approach": {
+          "method": "Bundle PNG files in widget package (MPK)",
+          "why": "External files are easier to work with and display at proper sizes"
+        },
+        "icon_files": {
+          "toolbox_icon": {
+            "filename": "{WidgetName}.icon.png",
+            "size": "64x64 pixels (ideal)",
+            "purpose": "Toolbox list view icon"
+          },
+          "dark_mode_icon": {
+            "filename": "{WidgetName}.icon.dark.png",
+            "size": "64x64 pixels",
+            "purpose": "Dark theme toolbox icon (optional)"
+          },
+          "tile_icon": {
+            "filename": "{WidgetName}.tile.png",
+            "size": "256x192 pixels",
+            "purpose": "Toolbox tile view (optional)"
+          }
+        },
+        "how_to_add": [
+          "1. Create 64x64 PNG file",
+          "2. Name it {WidgetName}.icon.png",
+          "3. Place in src/ folder",
+          "4. Build tool automatically copies to MPK root"
         ],
-        "conversion": "Convert PNG to base64 for <icon> element in widget XML"
+        "resize_code": "$src = [System.Drawing.Image]::FromFile('source.png')\n$bmp = New-Object System.Drawing.Bitmap(64, 64)\n$g = [System.Drawing.Graphics]::FromImage($bmp)\n$g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic\n$g.DrawImage($src, 0, 0, 64, 64)\n$bmp.Save('WidgetName.icon.png')",
+        "deprecated_approach": {
+          "method": "Base64 in <icon> XML element",
+          "problem": "Icons appear too small, no size control"
+        }
       },
       "verification_date": "2025-12-16",
-      "title": "Widget Toolbox Icon Guidelines",
+      "title": "Widget Toolbox Icon Guidelines (CORRECTED)",
       "category": "configuration"
+    },
+    {
+      "id": "widget_critical_fixes",
+      "verified": true,
+      "description": "Critical fixes and gotchas discovered through live widget development",
+      "content": {
+        "package_xml_naming": {
+          "problem": "F4 shows 'Widget XML not found' error in Studio Pro",
+          "cause": "package.xml inside MPK references wrong widget XML filename",
+          "solution": "Ensure package.xml <file path='WidgetName.xml'/> matches actual XML file",
+          "example": "If widget is InfoTooltipMx.xml, package.xml must reference InfoTooltipMx.xml NOT EditableFieldMx.xml"
+        },
+        "utf8_bom_issue": {
+          "problem": "Build fails with XML parsing errors or weird characters",
+          "cause": "PowerShell Set-Content -Encoding UTF8 adds BOM (Byte Order Mark)",
+          "solution": "Use [System.IO.File]::WriteAllText with UTF8Encoding($false)",
+          "code_example": "$utf8NoBom = New-Object System.Text.UTF8Encoding $false\n[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)"
+        },
+        "integer_required_attribute": {
+          "problem": "Build fails on integer property with required attribute",
+          "cause": "Mendix widget schema does not allow required attribute on type='integer'",
+          "wrong": "<property key='count' type='integer' required='true' defaultValue='0'>",
+          "correct": "<property key='count' type='integer' defaultValue='0'>"
+        },
+        "small_widget_clickability": {
+          "problem": "Small widgets (icons, badges) cannot be clicked in Studio Pro design mode",
+          "cause": "Widget renders too small to hit with mouse click",
+          "solution": "Add wrapper div with minimum 24x24px dimensions",
+          "css_example": ".widget-wrapper { display: inline-flex; min-width: 24px; min-height: 24px; align-items: center; justify-content: center; }"
+        },
+        "mpk_verification": {
+          "description": "Always verify MPK structure after build",
+          "command": "tar -tf dist/1.0.0/org.widgetname.mpk",
+          "expected": "Should list package.xml, WidgetName.xml, WidgetName.js, etc."
+        }
+      },
+      "verification_date": "2025-12-17",
+      "title": "Widget Development Critical Fixes",
+      "category": "troubleshooting"
     }
   ]
 }

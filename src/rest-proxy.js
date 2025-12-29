@@ -1178,8 +1178,8 @@ function checkRelevance(title, content) {
       totalScore >= 10
         ? 'Directly Mendix-related'
         : totalScore >= 3
-          ? 'Development-related, potentially useful for Mendix'
-          : 'Does not appear to be related to Mendix or relevant development topics',
+        ? 'Development-related, potentially useful for Mendix'
+        : 'Does not appear to be related to Mendix or relevant development topics',
   };
 }
 

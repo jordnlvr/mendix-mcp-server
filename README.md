@@ -14,6 +14,60 @@
 
 ---
 
+## 🆕 What's New in v3.6.0 (Dec 29, 2025)
+
+### 🔍 **Source Attribution**
+Every response now includes comprehensive source information:
+- **Quality Assessment** - EXCELLENT/GOOD/FAIR/POOR/NO_RESULTS ratings
+- **Source Details** - Category, relevance score, source URL, date added, Mendix version
+- **Search Metadata** - Search method used (hybrid/keyword), total results, average confidence
+- **Transparency** - Know exactly where information comes from!
+
+### 📡 **Dual Cloud Deployment**
+- **Fly.io MCP Server** - FREE tier, SSE protocol for coding tools
+- **Railway REST API** - HTTP API for web integrations  
+- **Shared Knowledge Base** - Both connect to same Supabase (321+ entries)
+- **Complete CI/CD** - One `git push` → both deploy automatically!
+
+### 📚 **Documentation Overhaul**
+Added 7 comprehensive guides:
+- `ARCHITECTURE.md` - Complete system architecture  
+- `CONNECTION-GUIDE.md` - How to connect any client
+- `TROUBLESHOOTING.md` - When things break
+- `DEPLOYMENT-SUMMARY.md` - What was deployed
+- `QUICK-REFERENCE.md` - One-page cheat sheet
+- `CICD-AUTOMATION.md` - Complete automation guide
+- `SOURCE-ATTRIBUTION-UPDATE.md` - Source feature details
+
+---
+
+## 📡 Cloud Deployments
+
+**We have TWO production deployments:**
+
+### **1. Fly.io - MCP Server** ⭐ NEW!
+- **URL:** `https://mendix-mcp-server.fly.dev/sse`
+- **Protocol:** SSE (Server-Sent Events) with MCP
+- **Cost:** FREE (Fly.io free tier)
+- **Used By:** Claude Code CLI, Claude Desktop, GitHub Copilot, VS Code
+- **Docs:** [FLYIO-DEPLOYMENT.md](./FLYIO-DEPLOYMENT.md)
+
+### **2. Railway - REST API**
+- **URL:** `https://mendix-mcp-server-production.up.railway.app`
+- **Protocol:** HTTP REST API
+- **Cost:** ~$5/month
+- **Used By:** Custom ChatGPT, n8n workflows, web apps
+- **Docs:** [RAILWAY-DEPLOYMENT.md](./RAILWAY-DEPLOYMENT.md)
+
+**Both connect to the same Supabase database (321+ entries) - always in sync!**
+
+📚 **Complete Documentation:**
+- [ARCHITECTURE.md](./ARCHITECTURE.md) - Full system architecture
+- [CONNECTION-GUIDE.md](./CONNECTION-GUIDE.md) - How to connect clients
+- [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - When things go wrong
+
+---
+
 ## 🚀 Quick Install
 
 ```bash

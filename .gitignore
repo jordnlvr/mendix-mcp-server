@@ -22,3 +22,13 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# SECRET FILES - Never commit these!
+flyio-secrets.ps1
+flyio-secrets.sh
+railway-secrets.ps1
+railway-secrets.sh
+*secrets*.ps1
+*secrets*.sh
+*.secret
+secrets/

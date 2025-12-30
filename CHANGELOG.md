@@ -18,11 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **🎯 Relevance Checking for /learn endpoint**
+
   - Content must be related to Mendix or relevant development topics
   - Off-topic/spam content is rejected with helpful error messages
   - Liberal matching allows Mendix-adjacent technologies
 
 - **Accepted Topic Categories** (weighted scoring):
+
   - **Mendix Core** (weight 10): mendix, microflow, nanoflow, domain model, xpath, pluggable widget, etc.
   - **Low-Code** (weight 8): low-code, no-code, rapid application, citizen developer, siemens
   - **Dev Technologies** (weight 3): react, typescript, javascript, java, npm, webpack, etc.
@@ -44,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Why This Matters
 
 Prevents the knowledge base from being polluted with off-topic content.
-A recipe for chocolate cake? Rejected. 
+A recipe for chocolate cake? Rejected.
 React performance optimization patterns? Accepted (useful for widgets).
 Mendix microflow error handling? Definitely accepted.
 

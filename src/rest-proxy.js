@@ -23,6 +23,11 @@ import { config } from 'dotenv';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 
+// MCP SDK Imports
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { formatWithQualityAssessment } from './utils/SourceFormatter.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 config({ path: join(__dirname, '..', '.env') });
@@ -1631,6 +1636,74 @@ app.get('/openapi.json', (req, res) => {
       logger.error('Failed to serve OpenAPI spec', { error: error.message });
       res.status(500).json({ error: 'OpenAPI spec not available' });
     });
+});
+
+// ============================================
+// MCP OVER SSE (Unified Endpoint)
+// ============================================
+
+app.get('/sse', async (req, res) => {
+  logger.info('New SSE connection established');
+  await initialize();
+
+  const server = new McpServer({
+    name: 'mendix-expert',
+    version: '3.5.4',
+  });
+
+  // Tool: Query Knowledge
+  server.tool(
+    'query_mendix_knowledge',
+    'Search the Mendix knowledge base with source attribution',
+    { 
+      topic: { type: 'string', description: 'Topic to search for' }, 
+      detail_level: { type: 'string', description: 'basic, detailed, expert', default: 'basic' } 
+    },
+    async ({ topic, detail_level = 'basic' }) => {
+      const limit = detail_level === 'expert' ? 10 : (detail_level === 'detailed' ? 5 : 3);
+      const searchType = hybridSearch ? 'hybrid (keyword + semantic)' : 'keyword only';
+      const results = hybridSearch ? await hybridSearch.search(topic, { limit }) : searchEngine.search(topic, { limit });
+      const formatted = formatWithQualityAssessment(results, topic, searchType);
+      return { content: [{ type: 'text', text: formatted.answer }], isError: false, _meta: formatted.metadata };
+    }
+  );
+
+  // Tool: Search Knowledge (Hybrid)
+  server.tool(
+    'search_knowledge',
+    'Hybrid keyword + semantic search with quality assessment',
+    { query: { type: 'string' }, limit: { type: 'number', default: 10 } },
+    async ({ query, limit = 10 }) => {
+      const searchType = hybridSearch ? 'hybrid (keyword + semantic)' : 'keyword only';
+      const results = hybridSearch ? await hybridSearch.search(query, { limit }) : searchEngine.search(query, { limit });
+      const formatted = formatWithQualityAssessment(results, query, searchType);
+      return { content: [{ type: 'text', text: formatted.answer }], isError: false, _meta: formatted.metadata };
+    }
+  );
+
+  // Tool: Add Knowledge
+  server.tool(
+    'add_to_knowledge_base',
+    'Add new knowledge',
+    { title: { type: 'string' }, content: { type: 'string' }, category: { type: 'string', default: 'general' } },
+    async ({ title, content, category = 'general' }) => {
+      const result = await knowledgeManager.add(category, category, { title, content }, 'api-learned', { learnedFrom: 'mcp-sse' });
+      return { content: [{ type: 'text', text: `Added: ${title} (ID: ${result.id})` }] };
+    }
+  );
+  
+  // Tool: Server Status
+  server.tool('get_server_status', 'Check server status', {}, async () => {
+    return { content: [{ type: 'text', text: JSON.stringify({ status: 'active', entries: knowledgeManager.getStats().totalEntries, mode: 'unified-rest-sse' }) }] };
+  });
+
+  const transport = new SSEServerTransport('/message', res);
+  await server.connect(transport);
+});
+
+app.post('/message', async (req, res) => {
+  // Handled by SSE transport
+  res.status(200).end();
 });
 
 // ============================================================================

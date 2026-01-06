@@ -1,0 +1,801 @@
+{
+  "title": "Mendix Mapping - Complete Guide",
+  "category": "Integration",
+  "lastUpdated": "2025-12-29",
+  "version": "Mendix 11+",
+  "sources": [
+    "https://docs.mendix.com/refguide/mapping-documents/",
+    "https://docs.mendix.com/refguide/import-mappings/",
+    "https://docs.mendix.com/refguide/export-mappings/",
+    "https://docs.mendix.com/refguide/json-structures/",
+    "https://docs.mendix.com/refguide/xml-schemas/",
+    "https://docs.mendix.com/refguide/message-definitions/",
+    "https://docs.mendix.com/refguide/call-rest-action/",
+    "https://docs.mendix.com/refguide/import-mapping-action/",
+    "https://docs.mendix.com/refguide/export-mapping-action/",
+    "https://docs.mendix.com/refguide/consumed-rest-services/",
+    "https://docs.mendix.com/refguide/published-rest-services/",
+    "https://docs.mendix.com/refguide/consumed-web-services/",
+    "https://docs.mendix.com/refguide/published-web-services/",
+    "https://docs.mendix.com/refguide/integration/"
+  ],
+  "overview": "Mapping documents in Mendix are used to convert between Mendix domain model entities and external data formats (XML, JSON). They are fundamental to integration with external systems via REST, SOAP, and direct import/export operations.",
+  "keyComponents": {
+    "importMappings": {
+      "description": "Define how incoming XML or JSON is converted into Mendix objects",
+      "usedIn": [
+        "Receiving XML from web services (call web service activity)",
+        "Receiving XML/JSON from REST calls (call REST service action)",
+        "Direct import using 'import from mapping' microflow action"
+      ],
+      "objectObtaining": {
+        "methods": [
+          {
+            "name": "Create an object",
+            "description": "Creates a new object. Can throw error if Before Create microflows fail."
+          },
+          {
+            "name": "Find an object (by key)",
+            "description": "Searches for object using Key attributes. Converts to XPath query. Throws error if multiple objects found."
+          },
+          {
+            "name": "Call a microflow",
+            "description": "Calls microflow to obtain/return an object. Can pass input parameter, parent entity, or current XML element attributes as parameters."
+          }
+        ],
+        "ifNoObjectFound": [
+          {
+            "action": "Create",
+            "description": "Create an object if find operation fails"
+          },
+          {
+            "action": "Ignore",
+            "description": "Skip this element and continue parsing"
+          },
+          {
+            "action": "Error",
+            "description": "Stop parsing and throw error (must be handled in calling microflow)"
+          },
+          {
+            "action": "Decide at use",
+            "description": "For top-level mappings only - decision can be made when mapping is invoked"
+          }
+        ]
+      },
+      "associations": {
+        "description": "Can set association to parent object after obtaining Mendix object",
+        "warning": "Lists are NOT stored ordered in Mendix database - XML sequence order may differ from database order"
+      },
+      "attributeMapping": {
+        "properties": [
+          {
+            "name": "Entity Attribute",
+            "description": "Select attribute to map value element to. All value mappings must be mapped except when used as microflow parameter."
+          },
+          {
+            "name": "Key",
+            "description": "Specifies if value element is used as search key. Binary type attributes NOT supported as keys."
+          },
+          {
+            "name": "Convert using",
+            "description": "Optional microflow to convert data format. Takes element type or String parameter. Executed BEFORE used as search key or microflow parameter."
+          },
+          {
+            "name": "Occurrence",
+            "description": "0..1 or 1 based on schema. Empty values with 0 occurrence are skipped."
+          }
+        ]
+      },
+      "parameters": {
+        "description": "Mappings can receive incoming parameter from calling microflow",
+        "usage": [
+          "Can be used as key for obtaining objects",
+          "Can be used in microflows to obtain objects",
+          "Entity parameters allow setting associations",
+          "Primitive parameters can be written to attributes"
+        ]
+      },
+      "troubleshooting": {
+        "longJsonStrings": {
+          "issue": "Jackson Core XML library has 20 million character limit (5 million in earlier versions)",
+          "error": "StreamConstraintsException: String value length exceeds maximum",
+          "solution": "Override using custom setting: mapping.import.MaxJsonReadingLength",
+          "warning": "May result in increased memory usage"
+        }
+      }
+    },
+    "exportMappings": {
+      "description": "Define how Mendix objects are converted to XML/JSON for external systems",
+      "usedIn": [
+        "Sending XML to web services (call web service activity)",
+        "Exporting directly using 'export with mapping' microflow action",
+        "REST service responses"
+      ],
+      "objectObtaining": {
+        "methods": [
+          {
+            "name": "From parameter",
+            "description": "Top-level entity becomes mapping parameter. Must pass object when invoking mapping."
+          },
+          {
+            "name": "By association",
+            "description": "Child objects fetched via association with parent object at runtime"
+          },
+          {
+            "name": "By microflow",
+            "description": "Use microflow to determine what object to return. Can pass parent objects as arguments."
+          }
+        ],
+        "errorHandling": [
+          {
+            "option": "Throw error",
+            "description": "Abort mapping - calling microflow must handle error"
+          },
+          {
+            "option": "Skip element",
+            "description": "Only if schema element minOccurs=0. Continue with remainder of mapping."
+          }
+        ]
+      },
+      "attributeMapping": {
+        "properties": [
+          {
+            "name": "Entity attribute",
+            "description": "Domain entity attribute to map to element"
+          },
+          {
+            "name": "Schema value element",
+            "description": "Element that will be filled"
+          },
+          {
+            "name": "Occurrence",
+            "description": "0..1 or 1. Empty values with 0 occurrence skip element creation."
+          },
+          {
+            "name": "Convert using",
+            "description": "Optional microflow to convert value before export"
+          },
+          {
+            "name": "Map attributes by name",
+            "description": "Auto-match attributes by name"
+          }
+        ]
+      },
+      "optionalElements": {
+        "criteria": [
+          "Element does not contain attributes",
+          "maxOccurs=1",
+          "Not a choice element or contained by choice",
+          "Not an inheritance element or contained by inheritance"
+        ],
+        "behavior": "If no object defined, element is always created"
+      },
+      "validation": {
+        "xmlOnly": true,
+        "property": "Validate against schema",
+        "default": "No",
+        "warning": "Can impact performance",
+        "optionalAndNillable": "Server checks schema for empty values - throws exception if not optional/nillable (regardless of validation settings)"
+      }
+    },
+    "messageDefinitions": {
+      "description": "Define structure of messages for both JSON and XML, used for both single objects and lists",
+      "structure": {
+        "basedOn": "Entity in domain model",
+        "supports": [
+          "Individual objects",
+          "Lists of objects"
+        ],
+        "canExportBoth": "JSON and XML"
+      },
+      "properties": [
+        {
+          "name": "Name",
+          "editable": true,
+          "description": "Name of the definition"
+        },
+        {
+          "name": "Entity",
+          "editable": true,
+          "description": "Entity to base message on"
+        },
+        {
+          "name": "External Name",
+          "editable": true,
+          "default": "Attribute/entity name. For 0..* adds 's'",
+          "description": "XML node or JSON property name"
+        },
+        {
+          "name": "External Single Item Name",
+          "editable": true,
+          "xmlOnly": true,
+          "for": "0..* occurrences",
+          "description": "XML node for single item in list"
+        },
+        {
+          "name": "Example value",
+          "editable": true,
+          "description": "Shows in REST interactive documentation. DateTime format: year-month-day or year-month-day hour:minute:second"
+        },
+        {
+          "name": "Public Documentation",
+          "editable": true,
+          "description": "Additional info for interactive docs"
+        }
+      ],
+      "generateMappings": {
+        "description": "Can auto-generate import/export mappings from message definition",
+        "outputs": "Mapping documents added to module"
+      }
+    },
+    "jsonStructures": {
+      "description": "Store JSON snippet and convert to schema structure for use in import/export mappings",
+      "features": {
+        "format": "Auto-formats JSON for readability (does not change semantic content)",
+        "validation": "Auto-checks validity on paste/modify",
+        "structure": "Parses to tree structure with columns: Name, Value, Primitive Type, Occurrence, Custom name",
+        "specialCharacters": "Encodes special unicode per JSON standards (e.g., ❤️ → \\u2764)"
+      },
+      "supportedTypes": [
+        {
+          "jsonValue": "\"string\"",
+          "mendixType": "String"
+        },
+        {
+          "jsonValue": "123",
+          "mendixType": "Integer"
+        },
+        {
+          "jsonValue": "true/false",
+          "mendixType": "Boolean"
+        },
+        {
+          "jsonValue": "\"1985-04-12T23:20:50.52Z\"",
+          "mendixType": "Date and time"
+        },
+        {
+          "jsonValue": "12.50",
+          "mendixType": "Decimal"
+        }
+      ],
+      "arrays": {
+        "notation": "Square brackets [ ]",
+        "canBe": [
+          "Root of snippet",
+          "Within JSON object",
+          "Within another array"
+        ],
+        "limitation": "Mixed arrays (different data types) are unsupported. First item determines array type."
+      },
+      "objects": {
+        "notation": "Curly braces { }",
+        "contains": "Comma-separated list of properties (key-value pairs)"
+      }
+    },
+    "xmlSchemas": {
+      "description": "Defined in XSD files, describe XML document structure for import/export mappings",
+      "fileSupport": {
+        "basedOn": "Entities and attributes mapping",
+        "limitations": [
+          {
+            "construct": "sequence",
+            "support": "Only if occurs exactly once"
+          },
+          {
+            "construct": "choice",
+            "support": "Only if individual options are not sequence elements"
+          },
+          {
+            "construct": "all",
+            "support": "Only if each child occurs at most once"
+          },
+          {
+            "construct": "any",
+            "support": "No"
+          },
+          {
+            "construct": "anyAttribute",
+            "support": "No"
+          },
+          {
+            "construct": "list",
+            "support": "No"
+          },
+          {
+            "construct": "group",
+            "support": "Yes"
+          },
+          {
+            "construct": "unique",
+            "support": "Yes"
+          },
+          {
+            "construct": "attributeGroup",
+            "support": "Yes"
+          },
+          {
+            "construct": "union",
+            "support": "Yes"
+          }
+        ],
+        "unsupportedWarning": "Unsupported constructs shown with warning icon - checking them causes consistency errors"
+      },
+      "constraints": [
+        "XML generated must strictly adhere to XSD (exact tag order)",
+        "XSD file must be in app - runtime error if referenced but missing"
+      ],
+      "elementsAndTypes": {
+        "simpleType": "Primitive value (e.g., integer, string)",
+        "complexTypeSimpleContent": "Primitive value with attributes",
+        "complexTypeComplexContent": "Child elements",
+        "objectElements": "Complex types or multiple occurrences → mapped to entity",
+        "valueElements": "Simple types, occur at most once → mapped to attribute",
+        "attributes": "Always simple type, occur once max → mapped to attribute"
+      },
+      "mixedContent": {
+        "description": "Element has both text and child elements",
+        "commonIn": "Document data (XHTML)",
+        "support": "Not supported"
+      }
+    }
+  },
+  "microflowActivities": {
+    "callRestService": {
+      "description": "Call REST endpoint from microflow",
+      "tabs": {
+        "general": {
+          "location": {
+            "format": "String template with parameters {1}, {2}, etc.",
+            "escape": "Double opening brace {{",
+            "mustResultIn": "Valid URL string"
+          },
+          "httpMethod": "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS",
+          "timeout": {
+            "recommended": "Yes (default)",
+            "default": "300 seconds",
+            "warning": "Cloud infrastructure closes inactive connections. Without timeout, activity can wait indefinitely."
+          },
+          "proxyConfig": "Use app settings (default) | Override | No proxy",
+          "clientCertificate": "Use app settings (default) | Override"
+        },
+        "httpHeaders": {
+          "useHttpAuth": "Basic authentication (username/password)",
+          "customHeaders": "Key-value pairs (microflow expressions)",
+          "nginxWarning": "Headers with underscore _ are silently dropped by NGINX"
+        },
+        "request": {
+          "methods": "POST, PUT, PATCH, OPTIONS only",
+          "options": [
+            {
+              "name": "Export mapping for entire request",
+              "description": "Use export mapping. Choose JSON or XML content type.",
+              "note": "Content-Type header NOT set by default - use Custom HTTP Headers"
+            },
+            {
+              "name": "Binary for entire request",
+              "description": "Send binary data (FileDocument). See Images and Files with REST guide."
+            },
+            {
+              "name": "Form-data",
+              "description": "Generate multipart/form-data request. Supports FileDocuments and images. Can specify HTTP headers per part.",
+              "contentType": "Automatically set to multipart/form-data",
+              "fileDocumentContentType": "application/octet-stream"
+            },
+            {
+              "name": "Custom request template",
+              "description": "Generate request using string template (plain text structure)"
+            }
+          ]
+        },
+        "response": {
+          "options": [
+            {
+              "name": "Apply import mapping",
+              "description": "JSON/XML → objects using import mapping"
+            },
+            {
+              "name": "Store in HTTP response",
+              "description": "Store in HttpResponse object. Updates $latestHttpResponse variable."
+            },
+            {
+              "name": "Store in file document",
+              "description": "Binary content (PDF) → entity inheriting from System.FileDocument"
+            },
+            {
+              "name": "Store in string",
+              "description": "String response (CSV) → string variable"
+            },
+            {
+              "name": "Do not store",
+              "description": "Call returns nothing useful"
+            }
+          ],
+          "latestHttpResponse": {
+            "type": "HttpResponse",
+            "scope": "Current microflow only",
+            "contentAttribute": "Usually empty to minimize memory",
+            "filledWhen": [
+              "Response handling = 'Store in HTTP response' AND call succeeded",
+              "'Store message body in $latestHttpResponse' checked AND call failed"
+            ]
+          },
+          "errorHandling": {
+            "nonSuccessStatus": "4xx/5xx → flow continues in error handler",
+            "recommendation": "Always add error handler for Call REST service"
+          }
+        }
+      },
+      "securityConsiderations": {
+        "ssrf": {
+          "risk": "Server Side Request Forgery - user accesses inaccessible resources via your app",
+          "prevention": [
+            "Never use user-provided URLs directly",
+            "Validate and sanitize user inputs",
+            "Maintain safe list of allowed domains",
+            "Do not allow unprocessed response access"
+          ]
+        }
+      },
+      "troubleshooting": {
+        "connectionReset": {
+          "cause": "Infrastructure closes inactive connection",
+          "solutions": [
+            "Set http.client.CleanupAfterSeconds < connection timeout",
+            "Handle error in microflow and retry"
+          ]
+        }
+      }
+    },
+    "importWithMapping": {
+      "description": "Import XML/JSON document data into domain model entities",
+      "inputs": "String variable, FileDocument, HttpRequest, or HttpResponse",
+      "mapping": "Import mapping defines XML/JSON → object transformation",
+      "inputContentType": "XML or JSON (if message definition-based)",
+      "inputContains": "Single object or list (if message definition-based)",
+      "ifNoObjectFound": "Decide action when mapping has 'decide at use' checked",
+      "parameter": "If mapping requires parameter",
+      "range": {
+        "all": "Map and return all objects",
+        "first": "Map and return only first object (result is single object)",
+        "custom": "Map and return given number (limit as microflow expression)"
+      },
+      "commit": {
+        "yes": "Save to database + trigger event handlers",
+        "yesWithoutEvents": "Save to database, no event handlers (default)",
+        "no": "Create objects without saving (need commit action later)"
+      },
+      "validateAgainstSchema": {
+        "xmlOnly": true,
+        "applicableWhen": "Mapping from XML schema or consumed web service",
+        "default": "No",
+        "warning": "Can impact performance"
+      }
+    },
+    "exportWithMapping": {
+      "description": "Export domain model entities to XML/JSON document or string",
+      "exportMapping": "Defines domain model → XML/JSON correspondence",
+      "parameterType": "Type of required input if mapping needs it",
+      "parameter": "Select parameter of correct type",
+      "contentType": "XML or JSON (if message definition-based)",
+      "validateAgainstSchema": {
+        "xmlOnly": true,
+        "default": "No",
+        "warning": "Can impact performance"
+      },
+      "optionalAndNillable": {
+        "description": "Schema elements can be optional (minOccurs=0) and/or nillable",
+        "behavior": "Server checks schema for empty values: exclude (optional) or send with nil attribute (nillable)",
+        "exception": "Throws exception if element not optional/nillable with empty value (regardless of validation)"
+      },
+      "storeIn": "System.FileDocument specialization OR string variable",
+      "name": "Name of resulting object/string"
+    }
+  },
+  "restServices": {
+    "published": {
+      "description": "Expose entities and microflows to other apps using REST standard",
+      "creation": [
+        "Right-click entity → Expose as REST resource",
+        "Right-click microflow → Publish as REST service operation"
+      ],
+      "authentication": {
+        "default": "Basic auth + active session (when security = Prototype/Production)",
+        "options": [
+          "No authentication (per service)",
+          "Allow anonymous users (app-wide)",
+          "Custom authentication microflow"
+        ],
+        "note": "Web service users CANNOT access REST services"
+      },
+      "documentation": {
+        "location": "http://yourapp.com/rest-doc/",
+        "format": "Interactive Swagger UI",
+        "apiFormats": [
+          "OpenAPI 3.0",
+          "OpenAPI 2.0"
+        ],
+        "includes": "JSON Schemas for message definitions"
+      },
+      "logging": "Set REST Publish log node to Trace for detailed information"
+    },
+    "consumed": {
+      "description": "Interact with external REST APIs",
+      "features": [
+        "Build and test REST requests",
+        "Create data structures",
+        "Import OpenAPI/Swagger contracts"
+      ],
+      "primaryAction": "Call REST Service microflow activity",
+      "systemEntities": "HttpRequest and HttpResponse in domain model"
+    }
+  },
+  "webServices": {
+    "soap": {
+      "description": "Common enterprise protocol for web services using XML message format",
+      "standards": [
+        "SOAP 1.1",
+        "SOAP 1.2",
+        "MTOM/XOP",
+        "WS-MetadataExchange v1.1",
+        "WS-Policy v1.2 and v1.5",
+        "WS-PolicyAttachment 1.5",
+        "WS-ReliableMessaging 1.1",
+        "WS-Addressing 1.0"
+      ]
+    },
+    "consumed": {
+      "description": "Call web services on external systems",
+      "wsdl": "Web Service Definition Language - describes how client interacts with server",
+      "components": [
+        "Message types (incoming/outgoing)",
+        "Endpoint URL",
+        "Associated XSD documents for validation"
+      ],
+      "microflowActivity": "Call Web Service",
+      "authentication": {
+        "description": "SOAP envelope header contains Authentication element",
+        "format": "<username> and <password> elements",
+        "userType": "Web service users only (created by Administrator)",
+        "restriction": "Web service users cannot sign in via standard login page"
+      },
+      "dotNetIntegration": {
+        "binding": "basicHttpBinding (SOAP 1.1) or wsHttpBinding (SOAP 1.2)",
+        "secureConnection": "Configure SSL + security mode 'Transport' with clientCredentialType 'Basic' in web.config"
+      }
+    },
+    "published": {
+      "description": "Expose microflows as web services (SOAP 1.1)",
+      "creation": "Right-click microflow → Publish as web service operation",
+      "runtimeDoc": {
+        "location": "http://localhost:8080/ws-doc/ (when running locally)",
+        "formats": [
+          "WSDL (computer-readable XML)",
+          "Example Request/Response XML messages (human-readable)"
+        ]
+      },
+      "callFlow": {
+        "authentication": "SOAP header must contain Authentication element with username/password matching web service user",
+        "parameterHandling": [
+          "Domain entity input → XML-to-Domain mapping (creates actual objects)",
+          "Primitive parameters → used directly"
+        ],
+        "execution": "Microflow proceeds as normal",
+        "resultConversion": [
+          "Basic types → returned directly",
+          "Domain entities → require mapping to XML"
+        ],
+        "numberFormatting": "Trailing zeroes removed, no scientific notation (consistent with consumed services)"
+      },
+      "responseStatuses": {
+        "default": "200 (OK)",
+        "malformedRequest": "500 with SOAP fault",
+        "internalError": "500 with SOAP fault",
+        "memoryOptimization": "Response sent during serialization to free memory. Status 200 may be sent even if error occurs during serialization."
+      }
+    }
+  },
+  "dataFormats": {
+    "xml": {
+      "description": "eXtensible Markup Language - standard for encoding data",
+      "usage": [
+        "Serialization (export)",
+        "De-serialization (import)",
+        "SOAP web services",
+        "Data exchange between systems"
+      ],
+      "structure": "Hierarchical tags wrapping data",
+      "schema": "XSD (XML Schema Definition) defines structure"
+    },
+    "json": {
+      "description": "JavaScript Object Notation - lightweight data format",
+      "usage": [
+        "REST APIs",
+        "Modern web services",
+        "Data exchange"
+      ],
+      "structure": "Key-value pairs and arrays",
+      "schema": "JSON Structure document defines structure"
+    }
+  },
+  "bestPractices": {
+    "mapping": [
+      "Use Map Automatically to quickly create mappings and domain entities",
+      "Always validate mappings against schema in development",
+      "Disable schema validation in production for performance",
+      "Use conversion microflows for non-standard formats",
+      "Mark search key attributes appropriately",
+      "Handle 'no object found' scenarios explicitly",
+      "Keep associations clear and purposeful",
+      "Document complex mappings"
+    ],
+    "integration": [
+      "Use message definitions for consistent JSON/XML handling",
+      "Create reusable mappings for common patterns",
+      "Always add error handlers for REST/web service calls",
+      "Store sensitive data securely, not in mappings",
+      "Use parameters to make mappings flexible",
+      "Test with real data formats from target systems",
+      "Monitor performance with large datasets",
+      "Use appropriate commit strategy for data volume"
+    ],
+    "restServices": [
+      "Use proper HTTP methods (GET for read, POST for create, etc.)",
+      "Implement proper authentication",
+      "Return appropriate status codes",
+      "Document your published services",
+      "Version your APIs",
+      "Handle errors gracefully",
+      "Use timeouts appropriately",
+      "Prevent SSRF attacks by validating URLs"
+    ],
+    "performance": [
+      "Disable XML validation in production",
+      "Use 'First' range for single object imports",
+      "Commit without events when handlers not needed",
+      "Use Custom range to limit large imports",
+      "Consider memory usage with large responses",
+      "Set appropriate http.client.CleanupAfterSeconds",
+      "Override MaxJsonReadingLength only when needed"
+    ]
+  },
+  "commonPatterns": {
+    "restApiConsumption": {
+      "steps": [
+        "1. Create JSON structure from API response example",
+        "2. Create import mapping based on JSON structure",
+        "3. Map JSON elements to domain entities",
+        "4. Use Call REST service activity with import mapping",
+        "5. Handle response in microflow"
+      ]
+    },
+    "restApiPublication": {
+      "steps": [
+        "1. Create message definition based on entity",
+        "2. Generate export mapping from message definition",
+        "3. Create microflow with entity parameter",
+        "4. Right-click microflow → Publish as REST operation",
+        "5. Configure authentication and documentation"
+      ]
+    },
+    "dataImport": {
+      "steps": [
+        "1. Obtain XSD or JSON structure from source system",
+        "2. Import as XML Schema or JSON Structure",
+        "3. Create import mapping",
+        "4. Map elements to domain entities",
+        "5. Use Import with Mapping activity in microflow",
+        "6. Choose commit strategy",
+        "7. Handle imported objects"
+      ]
+    },
+    "dataExport": {
+      "steps": [
+        "1. Create export mapping based on XSD/JSON structure",
+        "2. Map domain entities to schema elements",
+        "3. Define how to obtain child objects (association/microflow)",
+        "4. Use Export with Mapping activity",
+        "5. Store result in file or string",
+        "6. Send/save as needed"
+      ]
+    }
+  },
+  "troubleshooting": {
+    "importMapping": [
+      {
+        "issue": "Object not found during import",
+        "cause": "Key attributes don't match or object doesn't exist",
+        "solution": "Check key attribute values, verify 'If no object found' setting, consider using 'Create' or microflow"
+      },
+      {
+        "issue": "Multiple objects found",
+        "cause": "Key attributes not unique",
+        "solution": "Make key attributes unique or adjust search criteria"
+      },
+      {
+        "issue": "JSON string too long",
+        "error": "StreamConstraintsException",
+        "solution": "Set mapping.import.MaxJsonReadingLength custom setting (default 20M)"
+      },
+      {
+        "issue": "Binary attribute as key",
+        "error": "Consistency error",
+        "solution": "Binary type attributes not supported as keys - use different attribute"
+      }
+    ],
+    "exportMapping": [
+      {
+        "issue": "Empty optional elements",
+        "cause": "Element is optional/nillable but value is empty",
+        "solution": "Server auto-handles per schema - ensure data is valid"
+      },
+      {
+        "issue": "Validation performance",
+        "cause": "Schema validation enabled",
+        "solution": "Disable in production if not needed"
+      },
+      {
+        "issue": "Wrong XML tag order",
+        "cause": "XML must match XSD order exactly",
+        "solution": "Ensure mapping follows schema sequence"
+      }
+    ],
+    "restService": [
+      {
+        "issue": "Connection reset error",
+        "cause": "Infrastructure closed inactive connection",
+        "solution": "Set http.client.CleanupAfterSeconds lower than connection timeout OR retry in error handler"
+      },
+      {
+        "issue": "NGINX drops headers",
+        "cause": "Headers with underscore character",
+        "solution": "Use hyphens instead of underscores in header names"
+      },
+      {
+        "issue": "SSRF vulnerability",
+        "cause": "User-provided URLs called directly",
+        "solution": "Validate URLs, use safe list, don't expose raw responses"
+      },
+      {
+        "issue": "No error handler",
+        "cause": "4xx/5xx status without handler",
+        "solution": "Always add error handler to Call REST service activity"
+      }
+    ]
+  },
+  "relatedTopics": [
+    "Domain Model Design",
+    "Microflow Design",
+    "Error Handling",
+    "Integration Patterns",
+    "Security in Integrations",
+    "Performance Optimization",
+    "API Versioning",
+    "Data Validation"
+  ],
+  "keywords": [
+    "mapping",
+    "import mapping",
+    "export mapping",
+    "JSON",
+    "XML",
+    "REST",
+    "SOAP",
+    "web service",
+    "integration",
+    "API",
+    "XSD",
+    "JSON structure",
+    "message definition",
+    "data transformation",
+    "microflow activity",
+    "call REST service",
+    "import with mapping",
+    "export with mapping",
+    "consumed services",
+    "published services",
+    "schema validation",
+    "attribute mapping",
+    "association mapping",
+    "conversion microflow"
+  ]
+}

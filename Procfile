@@ -1,1 +1,1 @@
-web: npm run rest
+web: node src/rest-proxy.js

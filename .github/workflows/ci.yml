@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+      fail-fast: false
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Validate knowledge base JSON
+        run: |
+          echo "Validating JSON files..."
+          for file in knowledge/*.json; do
+            echo "  Checking $file..."
+            node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))"
+          done
+          echo "✅ All knowledge files are valid JSON"
+
+      - name: 🧪 Test ESM imports
+        run: |
+          node --input-type=module -e "
+          import SearchEngine from './src/core/SearchEngine.js';
+          import KnowledgeManager from './src/core/KnowledgeManager.js';
+          console.log('✅ Core modules import successfully');
+          "
+
+      - name: 🔍 Test search functionality
+        run: |
+          node --input-type=module -e "
+          import SearchEngine from './src/core/SearchEngine.js';
+          import KnowledgeManager from './src/core/KnowledgeManager.js';
+          
+          const km = new KnowledgeManager('./knowledge');
+          await km.load();
+          
+          const engine = new SearchEngine();
+          engine.indexKnowledgeBase(km.knowledgeBase);
+          
+          // Test basic search
+          const results = engine.search('microflow');
+          console.log('🔍 Search test: microflow → ' + results.length + ' results');
+          
+          // Test fuzzy search
+          const fuzzyResults = engine.search('micorflow');
+          console.log('🔍 Fuzzy test: micorflow → ' + fuzzyResults.length + ' results');
+          
+          if (results.length === 0) {
+            console.error('❌ Search test failed - no results for microflow!');
+            process.exit(1);
+          }
+          
+          console.log('✅ Search tests passed!');
+          "
+
+      - name: ✅ Syntax check main server
+        run: node --check src/index.js
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 📝 Check JSON validity
+        run: |
+          for file in knowledge/*.json config/*.json; do
+            if [ -f "$file" ]; then
+              echo "Checking $file..."
+              node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))"
+            fi
+          done
+          echo "✅ All JSON files are valid"
+
+      - name: 📝 Check package.json
+        run: |
+          node -e "
+          const pkg = require('./package.json');
+          console.log('📦 Package:', pkg.name, 'v' + pkg.version);
+          console.log('✅ package.json is valid');
+          "

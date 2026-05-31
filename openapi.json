@@ -1,0 +1,715 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Mendix Expert API",
+    "description": "A self-learning knowledge base for Mendix development with 700KB+ curated content. Provides expert-level answers about SDK patterns, best practices, troubleshooting, project analysis, theme analysis, and Beast Mode research protocol. Universal self-learning enabled - ALL clients (ChatGPT, Copilot, Claude, n8n) now get quality signals!",
+    "version": "3.5.1"
+  },
+  "servers": [
+    {
+      "url": "https://mendix-mcp-server-production.up.railway.app",
+      "description": "Production cloud server (Railway + Supabase)"
+    },
+    {
+      "url": "http://localhost:5050",
+      "description": "Local development server"
+    }
+  ],
+  "paths": {
+    "/query": {
+      "post": {
+        "operationId": "queryKnowledge",
+        "summary": "Query Mendix Knowledge Base",
+        "description": "Search the curated Mendix knowledge base for information about SDK patterns, best practices, Studio Pro features, troubleshooting, and more. Uses hybrid keyword + semantic search.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "The topic or question to search for. Can be natural language like 'How do I create a microflow with the SDK?' or keywords like 'entity creation SDK'."
+                  },
+                  "detail_level": {
+                    "type": "string",
+                    "enum": ["brief", "standard", "detailed"],
+                    "default": "standard",
+                    "description": "Level of detail in response. 'brief' returns summaries, 'standard' returns moderate content, 'detailed' returns full entries."
+                  }
+                },
+                "required": ["topic"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "resultCount": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": { "type": "string" },
+                          "content": { "type": "string" },
+                          "category": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "post": {
+        "operationId": "hybridSearch",
+        "summary": "Hybrid Search (Keyword + Vector)",
+        "description": "Performs advanced hybrid search combining TF-IDF keyword matching with semantic vector search. Returns answerQuality and beastModeNeeded flags - when beastModeNeeded is true, GPT should search the web for better answers and then call /learn to add them.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "Search query - can be natural language or keywords"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Maximum number of results to return"
+                  }
+                },
+                "required": ["query"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results with match type indicators and quality assessment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": { "type": "string" },
+                    "resultCount": { "type": "integer" },
+                    "answerQuality": {
+                      "type": "string",
+                      "enum": ["none", "weak", "partial", "good", "strong"],
+                      "description": "Quality of results found. If 'none', 'weak', or 'partial', consider searching the web."
+                    },
+                    "beastModeNeeded": {
+                      "type": "boolean",
+                      "description": "If true, the knowledge base doesn't have a strong answer. GPT should search the web and call /learn to add findings."
+                    },
+                    "qualityReason": {
+                      "type": "string",
+                      "description": "Human-readable explanation of the quality assessment"
+                    },
+                    "beastModeInstructions": {
+                      "type": "string",
+                      "description": "Instructions for GPT when beastModeNeeded is true"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "title": { "type": "string" },
+                          "content": { "type": "string" },
+                          "category": { "type": "string" },
+                          "matchType": {
+                            "type": "string",
+                            "enum": ["both", "keyword", "vector"],
+                            "description": "How the result was matched: 'both' = keyword AND vector, 'keyword' = keyword only, 'vector' = semantic only"
+                          },
+                          "score": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/learn": {
+      "post": {
+        "operationId": "learnKnowledge",
+        "summary": "Add New Knowledge (Self-Learning)",
+        "description": "Add new knowledge to the knowledge base. Call this after searching the web and finding good Mendix information. The knowledge is permanently stored in Supabase and indexed in Pinecone for semantic search.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Title for this knowledge entry"
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "The knowledge content (minimum 50 characters)"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "Category like best-practices, troubleshooting, sdk-patterns, studio-pro"
+                  },
+                  "source": {
+                    "type": "string",
+                    "description": "Source name like docs.mendix.com, community.mendix.com"
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "description": "Full URL of the source"
+                  },
+                  "mendixVersion": {
+                    "type": "string",
+                    "description": "Mendix version this applies to, e.g., '11.5.0'"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Tags for categorization"
+                  }
+                },
+                "required": ["title", "content"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Knowledge added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "id": { "type": "string" },
+                    "duplicate": { "type": "boolean" },
+                    "qualityScore": { "type": "number" },
+                    "vectorIndexed": { "type": "boolean" },
+                    "searchableNow": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/best-practice": {
+      "post": {
+        "operationId": "getBestPractice",
+        "summary": "Get Best Practice Recommendations",
+        "description": "Get expert recommendations and best practices for specific Mendix development scenarios like error handling, naming conventions, performance optimization, security, etc.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "scenario": {
+                    "type": "string",
+                    "description": "The scenario to get recommendations for, e.g., 'microflow error handling', 'entity naming', 'performance optimization', 'security hardening'"
+                  }
+                },
+                "required": ["scenario"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Best practice recommendations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "scenario": { "type": "string" },
+                    "recommendations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": { "type": "string" },
+                          "content": { "type": "string" },
+                          "category": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "operationId": "getStatus",
+        "summary": "Get Server Status",
+        "description": "Get current server status, capabilities, and example queries. Use this to understand what the API can do.",
+        "responses": {
+          "200": {
+            "description": "Server status and capabilities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "version": { "type": "string" },
+                    "knowledge": {
+                      "type": "object",
+                      "properties": {
+                        "totalEntries": { "type": "integer" },
+                        "filesLoaded": { "type": "integer" },
+                        "indexedTerms": { "type": "integer" }
+                      }
+                    },
+                    "capabilities": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "exampleQueries": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyze": {
+      "post": {
+        "operationId": "analyzeProject",
+        "summary": "Analyze Mendix Project",
+        "description": "Analyze a Mendix project file (.mpr) to discover modules, entities, microflows, and other model elements. Requires the .mpr file to be accessible from the server.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "project_path": {
+                    "type": "string",
+                    "description": "Absolute path to the .mpr file, e.g., 'D:/Projects/MyApp/MyApp.mpr'"
+                  },
+                  "module_name": {
+                    "type": "string",
+                    "description": "Optional: Filter to analyze only a specific module"
+                  }
+                },
+                "required": ["project_path"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project analysis results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "project_path": { "type": "string" },
+                    "analysis": { "type": "object" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics": {
+      "get": {
+        "operationId": "getAnalytics",
+        "summary": "Get Usage Analytics",
+        "description": "View usage statistics, popular topics, tool usage counts, and trends. Useful for understanding what queries are most common and identifying knowledge gaps.",
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["day", "week", "month", "all"],
+              "default": "all"
+            },
+            "description": "Time period to analyze"
+          },
+          {
+            "name": "include_trends",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Include hourly/daily trend data"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage analytics report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": { "type": "string" },
+                    "report": {
+                      "type": "object",
+                      "properties": {
+                        "toolUsage": { "type": "object" },
+                        "popularTopics": { "type": "array" },
+                        "summary": { "type": "object" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyze-theme": {
+      "post": {
+        "operationId": "analyzeTheme",
+        "summary": "Analyze Mendix custom theme",
+        "description": "Performs deep analysis of a Mendix project's custom theme for best practices, issues, and recommendations. Returns letter grade (A+ to F) with detailed category scores.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["project_path"],
+                "properties": {
+                  "project_path": {
+                    "type": "string",
+                    "description": "Absolute path to the Mendix project root directory"
+                  },
+                  "mendix_version": {
+                    "type": "string",
+                    "enum": ["10", "11"],
+                    "description": "Mendix Studio Pro version (auto-detected if not specified)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Theme analysis results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "grade": {
+                      "type": "string",
+                      "description": "Overall letter grade (A+, A, A-, B+, B, B-, C+, C, C-, D+, D, D-, F)"
+                    },
+                    "score": {
+                      "type": "number",
+                      "description": "Numeric score 0-100"
+                    },
+                    "categoryScores": {
+                      "type": "object",
+                      "properties": {
+                        "fileStructure": { "type": "number" },
+                        "naming": { "type": "number" },
+                        "variables": { "type": "number" },
+                        "theming": { "type": "number" },
+                        "maintainability": { "type": "number" },
+                        "performance": { "type": "number" }
+                      }
+                    },
+                    "issues": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "severity": { "type": "string", "enum": ["critical", "warning", "info"] },
+                          "category": { "type": "string" },
+                          "message": { "type": "string" },
+                          "file": { "type": "string" },
+                          "line": { "type": "integer" },
+                          "suggestion": { "type": "string" }
+                        }
+                      }
+                    },
+                    "recommendations": {
+                      "type": "array",
+                      "items": { "type": "string" }
+                    },
+                    "mendixVersion": { "type": "string" },
+                    "themeType": { "type": "string", "enum": ["web", "native", "both"] },
+                    "filesAnalyzed": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required project_path parameter"
+          },
+          "404": {
+            "description": "Project directory not found"
+          },
+          "500": {
+            "description": "Analysis error"
+          }
+        }
+      }
+    },
+    "/beast-mode": {
+      "get": {
+        "operationId": "getBeastMode",
+        "summary": "Get Beast Mode Research Protocol",
+        "description": "Returns the Beast Mode research protocol - an exhaustive, 5-tier research methodology for finding answers to any Mendix question. Use this when you need thorough research or want to know what Beast Mode means.",
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["prompt", "instructions", "brief"],
+              "default": "prompt"
+            },
+            "description": "Output format: 'prompt' = full copy-paste protocol, 'instructions' = explanation of what it is, 'brief' = quick summary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Beast Mode protocol",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "name": { "type": "string", "description": "Beast Mode" },
+                    "description": { "type": "string" },
+                    "format": { "type": "string" },
+                    "prompt": {
+                      "type": "string",
+                      "description": "The actual Beast Mode protocol/prompt text"
+                    },
+                    "tip": { "type": "string" },
+                    "stats": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "operationId": "getDashboard",
+        "summary": "Analytics Dashboard",
+        "description": "Returns a beautiful HTML dashboard showing usage analytics, tool usage charts, popular topics, and server health. Open in browser for visual display.",
+        "responses": {
+          "200": {
+            "description": "HTML analytics dashboard",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "description": "Full HTML page with embedded CSS and usage visualizations"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/harvest-status": {
+      "get": {
+        "operationId": "getHarvestStatus",
+        "summary": "Get Harvest Status",
+        "description": "Returns the current status of the automated knowledge harvesting system, including last run time, next scheduled run, and harvest statistics.",
+        "responses": {
+          "200": {
+            "description": "Harvest status information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "description": "Current harvest system status" },
+                    "enabled": { "type": "boolean" },
+                    "lastRun": { "type": "string", "format": "date-time" },
+                    "nextRun": { "type": "string", "format": "date-time" },
+                    "sources": {
+                      "type": "array",
+                      "items": { "type": "string" },
+                      "description": "Available harvest sources"
+                    },
+                    "stats": {
+                      "type": "object",
+                      "description": "Harvest statistics"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/harvest": {
+      "post": {
+        "operationId": "triggerHarvest",
+        "summary": "Trigger Manual Harvest",
+        "description": "Manually triggers a knowledge harvest from Mendix documentation sources. Can specify which sources to harvest.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sources": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "releaseNotes",
+                        "refGuide",
+                        "howTo",
+                        "studioProGuide",
+                        "apidocs",
+                        "mxsdk"
+                      ]
+                    },
+                    "description": "Specific sources to harvest. If omitted, harvests from all sources."
+                  },
+                  "dryRun": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, shows what would be harvested without saving"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Harvest triggered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "sources": { "type": "array", "items": { "type": "string" } },
+                    "dryRun": { "type": "boolean" },
+                    "results": { "type": "object", "description": "Harvest results per source" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/knowledge-gap": {
+      "post": {
+        "operationId": "reportKnowledgeGap",
+        "summary": "Report Missing Knowledge",
+        "description": "Report a topic or question that the knowledge base couldn't answer. These gaps are tracked and prioritized for future harvesting.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "The topic or question that wasn't covered"
+                  },
+                  "context": {
+                    "type": "string",
+                    "description": "Additional context about what the user was trying to accomplish"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high"],
+                    "default": "medium",
+                    "description": "Priority level for this gap"
+                  }
+                },
+                "required": ["topic"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Knowledge gap recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" },
+                    "gapId": {
+                      "type": "string",
+                      "description": "Unique identifier for this knowledge gap"
+                    },
+                    "totalGaps": {
+                      "type": "integer",
+                      "description": "Total number of recorded gaps"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

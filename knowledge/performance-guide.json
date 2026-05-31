@@ -1,0 +1,593 @@
+{
+  "topic": "Mendix Performance Optimization Guide",
+  "description": "Comprehensive guide to optimizing Mendix application performance covering database queries, microflows, pages, memory management, and scalability. Based on official Mendix performance best practices and production experience.",
+  "last_updated": "2025-12-01",
+  "mendix_versions": [
+    "10.24 (LTS)",
+    "11.4.0",
+    "11.5.0"
+  ],
+  "official_docs": [
+    "https://docs.mendix.com/refguide/community-best-practices-for-app-performance/",
+    "https://docs.mendix.com/howto/monitoring-troubleshooting/detect-and-resolve-performance-issues/",
+    "https://docs.mendix.com/refguide/performance-best-practices/"
+  ],
+  "whats_new_11_5": {
+    "opfs_storage": "Offline PWAs now use OPFS instead of IndexedDB - faster synchronization and SQL queries",
+    "page_export_optimization": "React/Native client page exports up to 35% smaller (from 11.4.0)",
+    "memory_leaks_fixed": "Multiple memory leaks fixed in Studio Pro 11.4/11.5 (style editor, microflow editing, branch switching)",
+    "tracing_filter": "New tracing feature to filter spans by name for better debugging"
+  },
+  "performance_fundamentals": {
+    "measurement": {
+      "tools": [
+        {
+          "tool": "Studio Pro Performance Tool",
+          "usage": "Run → Performance Tool → Execute action → Analyze results",
+          "measures": "Microflow execution time, query time, individual activity time",
+          "best_for": "Profiling microflows and queries during development"
+        },
+        {
+          "tool": "Best Practice Recommender",
+          "usage": "View → Best Practice Recommender",
+          "measures": "Performance, security, naming conventions issues",
+          "best_for": "Finding potential improvements automatically"
+        },
+        {
+          "tool": "Application Performance Monitor (APM)",
+          "usage": "Install APM module from Marketplace → Configure → Monitor production",
+          "measures": "Real-time performance metrics, slow queries, memory usage",
+          "best_for": "Production monitoring and alerting"
+        },
+        {
+          "tool": "Cloud Portal Metrics",
+          "usage": "Developer Portal → Apps → Metrics",
+          "measures": "CPU, memory, database connections, response times",
+          "best_for": "Infrastructure-level monitoring"
+        },
+        {
+          "tool": "OpenTelemetry Tracing (11.0+)",
+          "usage": "Enable in Runtime settings, integrate with Datadog/New Relic/etc.",
+          "measures": "Distributed traces, span timing, service dependencies",
+          "best_for": "Microservice architectures, production debugging"
+        }
+      ],
+      "key_metrics": [
+        "Response time (<2s target for pages)",
+        "Throughput (requests/second)",
+        "Database query time (<100ms target)",
+        "Memory usage (stable over time)",
+        "CPU utilization (<70% sustained)",
+        "Error rate (<0.1% target)"
+      ]
+    },
+    "performance_targets": {
+      "page_load": "<2 seconds",
+      "api_response": "<500ms",
+      "microflow_user_action": "<1 second",
+      "background_task": "Varies, but monitor for trends",
+      "data_grid_50_rows": "<1 second",
+      "concurrent_users_per_gb": "100+ users"
+    }
+  },
+  "database_optimization": {
+    "indexing": [
+      {
+        "practice": "Index all frequently queried attributes",
+        "impact": "10-100x query speedup",
+        "identify": "Profile queries, check WHERE clauses, find slow retrievals",
+        "create": "Entity → Attributes → Select attribute → Index: Yes",
+        "examples": [
+          "Customer.Email (if searching by email)",
+          "Order.OrderNumber (if looking up orders)",
+          "Order.Status (if filtering by status)",
+          "All association foreign keys (automatic in Mendix)"
+        ],
+        "considerations": "Indexes cost storage and slow writes slightly, but almost always worth it for read queries"
+      },
+      {
+        "practice": "Composite indexes for multi-attribute queries",
+        "description": "Index multiple attributes together",
+        "example": "Query [Status='Active' and Priority='High'] → Index (Status, Priority)",
+        "mendix_support": "Limited - create single indexes on both, database may combine",
+        "workaround": "Database-level composite indexes for critical queries"
+      },
+      {
+        "practice": "Index attributes used in sorting",
+        "rationale": "ORDER BY on unindexed column is expensive",
+        "example": "Data grid sorted by CreatedDate → Index CreatedDate",
+        "impact": "Faster sorting, especially for large datasets"
+      }
+    ],
+    "query_optimization": [
+      {
+        "technique": "Use 'Retrieve over association' instead of XPath",
+        "bad": "Retrieve OrderLine where [OrderLine_Order = $Order]",
+        "good": "Retrieve $Order/OrderLines",
+        "why": "Association uses foreign key index, XPath may trigger full table scan",
+        "impact": "2-10x faster, especially on large tables"
+      },
+      {
+        "technique": "Limit retrieved data with XPath constraints",
+        "bad": "Retrieve all Orders → Filter in microflow",
+        "good": "Retrieve Order [Status = 'Active']",
+        "why": "Database filtering faster than application filtering",
+        "impact": "Reduces data transfer and memory usage"
+      },
+      {
+        "technique": "Use offset and limit for pagination",
+        "implementation": "Retrieve with Limit: 50, Offset: $Page * 50",
+        "benefit": "Don't retrieve all 10,000 records to show 50",
+        "impact": "Major improvement for large datasets"
+      },
+      {
+        "technique": "Use aggregate functions for counts",
+        "bad": "Retrieve all → Count in microflow with List.size",
+        "good": "Use Count aggregate function",
+        "why": "Database counts without transferring data",
+        "impact": "100x faster for counting large datasets"
+      },
+      {
+        "technique": "Avoid calculated attributes in queries",
+        "problem": "Calculated per row, can't use indexes",
+        "alternative": "Store as regular attribute, update via events",
+        "example": "FullName calculated → Store FullName, update in Before Commit"
+      },
+      {
+        "technique": "Optimize XPath expressions",
+        "tips": [
+          "Simple constraints are faster than complex",
+          "Use indexes attributes in constraints",
+          "Avoid NOT operator when possible",
+          "Test XPath performance with Performance Tool"
+        ]
+      }
+    ],
+    "batching": [
+      {
+        "technique": "Batch database operations",
+        "bad": "Loop over 1000 objects → Change each → Commit each",
+        "good": "Loop over 1000 objects → Change each → Commit after loop",
+        "better": "Change List action for 1000 objects at once",
+        "impact": "10-100x faster",
+        "explanation": "Single database query vs 1000 separate queries"
+      },
+      {
+        "technique": "Batch in scheduled events",
+        "implementation": "Process 100-1000 records → Commit → Process next batch",
+        "rationale": "Prevents transaction timeout, allows monitoring progress",
+        "example": "Import 100,000 records → Process in batches of 500"
+      },
+      {
+        "technique": "Use Change List and Delete List",
+        "description": "Batch update/delete multiple objects in single query",
+        "example": "Change list of OrderLines to set Status = 'Processed'",
+        "limitation": "All objects get same attribute values",
+        "impact": "10-50x faster than loop with individual changes"
+      }
+    ],
+    "connection_pooling": {
+      "description": "Reuse database connections instead of creating new for each request",
+      "mendix_default": "Connection pooling enabled automatically",
+      "configuration": "Runtime settings → Database pool size (default: 50)",
+      "tuning": "Increase if seeing 'no available connections' errors",
+      "monitoring": "Monitor database connection count in metrics"
+    }
+  },
+  "microflow_optimization": [
+    {
+      "practice": "Minimize loops",
+      "rationale": "Loops are expensive, especially with database operations inside",
+      "alternatives": [
+        "Change List / Delete List for batch operations",
+        "Aggregate functions for counting/summing",
+        "Single retrieve with XPath instead of loop filtering",
+        "Database-level operations when possible"
+      ],
+      "example": "Don't loop to count matching objects → Use Count aggregate"
+    },
+    {
+      "practice": "Minimize commits",
+      "rationale": "Each commit: database transaction + events + validation = expensive",
+      "guideline": "Commit after processing batch, not every iteration",
+      "bad": "Loop 1000 objects → Commit inside loop = 1000 commits",
+      "good": "Loop 1000 objects → Commit after loop = 1 commit",
+      "better": "Change List 1000 objects = 1 query + 1 commit",
+      "impact": "10-50x performance improvement"
+    },
+    {
+      "practice": "Avoid nested loops",
+      "problem": "O(n²) or worse complexity",
+      "alternative": "Pre-process data into lookup structure, use associations",
+      "example": "Instead of nested loop matching orders to customers, use Order → Customer association"
+    },
+    {
+      "practice": "Use sub-microflows for reusable logic",
+      "benefit": "Avoid duplication, but minimal performance impact",
+      "note": "Sub-microflow call overhead is negligible compared to database operations",
+      "guideline": "Extract for clarity, not performance"
+    },
+    {
+      "practice": "Optimize error handling",
+      "rationale": "Error handlers have overhead",
+      "guideline": "Use for truly risky operations (API calls, Java actions), not every activity",
+      "impact": "Minor, but adds up in tight loops"
+    },
+    {
+      "practice": "Async processing for long operations",
+      "pattern": "Create task → Return immediately → Scheduled event processes tasks",
+      "benefit": "Responsive UI, prevents timeouts",
+      "use_cases": "Report generation, bulk imports, email sending, external APIs"
+    }
+  ],
+  "page_optimization": [
+    {
+      "practice": "Minimize data grid columns",
+      "rationale": "Each column retrieves and renders data",
+      "guideline": "Show 5-8 most important columns",
+      "alternative": "Use show/hide columns, detail popup for full information",
+      "impact": "Faster grid loading, better UX"
+    },
+    {
+      "practice": "Use pagination on data grids",
+      "rationale": "Don't load all 10,000 records to show 20",
+      "implementation": "Data grid → Paging: Yes → Page size: 20-50",
+      "impact": "Massive improvement for large datasets"
+    },
+    {
+      "practice": "Optimize data sources",
+      "database_source": "Fastest - direct query with XPath",
+      "microflow_source": "Flexible but slower - use when complex logic needed",
+      "association_source": "Fast when retrieving over association",
+      "guideline": "Use database source unless microflow logic required"
+    },
+    {
+      "practice": "Avoid calculated attributes in grids",
+      "problem": "Calculated per row (N+1 problem)",
+      "impact": "Grid with 50 rows → 50 calculations",
+      "alternative": "Store as regular attribute or compute in data source microflow",
+      "example": "OrderTotal calculated → Store as attribute, update in Before Commit"
+    },
+    {
+      "practice": "Use list view for mobile",
+      "rationale": "Optimized for mobile rendering",
+      "alternative": "Data grid better for desktop",
+      "mobile_tip": "Minimize widgets per row, use lazy loading"
+    },
+    {
+      "practice": "Optimize images",
+      "techniques": [
+        "Compress images before upload",
+        "Use appropriate dimensions (don't resize in browser)",
+        "Lazy load images (load as scrolled into view)",
+        "Use CDN for static images"
+      ],
+      "impact": "Faster page load, reduced bandwidth"
+    },
+    {
+      "practice": "Minimize page complexity",
+      "guideline": "Simple pages load faster",
+      "tips": [
+        "Reduce number of widgets",
+        "Minimize nested containers",
+        "Avoid too many data sources on single page",
+        "Split complex pages into tabs or separate pages"
+      ]
+    }
+  ],
+  "memory_management": [
+    {
+      "concept": "Mendix memory model",
+      "description": "Objects in memory until commit or page navigation",
+      "implications": [
+        "Large lists can consume gigabytes",
+        "Non-persistable entities only exist in request scope",
+        "Committed objects cached in session"
+      ]
+    },
+    {
+      "practice": "Batch large operations",
+      "rationale": "Processing 100,000 objects at once exhausts memory",
+      "pattern": "Retrieve 1000 → Process → Commit → Retrieve next 1000 → Repeat",
+      "benefit": "Bounded memory usage"
+    },
+    {
+      "practice": "Use non-persistable entities for temporary data",
+      "rationale": "No database overhead, garbage collected quickly",
+      "use_for": "Form data, API request/response, calculations",
+      "limitation": "Lost on commit or page navigation"
+    },
+    {
+      "practice": "Monitor memory usage",
+      "tools": "Cloud Portal metrics, APM module, Java profilers",
+      "warning_signs": "Memory growing over time, out of memory errors, garbage collection pauses",
+      "investigation": "Profile to find memory leaks or excessive object retention"
+    },
+    {
+      "practice": "Tune JVM heap size",
+      "configuration": "Runtime settings → JVM heap: -Xmx4096m",
+      "guideline": "Start with 2-4GB, increase based on memory metrics",
+      "cloud": "Mendix Cloud scales heap with plan size",
+      "monitoring": "Track heap usage, aim for <80% steady state"
+    }
+  ],
+  "caching_strategies": [
+    {
+      "pattern": "Reference Data Caching",
+      "description": "Cache rarely-changing data (countries, settings, products)",
+      "implementation": "Non-persistable entity → Load on app start → Refresh periodically",
+      "benefit": "Eliminates repeated database queries",
+      "invalidation": "TTL-based or explicit on data change"
+    },
+    {
+      "pattern": "Query Result Caching",
+      "description": "Cache expensive query results",
+      "implementation": "Store result in non-persistable entity → Return from cache if fresh → Refresh if stale",
+      "use_for": "Dashboard metrics, reports, complex aggregations",
+      "trade_off": "Stale data vs performance"
+    },
+    {
+      "pattern": "CDN for Static Assets",
+      "description": "Offload static content (images, CSS, JS) to CDN",
+      "mendix_cloud": "Automatically uses CDN",
+      "benefit": "Faster load times, reduced app server load"
+    },
+    {
+      "pattern": "Browser Caching",
+      "description": "Configure cache headers for static resources",
+      "mendix_default": "Automatic for theme and widget resources",
+      "consideration": "Balance freshness vs performance"
+    }
+  ],
+  "scalability_patterns": [
+    {
+      "pattern": "Horizontal Scaling",
+      "description": "Add more app instances instead of bigger servers",
+      "mendix_cloud": "Supported with load balancer",
+      "requirements": [
+        "Stateless microflows (no shared in-memory state)",
+        "Distributed cache or database-backed state",
+        "Sticky sessions for UI (handled automatically)"
+      ],
+      "benefit": "Linear scalability, high availability"
+    },
+    {
+      "pattern": "Database Scaling",
+      "vertical": "Increase database instance size (CPU, RAM, IOPS)",
+      "horizontal": "Read replicas for read-heavy workloads",
+      "considerations": "Indexes most impactful before scaling database"
+    },
+    {
+      "pattern": "Async Processing",
+      "description": "Offload long-running tasks to background workers",
+      "implementation": "Task queue + Scheduled events processing tasks",
+      "benefit": "Responsive UI, horizontal scaling of workers",
+      "use_cases": "Batch processing, integrations, reports"
+    },
+    {
+      "pattern": "CDN and Edge Caching",
+      "description": "Serve content from servers close to users",
+      "mendix_cloud": "Global CDN included",
+      "benefit": "Reduced latency for global users"
+    }
+  ],
+  "profiling_workflow": [
+    {
+      "step": 1,
+      "action": "Identify slow operation",
+      "tools": "User reports, APM alerts, Cloud metrics",
+      "output": "Specific page or microflow that's slow"
+    },
+    {
+      "step": 2,
+      "action": "Profile with Performance Tool",
+      "process": "Run → Performance Tool → Execute slow operation → Review results",
+      "output": "Timing breakdown of activities and queries"
+    },
+    {
+      "step": 3,
+      "action": "Identify bottleneck",
+      "look_for": "Activities taking >100ms, database queries >100ms, loops",
+      "output": "Specific slow activity or query"
+    },
+    {
+      "step": 4,
+      "action": "Apply optimization",
+      "techniques": "Add index, batch operation, optimize query, cache result",
+      "output": "Improved code"
+    },
+    {
+      "step": 5,
+      "action": "Re-profile",
+      "verification": "Run Performance Tool again → Verify improvement",
+      "target": "At least 2x improvement, aim for 10x"
+    },
+    {
+      "step": 6,
+      "action": "Test in production-like environment",
+      "important": "Development data may not reflect production performance",
+      "output": "Validated improvement"
+    }
+  ],
+  "common_performance_issues": [
+    {
+      "issue": "Commit inside loop",
+      "symptom": "Microflow takes minutes instead of seconds",
+      "fix": "Move commit outside loop or use Change List",
+      "impact": "10-50x improvement"
+    },
+    {
+      "issue": "Missing database indexes",
+      "symptom": "Slow data grid loading, timeouts on large tables",
+      "fix": "Add indexes to queried attributes",
+      "impact": "10-100x improvement"
+    },
+    {
+      "issue": "Calculated attributes in data grids",
+      "symptom": "Grid loading takes seconds",
+      "fix": "Store as regular attribute or compute in data source",
+      "impact": "5-20x improvement"
+    },
+    {
+      "issue": "Retrieving entire dataset",
+      "symptom": "Out of memory, slow queries",
+      "fix": "Add XPath constraints, use pagination",
+      "impact": "Massive improvement"
+    },
+    {
+      "issue": "N+1 query problem",
+      "symptom": "Many small queries instead of one",
+      "fix": "Retrieve over association, batch operations",
+      "impact": "10x improvement"
+    },
+    {
+      "issue": "Heavy Before Commit events",
+      "symptom": "All saves are slow",
+      "fix": "Move complex logic to After Commit or microflows",
+      "impact": "2-10x improvement"
+    }
+  ],
+  "optimization_checklist": [
+    "✅ Profile to identify actual bottlenecks (don't guess)",
+    "✅ Add indexes to all frequently queried attributes",
+    "✅ Remove commits from inside loops",
+    "✅ Use batch operations (Change List, Delete List)",
+    "✅ Retrieve over association instead of XPath where possible",
+    "✅ Use pagination on large data grids",
+    "✅ Replace calculated attributes with stored values",
+    "✅ Cache frequently accessed data",
+    "✅ Minimize data grid columns",
+    "✅ Use database source for grids (not microflow unless needed)",
+    "✅ Batch large operations (process 100-1000 at a time)",
+    "✅ Use aggregate functions for counts/sums",
+    "✅ Optimize images (compress, appropriate dimensions)",
+    "✅ Monitor memory usage and tune JVM heap",
+    "✅ Test with production-like data volumes",
+    "✅ Set performance targets and measure against them"
+  ],
+  "performance_testing": {
+    "types": [
+      {
+        "type": "Load Testing",
+        "description": "Test with expected user load",
+        "tools": "JMeter, LoadRunner, k6",
+        "goal": "Verify performance under normal load"
+      },
+      {
+        "type": "Stress Testing",
+        "description": "Test beyond expected load until failure",
+        "goal": "Find breaking point, validate graceful degradation"
+      },
+      {
+        "type": "Soak Testing",
+        "description": "Test under sustained load over time (hours/days)",
+        "goal": "Identify memory leaks, resource exhaustion"
+      }
+    ],
+    "best_practices": [
+      "Test with production-like data volumes",
+      "Use realistic user scenarios",
+      "Monitor all metrics during test (CPU, memory, DB)",
+      "Test in environment similar to production",
+      "Gradually increase load to find limits",
+      "Document results and baselines"
+    ]
+  },
+  "mendix_11_performance_improvements": [
+    {
+      "improvement": "React Client Performance",
+      "description": "React client faster than Dojo for most operations",
+      "impact": "10-30% faster page rendering",
+      "version": "11.0+"
+    },
+    {
+      "improvement": "View Entities",
+      "description": "OQL-based read-only entities for complex queries",
+      "benefit": "Complex reporting without custom Java",
+      "version": "11.0+"
+    },
+    {
+      "improvement": "OpenTelemetry Tracing",
+      "description": "Built-in distributed tracing",
+      "benefit": "Better performance monitoring and debugging",
+      "version": "11.0+"
+    }
+  ],
+  "summary": "Performance optimization is iterative: profile → identify bottleneck → optimize → verify. Focus on highest-impact optimizations first (indexes, batching, removing loops). Most performance issues come from database queries - optimize those first. Always measure with realistic data volumes.",
+  "categories": {
+    "performance": [
+      {
+        "topic": "Official Mendix Database Indexes and Performance",
+        "description": "Database indexing best practices from official Mendix documentation covering index creation, ordering, and performance considerations.",
+        "source_url": "https://docs.mendix.com/refguide/indexes/",
+        "last_updated": "March 28, 2025",
+        "mendix_version": "11.x",
+        "index_overview": {
+          "definition": "Lists of attributes for which database indexes are created on underlying table",
+          "purpose": "Improve speed of retrieving objects when indexed attributes used in search fields, XPath constraints, or OQL WHERE clauses",
+          "location": "Entity properties > Indexes tab"
+        },
+        "when_indexes_help": [
+          "Search field lookups (except 'Contains' comparison)",
+          "XPath constraints in data grids/template grids",
+          "OQL query WHERE clauses"
+        ],
+        "when_indexes_dont_help": {
+          "contains_comparison": "Search fields with Comparison='Contains' do NOT benefit from indexes"
+        },
+        "important_considerations": {
+          "attribute_order": {
+            "rule": "Index attributes should match query attribute order",
+            "single_attribute": "Only benefits if it's FIRST attribute in multi-attribute index",
+            "example": "Index on (ZipCode, HouseNumber) - query on ZipCode alone benefits, but query on HouseNumber alone does NOT"
+          },
+          "system_members": {
+            "auto_indexed": [
+              "owner",
+              "changedBy",
+              "id (auto-generated)"
+            ],
+            "not_indexed": [
+              "createdDate",
+              "changedDate"
+            ]
+          },
+          "non_persistable": "Cannot define indexes - indexes are database concept only",
+          "performance_tradeoff": {
+            "benefit": "Faster retrieval",
+            "cost": "Slower change/delete operations (index must be updated)",
+            "guideline": "Only create index if retrieval performance gain justifies update performance loss"
+          }
+        },
+        "best_practices": [
+          "Index attributes frequently used in WHERE clauses or search fields",
+          "Match index attribute order to query attribute order",
+          "Avoid over-indexing rarely-searched attributes",
+          "Consider query patterns when designing multi-attribute indexes"
+        ],
+        "example": {
+          "scenario": "Customers retrieved by ZIP code and house number",
+          "index": "Create index on (zipcode, housenumber) in that order",
+          "query": "WHERE c.zipcode = $Param1 AND c.housenumber = $Param2 - uses index efficiently"
+        },
+        "_metadata": {
+          "id": "9f600d33-1695-43ce-a8a1-b33b050aeaac",
+          "added_at": "2025-12-08T00:37:19.954Z",
+          "source": "https://docs.mendix.com/refguide/indexes/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ]
+  }
+}

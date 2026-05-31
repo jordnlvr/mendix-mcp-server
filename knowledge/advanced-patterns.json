@@ -1,0 +1,1010 @@
+{
+  "topic": "Advanced Mendix Patterns and Expert Techniques",
+  "description": "Expert-level patterns, real-world examples, and advanced techniques for experienced Mendix developers. Covers complex scenarios, architectural patterns, and production-proven solutions.",
+  "last_updated": "2025-12-01",
+  "mendix_versions": ["10.24 (LTS)", "11.4.0", "11.5.0"],
+  "official_docs": [
+    "https://docs.mendix.com/howto/",
+    "https://forum.mendix.com/",
+    "Mendix World presentations",
+    "MVP blog posts"
+  ],
+  "mendix_11_patterns": {
+    "optimistic_locking_pattern": {
+      "pattern": "Concurrent Modification Handling with Optimistic Locking",
+      "description": "Handle ConcurrentModificationRuntimeException gracefully in high-concurrency scenarios",
+      "implementation": {
+        "enable": "Runtime tab in App Settings → Enable Optimistic Locking",
+        "error_handling": "Custom error handler on commit activities",
+        "retry_flow": "Catch error → Check error type → Retrieve fresh → Reapply changes → Retry"
+      },
+      "use_cases": [
+        "Multi-user editing",
+        "Batch processes with overlap",
+        "High-traffic applications"
+      ],
+      "version": "11.5.0+",
+      "docs": "https://docs.mendix.com/refguide/optimistic-locking/"
+    },
+    "action_return_mapping_pattern": {
+      "pattern": "Page Variable Updates from Microflow Returns",
+      "description": "Use action return value mapping to update page state from microflow results",
+      "implementation": "Configure return value mapping in action call → Map to page/snippet variables",
+      "use_cases": ["Computed values display", "Multi-value returns", "Cleaner page logic"],
+      "version": "11.5.0+"
+    },
+    "view_entity_reporting": {
+      "pattern": "Complex Reporting with View Entities",
+      "description": "Use OQL-based view entities for complex aggregations without custom Java",
+      "implementation": "Create view entity → Define OQL query → Use in data grids/charts",
+      "use_cases": ["Dashboard metrics", "Cross-entity reports", "Aggregated KPIs"],
+      "version": "11.0+"
+    }
+  },
+  "advanced_patterns": {
+    "domain_modeling": [
+      {
+        "pattern": "Audit Trail / History Tracking",
+        "description": "Track all changes to entity attributes with who, when, what",
+        "implementation": {
+          "entities": [
+            "AuditLog (EntityName, EntityID, AttributeName, OldValue, NewValue, ChangedBy, ChangedDate)"
+          ],
+          "approach": "Before Commit event on tracked entities → Compare with original → Create AuditLog entries",
+          "considerations": "Performance impact, storage growth, sensitive data handling"
+        },
+        "use_cases": ["Compliance requirements", "Financial data", "Forensic analysis"],
+        "code_pattern": "BCO_Entity_AuditTrail: Get original → Compare attributes → Log changes",
+        "optimization": "Batch audit logs, index by entity and date, archive old logs",
+        "note_11_5": "Consider using optimistic locking in addition for concurrent modification detection"
+      },
+      {
+        "pattern": "Soft Delete",
+        "description": "Mark records as deleted instead of physically deleting",
+        "implementation": {
+          "attributes": [
+            "IsDeleted (Boolean)",
+            "DeletedDate (DateTime)",
+            "DeletedBy (Association to User)"
+          ],
+          "approach": "Override delete with Change object setting IsDeleted=true",
+          "queries": "Add [IsDeleted = false] to all XPath constraints"
+        },
+        "advantages": ["Data recovery", "Audit trail", "Referential integrity maintained"],
+        "disadvantages": [
+          "Increased storage",
+          "More complex queries",
+          "Must filter deleted records everywhere"
+        ],
+        "use_when": "Regulatory requirements, data recovery needs, audit trails"
+      },
+      {
+        "pattern": "Polymorphic Associations",
+        "description": "Associate to multiple entity types through generalization",
+        "implementation": {
+          "generalization": "BaseEntity (parent) → Customer, Product, Order (children)",
+          "association": "Comment → BaseEntity (can comment on any child type)",
+          "type_checking": "Use getType() function to determine actual type"
+        },
+        "use_cases": ["Comments on multiple entities", "Attachments system", "Activity feeds"],
+        "example": "Document management: File → DocumentableEntity ← Invoice, Contract, Report"
+      },
+      {
+        "pattern": "Entity Versioning",
+        "description": "Maintain multiple versions of same entity",
+        "implementation": {
+          "attributes": ["Version (Integer), IsCurrent (Boolean), EffectiveDate, ExpirationDate"],
+          "approach": "On update, create new version with Version+1, set old IsCurrent=false",
+          "queries": "Retrieve current: [IsCurrent=true]"
+        },
+        "use_cases": ["Price lists", "Product catalogs", "Contract versions", "Policy documents"],
+        "considerations": "Storage cost, query complexity, historical reporting"
+      },
+      {
+        "pattern": "Materialized Path for Hierarchies",
+        "description": "Store full path from root for fast tree queries",
+        "implementation": {
+          "attributes": ["Path (String, e.g., '/1/3/7/'), Level (Integer)"],
+          "operations": "Add child: Parent.Path + ChildID + '/'",
+          "queries": "Find all descendants: [starts-with(Path, $Parent/Path)]"
+        },
+        "advantages": ["Fast subtree queries", "No recursive queries", "Simple depth calculation"],
+        "disadvantages": ["Update complexity when moving nodes", "Path length limits"],
+        "use_when": "Deep hierarchies (organizational charts, categories, file systems)"
+      }
+    ],
+    "microflow_patterns": [
+      {
+        "pattern": "Transaction Boundary Management",
+        "description": "Explicit control over commit points for data consistency",
+        "implementation": {
+          "approach": "Use transaction boundaries to group related operations",
+          "pattern": "Start → Change objects → Validate → Commit or Rollback",
+          "consideration": "Keep transactions short, commit regularly in loops"
+        },
+        "use_cases": ["Multi-step operations", "Batch processing", "Complex business rules"],
+        "example": "Order processing: Create order → Add lines → Calculate total → Validate inventory → Commit all or rollback"
+      },
+      {
+        "pattern": "Command Pattern / Action Handler",
+        "description": "Generic action dispatcher for extensible operations",
+        "implementation": {
+          "entities": ["Action (Name, Parameters), ActionHandler (maps Action to microflow)"],
+          "dispatcher": "SUB_Action_Execute: Retrieve ActionHandler by Action.Name → Call configured microflow",
+          "registration": "Configuration table mapping action names to microflow names"
+        },
+        "benefits": [
+          "Extensibility without code changes",
+          "Pluggable architecture",
+          "Easy testing"
+        ],
+        "use_cases": ["Workflow engines", "Rule engines", "Plugin systems"],
+        "example": "Payment processing: Different handlers for CreditCard, PayPal, BankTransfer"
+      },
+      {
+        "pattern": "Saga Pattern for Distributed Transactions",
+        "description": "Coordinate long-running business transactions across services",
+        "implementation": {
+          "entities": ["Saga (State, Steps), SagaStep (Operation, CompensatingOperation, Status)"],
+          "orchestration": "Execute steps → If failure, run compensating operations in reverse",
+          "states": "Started, InProgress, Compensating, Completed, Failed"
+        },
+        "use_cases": ["Microservices", "Multi-service operations", "Complex workflows"],
+        "example": "Order fulfillment: Reserve inventory → Charge payment → Ship order (each can be compensated)"
+      },
+      {
+        "pattern": "Async Processing with Task Queue",
+        "description": "Decouple long-running operations from user requests",
+        "implementation": {
+          "entities": ["Task (Type, Payload, Status, Priority, CreatedDate, ProcessedDate)"],
+          "producer": "Create Task → Set status=Pending → Return immediately",
+          "consumer": "Scheduled event: Retrieve pending tasks → Process → Update status",
+          "worker": "Multiple workers can process tasks concurrently"
+        },
+        "benefits": ["Responsive UI", "Scalability", "Retry logic", "Priority handling"],
+        "use_cases": ["Report generation", "Bulk imports", "Email sending", "External API calls"],
+        "monitoring": "Track task status, processing times, failure rates"
+      },
+      {
+        "pattern": "Circuit Breaker for External Services",
+        "description": "Prevent cascading failures from external service outages",
+        "implementation": {
+          "states": ["Closed (normal)", "Open (failing)", "Half-Open (testing)"],
+          "logic": "Track failures → Open circuit after threshold → Retry after cooldown",
+          "fallback": "Return cached data or default response when circuit open"
+        },
+        "configuration": "Failure threshold: 5 failures in 60s. Cooldown: 30s.",
+        "use_cases": ["API integrations", "External services", "Payment gateways"],
+        "benefits": ["Fault tolerance", "Faster failure", "Prevent resource exhaustion"]
+      }
+    ],
+    "integration_patterns": [
+      {
+        "pattern": "API Gateway / Backend for Frontend (BFF)",
+        "description": "Single entry point for external APIs, tailored responses per client",
+        "implementation": {
+          "architecture": "External clients → Mendix API Gateway → Internal services",
+          "features": "Authentication, rate limiting, transformation, caching, routing",
+          "per_client": "Mobile BFF: Minimal data. Web BFF: Full data. Partner API: Filtered"
+        },
+        "benefits": ["Security", "Client-specific optimization", "Versioning", "Monitoring"],
+        "use_cases": ["Multi-client applications", "Microservices", "External partners"]
+      },
+      {
+        "pattern": "Event-Driven Integration",
+        "description": "Publish domain events for loose coupling",
+        "implementation": {
+          "events": ["OrderCreated, OrderShipped, CustomerRegistered"],
+          "publishing": "After Commit event → Publish to message broker (Kafka, RabbitMQ)",
+          "consumers": "External systems subscribe to events, process independently"
+        },
+        "benefits": ["Decoupling", "Scalability", "Audit trail", "Real-time updates"],
+        "use_cases": ["Microservices", "Integration with external systems", "Real-time dashboards"]
+      },
+      {
+        "pattern": "Idempotent Operations",
+        "description": "Safe to execute same operation multiple times",
+        "implementation": {
+          "approach": "Track operation ID (UUID) → Check if already processed → Skip if duplicate",
+          "entities": "ProcessedOperations (OperationID, ProcessedDate)",
+          "pattern": "Check OperationID → If exists, return cached result → Else process + store"
+        },
+        "use_cases": ["Payment processing", "API operations", "Message queues"],
+        "benefits": ["Retry safety", "At-least-once delivery", "No duplicate charges"]
+      },
+      {
+        "pattern": "API Versioning Strategy",
+        "description": "Support multiple API versions simultaneously",
+        "strategies": [
+          "URL versioning: /api/v1/customers, /api/v2/customers",
+          "Header versioning: API-Version: 1.0",
+          "Content negotiation: Accept: application/vnd.company.v1+json"
+        ],
+        "implementation": "Separate published REST services per version, shared backend microflows",
+        "migration": "Deprecation warnings, sunset dates, client migration support",
+        "best_practice": "Support N and N-1 versions, deprecate gracefully"
+      }
+    ],
+    "performance_patterns": [
+      {
+        "pattern": "Read-Through Cache",
+        "description": "Cache database results to reduce query load",
+        "implementation": {
+          "approach": "Check cache → If hit, return → If miss, query database → Store in cache → Return",
+          "cache_entity": "Non-persistable entity or external cache (Redis)",
+          "invalidation": "TTL-based or explicit on data changes"
+        },
+        "use_cases": ["Frequently accessed data", "Expensive queries", "Reference data"],
+        "example": "Product catalog, configuration settings, lookup values",
+        "considerations": "Cache size, TTL, invalidation strategy, stale data risk"
+      },
+      {
+        "pattern": "Lazy Loading with Virtualization",
+        "description": "Load data on-demand as user scrolls",
+        "implementation": {
+          "approach": "Load first N records → Detect scroll → Load next N → Append to list",
+          "data_source": "Microflow with offset/limit parameters",
+          "client": "Infinite scroll widget or pagination"
+        },
+        "benefits": ["Fast initial load", "Reduced memory", "Better UX for large datasets"],
+        "use_cases": ["Large lists (10,000+ records)", "Mobile apps", "Search results"]
+      },
+      {
+        "pattern": "Database Query Optimization Patterns",
+        "description": "Advanced query techniques for performance",
+        "techniques": [
+          {
+            "name": "Covering indexes",
+            "description": "Index includes all queried attributes, no table lookup needed",
+            "example": "Index on (Status, CreatedDate) for query [Status='Active'] sorted by CreatedDate"
+          },
+          {
+            "name": "Selective retrieval",
+            "description": "Retrieve only needed attributes, not full objects",
+            "note": "Not directly supported in Mendix - use view entities or optimize associations"
+          },
+          {
+            "name": "Query result caching",
+            "description": "Cache expensive query results",
+            "implementation": "Store results in non-persistable entity, refresh periodically"
+          }
+        ]
+      },
+      {
+        "pattern": "Asynchronous Aggregation",
+        "description": "Pre-compute aggregates instead of calculating on-demand",
+        "implementation": {
+          "entities": ["OrderStatistics (CustomerID, TotalOrders, TotalRevenue, LastOrderDate)"],
+          "update": "After Commit on Order → Update OrderStatistics",
+          "scheduled": "Nightly recalculation for accuracy",
+          "display": "Retrieve OrderStatistics (instant) instead of aggregate query"
+        },
+        "benefits": ["Instant queries", "No expensive aggregations at runtime"],
+        "use_cases": ["Dashboards", "Reports", "Analytics"],
+        "trade_off": "Slightly stale data vs real-time calculation performance"
+      }
+    ],
+    "security_patterns": [
+      {
+        "pattern": "Row-Level Security with Path to User",
+        "description": "Complex security constraints through association chains",
+        "implementation": {
+          "xpath": "[Module.Order_Customer/Module.Customer_Account/System.owner = '[%CurrentUser%]']",
+          "explanation": "User can access Orders through Customer through Account ownership",
+          "use_case": "Multi-level organizational hierarchies"
+        },
+        "considerations": "Performance impact of deep paths, index all association foreign keys"
+      },
+      {
+        "pattern": "Attribute-Level Encryption",
+        "description": "Encrypt sensitive attributes in database",
+        "implementation": {
+          "approach": "Encrypt Before Commit, decrypt on retrieve",
+          "module": "Encryption module from Marketplace",
+          "attributes": "SSN, credit card, personal data"
+        },
+        "compliance": "GDPR, HIPAA, PCI-DSS requirements",
+        "considerations": "Performance overhead, key management, cannot query encrypted attributes"
+      },
+      {
+        "pattern": "Token-Based Authentication for APIs",
+        "description": "Secure API access with JWT tokens",
+        "implementation": {
+          "flow": "Login → Generate JWT → Return token → Client sends token in header → Validate token",
+          "token_content": "UserID, roles, expiration",
+          "validation": "Verify signature, check expiration, load user context"
+        },
+        "benefits": ["Stateless", "Scalable", "Cross-domain"],
+        "modules": "JWT or OAuth modules from Marketplace"
+      },
+      {
+        "pattern": "Multi-Tenancy with Data Isolation",
+        "description": "Separate data per tenant in single app instance",
+        "implementation": {
+          "entities": "All entities associate to Tenant",
+          "xpath": "[Module.Entity_Tenant = $currentSession/Tenant]",
+          "login": "User → Tenant association, set in session",
+          "enforcement": "XPath constraints on all entities, cannot be bypassed"
+        },
+        "benefits": ["Single app instance", "Cost effective", "Shared infrastructure"],
+        "risks": "Data leakage if constraints missed, careful testing required",
+        "alternative": "Separate app instances per tenant (more isolation, more cost)"
+      }
+    ],
+    "architectural_patterns": [
+      {
+        "pattern": "Domain-Driven Design (DDD) Modules",
+        "description": "Organize app into bounded contexts",
+        "implementation": {
+          "structure": "Separate modules per domain: Sales, Inventory, Shipping, Billing",
+          "boundaries": "Each module has own entities, clear interfaces",
+          "communication": "Modules interact via exposed microflows, not direct entity access",
+          "shared_kernel": "Common module for shared entities (User, Company, etc.)"
+        },
+        "benefits": ["Clear boundaries", "Team autonomy", "Parallel development"],
+        "use_when": "Large applications (100+ entities), multiple teams"
+      },
+      {
+        "pattern": "CQRS (Command Query Responsibility Segregation)",
+        "description": "Separate read and write models",
+        "implementation": {
+          "write_side": "Transactional entities, business logic, commands",
+          "read_side": "Denormalized view entities for queries, projections",
+          "synchronization": "Events update read models after write operations"
+        },
+        "benefits": ["Optimized for respective operations", "Scalability", "Performance"],
+        "use_cases": ["High-read workloads", "Complex reporting", "Event sourcing"],
+        "complexity": "Higher complexity, eventual consistency"
+      },
+      {
+        "pattern": "Plugin Architecture",
+        "description": "Extensible app with pluggable modules",
+        "implementation": {
+          "core": "Core app defines extension points (interfaces)",
+          "plugins": "Modules implement interfaces, register themselves",
+          "discovery": "Core discovers plugins at runtime, calls via interfaces"
+        },
+        "extension_points": "Custom widgets, payment providers, authentication methods",
+        "benefits": ["Extensibility", "Third-party integrations", "Marketplace readiness"]
+      }
+    ]
+  },
+  "real_world_case_studies": [
+    {
+      "title": "E-commerce Platform: Order Processing at Scale",
+      "challenge": "Process 10,000+ orders per day with complex pricing rules, inventory checks, and multi-warehouse fulfillment",
+      "solution": {
+        "architecture": "Event-driven with async task queue",
+        "order_flow": "Create Order → Task queue → Async processing → Inventory reservation → Payment → Fulfillment",
+        "optimization": "Batch inventory checks, pre-computed pricing, caching product data",
+        "scaling": "Horizontal scaling with multiple workers processing tasks"
+      },
+      "results": "99.9% uptime, <1s order submission, handles 10x peak traffic",
+      "lessons": [
+        "Async is critical",
+        "Batch operations",
+        "Monitor queue depth",
+        "Idempotent operations"
+      ]
+    },
+    {
+      "title": "Financial Services: Audit Trail and Compliance",
+      "challenge": "Track all data changes for regulatory compliance (SOX, GDPR), 7-year retention",
+      "solution": {
+        "audit": "Before Commit events on all entities → Audit log with who/what/when",
+        "storage": "Partitioned audit tables by year, archived to blob storage",
+        "reporting": "Dedicated reporting module with pre-aggregated views",
+        "encryption": "Attribute-level encryption for PII"
+      },
+      "results": "Passed compliance audits, audit queries <2s, manageable storage cost",
+      "lessons": [
+        "Plan storage strategy early",
+        "Index audit tables",
+        "Archive old data",
+        "Performance testing with production volume"
+      ]
+    },
+    {
+      "title": "SaaS Multi-Tenant Application",
+      "challenge": "Support 500+ tenants in single app instance with data isolation, custom branding, performance",
+      "solution": {
+        "isolation": "Tenant entity associated to all data, XPath constraints everywhere",
+        "branding": "Tenant-specific theming via CSS variables and logos",
+        "performance": "Tenant-level caching, indexed by TenantID, separate database per region",
+        "onboarding": "Automated tenant provisioning via Platform SDK"
+      },
+      "results": "500+ tenants, 99.95% uptime, <$50/tenant/month cost, 10min onboarding",
+      "lessons": [
+        "Test data isolation thoroughly",
+        "Index TenantID everywhere",
+        "Monitor per-tenant performance",
+        "Automate provisioning"
+      ]
+    },
+    {
+      "title": "Mobile App with Offline Sync",
+      "challenge": "Field service app for 200 technicians, must work offline, sync when online",
+      "solution": {
+        "offline": "Offline-first architecture with local storage",
+        "sync": "Bi-directional sync: Upload changes → Download updates → Conflict resolution",
+        "conflicts": "Last-write-wins with automatic merge, manual resolution for critical data",
+        "optimization": "Sync only changed data, compress payloads, incremental sync"
+      },
+      "results": "Works in areas with no connectivity, 95% automatic conflict resolution, <30s sync time",
+      "lessons": [
+        "Design for offline first",
+        "Conflict resolution strategy critical",
+        "Test with poor connectivity",
+        "Minimize sync payload"
+      ]
+    }
+  ],
+  "expert_tips": [
+    {
+      "tip": "Use non-persistable entities for complex forms",
+      "rationale": "No database overhead, can validate before persisting, easier to refactor",
+      "example": "Multi-step wizard: Collect all data in non-persistable, commit once at end",
+      "benefit": "Better performance, cleaner domain model"
+    },
+    {
+      "tip": "Implement graceful degradation for external services",
+      "rationale": "External services will fail - app should remain functional",
+      "pattern": "Try external service → Catch error → Log → Return cached/default data → Notify user",
+      "example": "Payment gateway down → Allow order submission, process payment later"
+    },
+    {
+      "tip": "Use view entities (Mendix 11) for complex reporting",
+      "rationale": "OQL allows joins, aggregations not possible in regular entities",
+      "use_case": "Dashboards, reports, analytics",
+      "limitation": "Read-only, no associations to persistable entities"
+    },
+    {
+      "tip": "Implement proper monitoring and alerting",
+      "rationale": "Know about issues before users report them",
+      "metrics": "Response time, error rate, queue depth, memory usage, database connections",
+      "tools": "Application Insights, Datadog, New Relic, custom health checks"
+    },
+    {
+      "tip": "Design for horizontal scaling",
+      "rationale": "Vertical scaling has limits, horizontal scales indefinitely",
+      "considerations": "Stateless microflows, distributed cache, load balancing, async processing",
+      "mendix_cloud": "Supports horizontal scaling with load balancer"
+    }
+  ],
+  "anti_patterns_advanced": [
+    {
+      "anti_pattern": "God Entity (entity with 100+ attributes)",
+      "problem": "Hard to understand, maintain, query performance suffers",
+      "solution": "Split into multiple entities with associations (1-1 for extensions)",
+      "example": "Customer with 150 attributes → Customer (core) + CustomerBilling + CustomerPreferences"
+    },
+    {
+      "anti_pattern": "Distributed Monolith",
+      "problem": "Split into modules but tight coupling remains",
+      "solution": "True loose coupling: well-defined interfaces, no shared databases, async communication",
+      "symptom": "Can't deploy modules independently, cascade of changes"
+    },
+    {
+      "anti_pattern": "Premature Optimization",
+      "problem": "Optimizing before knowing actual bottlenecks",
+      "solution": "Profile first, optimize actual slowest parts",
+      "quote": "Premature optimization is the root of all evil - Donald Knuth"
+    },
+    {
+      "anti_pattern": "Ignoring Non-Functional Requirements",
+      "problem": "Focus only on features, forget performance, security, scalability",
+      "solution": "Define NFRs early: response times, concurrent users, data volumes, availability",
+      "impact": "Expensive refactoring later"
+    }
+  ],
+  "performance_benchmarks": {
+    "targets": {
+      "page_load": "<2 seconds",
+      "api_response": "<500ms",
+      "microflow_execution": "<1 second for user actions",
+      "data_grid_load": "<1 second for 50 rows",
+      "concurrent_users": "100+ per 1GB RAM"
+    },
+    "optimization_roi": {
+      "indexes": "10-100x improvement, minimal cost",
+      "batch_operations": "10-50x improvement, code changes only",
+      "caching": "5-20x improvement, complexity cost",
+      "horizontal_scaling": "Linear improvement, infrastructure cost"
+    }
+  },
+  "categories": {
+    "domain_modeling": [
+      {
+        "pattern": "Multi-Assignee Junction Entity Pattern",
+        "description": "Enable multiple assignees per work item with independent status tracking using a junction entity. Common in ticketing, task management, and workflow systems.",
+        "implementation": {
+          "core_entity": "WorkItem (the main entity needing multiple assignees)",
+          "junction_entity": "WorkItemAssignment",
+          "associations": [
+            "WorkItem_WorkItemAssignment (1-*)",
+            "WorkItemAssignment_AssignmentType (1-1 to lookup entity)",
+            "WorkItemAssignment_Assignee (*-1 to User)"
+          ],
+          "junction_attributes": [
+            "Status (enum)",
+            "AssignedDate (DateTime)",
+            "CompletedDate (DateTime)",
+            "Notes (String - unlimited)"
+          ]
+        },
+        "key_insight": "Each junction record = independent work stream with its own status, allowing parallel work on different aspects of the same item",
+        "example": {
+          "scenario": "Support Ticket with Multiple Specialists",
+          "ticket": "Ticket #12345",
+          "assignments": [
+            { "type": "Database", "assignee": "DBA Team", "status": "In Progress" },
+            { "type": "Network", "assignee": "Network Team", "status": "Completed" },
+            { "type": "Application", "assignee": "Dev Team", "status": "Pending" }
+          ]
+        },
+        "ui_patterns": [
+          "Tab container where each tab represents one assignment",
+          "Nested data grid showing all assignments",
+          "Timeline view showing assignment history"
+        ],
+        "benefits": [
+          "Multiple people can work on same item simultaneously",
+          "Independent progress tracking per assignment",
+          "Clear responsibility assignment and accountability",
+          "Historical record of who did what and when"
+        ],
+        "naming_convention": {
+          "junction_entity": "[Parent][Assignment] e.g., TicketAssignment, TaskAssignment",
+          "associations": "Clear direction indicating parent-child relationship"
+        },
+        "use_cases": [
+          "Support ticket systems with multi-team resolution",
+          "Project tasks requiring multiple skills",
+          "Approval workflows with multiple approvers",
+          "Content review with multiple reviewers"
+        ],
+        "source": "Enterprise Mendix application patterns"
+      }
+    ],
+    "pluggable_widgets": [
+      {
+        "pattern": "Pluggable Widget Development for Studio Pro 11+",
+        "description": "Create custom React-based widgets using the official Pluggable Widget API",
+        "version_compatibility": "Studio Pro 10.x, 11.x and beyond",
+        "prerequisites": [
+          "Node.js 22.x LTS",
+          "Yeoman generator: npm install -g yo @mendix/generator-widget",
+          "React 18.x knowledge",
+          "TypeScript 5.x"
+        ],
+        "scaffold_command": "yo @mendix/widget MyWidgetName",
+        "project_structure": {
+          "src/MyWidget.tsx": "Main React component",
+          "src/MyWidget.xml": "Widget definition (properties)",
+          "src/MyWidget.editorPreview.tsx": "Design mode preview",
+          "src/MyWidget.editorConfig.ts": "Studio Pro editor configuration",
+          "package.json": "Dependencies and scripts",
+          "tsconfig.json": "TypeScript configuration"
+        },
+        "property_types": {
+          "primitives": {
+            "string": "Text input, single line or multiline",
+            "boolean": "Checkbox/toggle",
+            "integer": "Whole number input",
+            "decimal": "Decimal number input",
+            "enumeration": "Dropdown from predefined values"
+          },
+          "visual": {
+            "icon": "Icon picker (glyphicon or image)",
+            "image": "Static image selection"
+          },
+          "data": {
+            "attribute": "Entity attribute binding (path)",
+            "association": "Entity association binding",
+            "expression": "Client-side expression",
+            "textTemplate": "Translatable text with placeholders",
+            "object": "Complex object with nested properties",
+            "file": "File reference"
+          },
+          "behavior": {
+            "action": "On-click event handler (microflow/nanoflow/action)",
+            "datasource": "Data source configuration (database/xpath/association/microflow/nanoflow)",
+            "selection": "Single or multi-selection handling",
+            "widgets": "Container for child widgets"
+          }
+        },
+        "system_properties": {
+          "Label": "Widget label in page editor",
+          "Name": "Internal widget name",
+          "TabIndex": "Tab order for accessibility",
+          "Visibility": "Conditional visibility expression",
+          "Editability": "Read-only/editable state"
+        },
+        "xml_definition_example": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<widget id=\"mycompany.mywidget\" pluginWidget=\"true\" needsEntityContext=\"true\" offlineCapable=\"true\">\n  <name>My Widget</name>\n  <description>Widget description</description>\n  <icon/>\n  <properties>\n    <propertyGroup caption=\"General\">\n      <property key=\"dataAttribute\" type=\"attribute\" required=\"true\">\n        <caption>Data Attribute</caption>\n        <attributeTypes><attributeType name=\"String\"/></attributeTypes>\n      </property>\n      <property key=\"onClickAction\" type=\"action\">\n        <caption>On Click</caption>\n      </property>\n    </propertyGroup>\n  </properties>\n</widget>",
+        "react_component_pattern": "import { createElement, ReactElement } from 'react';\nimport { MyWidgetContainerProps } from '../typings/MyWidgetProps';\nimport './ui/MyWidget.css';\n\nexport function MyWidget(props: MyWidgetContainerProps): ReactElement {\n  const { dataAttribute, onClickAction } = props;\n  \n  const handleClick = () => {\n    if (onClickAction?.canExecute) {\n      onClickAction.execute();\n    }\n  };\n  \n  return (\n    <div className=\"my-widget\" onClick={handleClick}>\n      {dataAttribute?.displayValue ?? 'No value'}\n    </div>\n  );\n}",
+        "list_value_usage": "// For datasource property with ListValue type\nprops.datasource.items?.map((item, index) => (\n  <div key={index}>\n    {props.itemName(item).displayValue}\n  </div>\n))",
+        "best_practices": [
+          "Use TypeScript for type safety",
+          "Handle null/undefined values gracefully",
+          "Check canExecute before calling execute() on actions",
+          "Use displayValue for formatted output",
+          "Implement editorPreview for design mode",
+          "Add proper CSS namespacing to avoid conflicts",
+          "Support both web and native if possible"
+        ],
+        "common_integrations": {
+          "react_big_calendar": "Calendar widgets",
+          "react_datepicker": "Date/time pickers",
+          "plotly_js": "Charts (Bar, Column, Pie, Line, Area)",
+          "victory_native": "Native mobile charts",
+          "react_leaflet": "Maps",
+          "ag_grid": "Advanced data grids"
+        },
+        "build_commands": {
+          "development": "npm run dev",
+          "production": "npm run build",
+          "test": "npm test",
+          "release": "npm run release"
+        },
+        "source": "docs.mendix.com/apidocs-mxsdk/apidocs/pluggable-widgets-property-types, github.com/mendix/widgets-resources"
+      },
+      {
+        "pattern": "Native Mobile Widget Development",
+        "description": "Create React Native widgets for Mendix Native Mobile apps",
+        "scaffold_command": "yo @mendix/widget MyWidget --native",
+        "react_native_dependencies": [
+          "react-native",
+          "@mendix/pluggable-widgets-commons",
+          "react-native-vector-icons (optional)"
+        ],
+        "platform_conditional_code": "import { Platform } from 'react-native';\n\nconst Component = Platform.select({\n  ios: IOSComponent,\n  android: AndroidComponent,\n  default: WebComponent\n});",
+        "native_chart_example": "// Using Victory Native for charts\nimport { VictoryBar, VictoryChart, VictoryTheme } from 'victory-native';\n\nexport function NativeBarChart({ data }) {\n  return (\n    <VictoryChart theme={VictoryTheme.material}>\n      <VictoryBar data={data} />\n    </VictoryChart>\n  );\n}",
+        "testing_native": "Use Mendix Make It Native app or custom dev app",
+        "source": "github.com/mendix/widgets-resources, docs.mendix.com/howto/extensibility/create-native-widget"
+      }
+    ],
+    "extensibility_api": [
+      {
+        "pattern": "Studio Pro Web Extension Development (TypeScript)",
+        "description": "Create custom panels and features for Studio Pro using Web API",
+        "version_compatibility": "Studio Pro 10.18+, 11.x",
+        "prerequisites": [
+          "Node.js 22.x LTS",
+          "Studio Pro with --enable-extension-development flag"
+        ],
+        "setup_command": "npm create @mendix/extension my-extension",
+        "project_structure": {
+          "src/index.ts": "Extension entry point with activate() function",
+          "package.json": "Extension metadata",
+          "manifest.json": "Studio Pro manifest"
+        },
+        "entry_point_pattern": "import { ExtensionContext } from '@mendix/extensions-api';\n\nexport function activate(context: ExtensionContext) {\n  context.subscriptions.push(\n    context.commands.registerCommand('myExt.action', () => {\n      context.showInformationMessage('Extension activated!');\n    })\n  );\n}",
+        "capabilities": [
+          "Custom commands",
+          "Dockable panels",
+          "WebView-based UI",
+          "Model access (limited)"
+        ],
+        "debugging": "Launch via VS Code Debug configuration",
+        "source": "docs.mendix.com/apidocs-mxsdk/extensibility-api/web-extensibility-api"
+      },
+      {
+        "pattern": "Studio Pro C# Extension Development (.NET)",
+        "description": "Create deep integrations with Studio Pro using .NET API",
+        "version_compatibility": "Studio Pro 10.18+, 11.x",
+        "prerequisites": [".NET SDK 8.0+", "NuGet: Mendix.StudioPro.ExtensionsAPI"],
+        "csproj_setup": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <TargetFramework>net8.0</TargetFramework>\n    <Nullable>enable</Nullable>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageReference Include=\"Mendix.StudioPro.ExtensionsAPI\" Version=\"*\" />\n  </ItemGroup>\n</Project>",
+        "manifest_json": "{\n  \"name\": \"MyExtension\",\n  \"version\": \"1.0.0\",\n  \"minStudioProVersion\": \"10.18.0\",\n  \"extensionApiVersion\": \"1.0.0\",\n  \"entryPoint\": \"MyExtension.dll\"\n}",
+        "entry_point_pattern": "using Mendix.StudioPro.ExtensionsAPI;\n\npublic class MyExtension : IExtension\n{\n    public void Activate(IExtensionContext context)\n    {\n        var menuService = context.GetService<IMenuService>();\n        // Add menu items, register commands\n    }\n    public void Deactivate() { }\n}",
+        "services": {
+          "IAppService": "App lifecycle operations",
+          "IModelService": "Domain model access",
+          "IDocumentService": "Open document handling",
+          "IMenuService": "Menu item registration",
+          "IToolbarService": "Toolbar buttons",
+          "IDockingService": "Dockable panels",
+          "IDialogService": "Dialogs and prompts"
+        },
+        "source": "docs.mendix.com/apidocs-mxsdk/extensibility-api/csharp-extensibility-api"
+      }
+    ],
+    "atlas_ui_theming": [
+      {
+        "pattern": "Custom Atlas 3 Theme Development",
+        "description": "Create custom themes using SCSS variables and modules",
+        "version_compatibility": "Studio Pro 10.x, 11.x (Atlas 3)",
+        "theme_structure": {
+          "root": "theme/web/",
+          "main_file": "main.scss",
+          "custom_variables": "custom-variables.scss"
+        },
+        "variable_override_pattern": "// theme/web/custom-variables.scss\n// Override default Atlas variables\n$brand-primary: #007bff;\n$brand-success: #28a745;\n$font-base: 'Open Sans', sans-serif;\n$font-size-default: 14px;\n$border-radius-default: 4px;",
+        "themesource_structure": {
+          "module_main": "themesource/{module}/web/main.scss",
+          "native_main": "themesource/{module}/native/main.scss"
+        },
+        "scss_compilation_order": [
+          "1. Atlas Core variables",
+          "2. Your custom-variables.scss overrides",
+          "3. Atlas component styles",
+          "4. Themesource modules (alphabetical)",
+          "5. Your theme/web overrides"
+        ],
+        "exclusion_variables": {
+          "purpose": "Prevent Atlas from generating unused component CSS",
+          "examples": [
+            "$exclude-button: true; // Exclude button styles",
+            "$exclude-badge: true;",
+            "$exclude-navigation: true;"
+          ],
+          "benefit": "Smaller CSS bundle, faster loading"
+        },
+        "design_properties": {
+          "purpose": "Expose theme options in Studio Pro design panel",
+          "location": "theme/settings.json or design-properties.json",
+          "types": ["Toggle", "Dropdown", "ColorPicker"]
+        },
+        "native_theming": {
+          "main_file": "theme/native/main.js",
+          "variables": "theme/native/custom-variables.js",
+          "pattern": "export const brand = { primary: '#007bff' };"
+        },
+        "best_practices": [
+          "Use custom-variables.scss for overrides, not direct Atlas edits",
+          "Organize custom styles in themesource modules",
+          "Use exclusion variables for unused components",
+          "Test both web and native if PWA/hybrid",
+          "Use design properties for user-selectable options"
+        ],
+        "source": "docs.mendix.com/howto/front-end/atlas-ui, docs.mendix.com/refguide/customize-styling-new"
+      },
+      {
+        "pattern": "Atlas Design System Component Customization",
+        "description": "Customize individual Atlas components while maintaining consistency",
+        "component_customization_pattern": "// In themesource/mymodule/web/main.scss\n\n// Override button variants\n.btn-primary {\n  background: linear-gradient(45deg, $brand-primary, darken($brand-primary, 10%));\n  border: none;\n  box-shadow: 0 2px 4px rgba(0,0,0,0.1);\n}",
+        "creating_new_variants": "// Add custom button variant\n.btn-gradient {\n  @extend .btn;\n  background: linear-gradient(90deg, $brand-primary, $brand-secondary);\n}",
+        "building_blocks": {
+          "purpose": "Pre-composed page sections using Atlas components",
+          "location": "Marketplace building blocks or custom module",
+          "best_practice": "Create building blocks for repeated UI patterns"
+        },
+        "source": "Atlas 3 Design System documentation"
+      },
+      {
+        "pattern": "Complete Atlas 3 File Structure - SP11+",
+        "description": "Full file and folder structure for Atlas theming in Mendix 11",
+        "version_compatibility": "Studio Pro 10.x, 11.x",
+        "theme_folder_structure": {
+          "theme/web/custom-variables.scss": "Theme settings - colors, fonts, spacing overrides",
+          "theme/web/main.scss": "Starting point for custom styling",
+          "theme/web/exclusion-variables.scss": "Variables to exclude Atlas core styling",
+          "theme/web/settings.json": "CSS files to load including compiled output",
+          "theme/native/custom-variables.js": "Native mobile theme settings (JavaScript)",
+          "theme/native/main.js": "Native mobile custom styling",
+          "theme/native/exclusionVariables.js": "Native exclusion variables"
+        },
+        "themesource_structure": {
+          "themesource/Atlas_Core/web/*": "Core Atlas styling - DO NOT MODIFY",
+          "themesource/Atlas_Core/native/*": "Core Atlas native styling - DO NOT MODIFY",
+          "themesource/{MODULE_NAME}/web/main.scss": "Module web styling entry point",
+          "themesource/{MODULE_NAME}/native/main.js": "Module native styling entry point",
+          "themesource/{MODULE_NAME}/web/design-properties.json": "Design properties for module",
+          "themesource/{MODULE_NAME}/public/": "Images, fonts, other resources"
+        },
+        "scss_compilation_order": [
+          "1. themesource main.scss files - Non-UI Marketplace modules (alphabetical)",
+          "2. themesource main.scss files - UI resources modules (App Settings > Theme order)",
+          "3. themesource main.scss files - Non-UI user modules (App Explorer order)",
+          "4. theme/web/custom-variables.scss",
+          "5. theme/web/main.scss"
+        ],
+        "ui_resource_module_ordering": {
+          "location": "App Settings > Theme",
+          "rule": "Lower in list = higher precedence (loaded later, overrides earlier)",
+          "example": [
+            "Atlas_Core (base)",
+            "Atlas_Web_Content",
+            "YourThemeModule (last = highest priority)"
+          ]
+        },
+        "source": "docs.mendix.com/howto/front-end/customize-styling-new (September 2025)"
+      },
+      {
+        "pattern": "Complete Exclusion Variables Reference - SP11+",
+        "description": "All supported exclusion variables to disable Atlas default styling",
+        "web_exclusion_variables": [
+          "$exclude-background-helpers",
+          "$exclude-badge",
+          "$exclude-badge-button",
+          "$exclude-badge-button-helpers",
+          "$exclude-button",
+          "$exclude-button-helpers",
+          "$exclude-check-box",
+          "$exclude-custom-dijit-widget",
+          "$exclude-custom-switch",
+          "$exclude-data-grid",
+          "$exclude-data-grid-helpers",
+          "$exclude-data-view",
+          "$exclude-data-picker",
+          "$exclude-glyphicon",
+          "$exclude-grid",
+          "$exclude-group-box",
+          "$exclude-group-box-helpers",
+          "$exclude-header",
+          "$exclude-helper-classes",
+          "$exclude-input",
+          "$exclude-image-helpers",
+          "$exclude-label",
+          "$exclude-label-helpers",
+          "$exclude-layout-grid",
+          "$exclude-list-view",
+          "$exclude-list-view-helpers",
+          "$exclude-modal",
+          "$exclude-navigation-bar",
+          "$exclude-navigation-bar-helpers",
+          "$exclude-navigation-list",
+          "$exclude-navigation-tree",
+          "$exclude-navigation-tree-helpers",
+          "$exclude-pagination",
+          "$exclude-pop-up-menu",
+          "$exclude-progress",
+          "$exclude-progress-bar",
+          "$exclude-progress-bar-helpers",
+          "$exclude-progress-circle",
+          "$exclude-progress-circle-helpers",
+          "$exclude-radio-button",
+          "$exclude-range-slider",
+          "$exclude-range-slider-helpers",
+          "$exclude-rating",
+          "$exclude-rating-helpers",
+          "$exclude-simple-menu-bar",
+          "$exclude-simple-menu-bar-helpers",
+          "$exclude-slider",
+          "$exclude-slider-helpers",
+          "$exclude-table",
+          "$exclude-table-helpers",
+          "$exclude-tab-container",
+          "$exclude-tab-container-helpers",
+          "$exclude-template-grid",
+          "$exclude-template-grid-helpers",
+          "$exclude-timeline",
+          "$exclude-typography",
+          "$exclude-typography-helpers"
+        ],
+        "native_exclusion_variables": [
+          "excludeActivityIndicator",
+          "excludeActivityIndicatorHelpers",
+          "excludeAnimation",
+          "excludeBackgroundImage",
+          "excludeBadge",
+          "excludeBadgeHelpers",
+          "excludeBottomSheet",
+          "excludeButtons",
+          "excludeButtonsHelpers",
+          "excludeCarousel",
+          "excludeCheckBox",
+          "excludeColorPicker",
+          "excludeContainer",
+          "excludeDatePicker",
+          "excludeDropDown",
+          "excludeFeedback",
+          "excludeFAB",
+          "excludeFABHelpers",
+          "excludeImage",
+          "excludeImageHelpers",
+          "excludeIntroScreen",
+          "excludeIntroScreenHelpers",
+          "excludeLayoutGrid",
+          "excludeLineChart",
+          "excludeLineChartHelpers",
+          "excludeBarChart",
+          "excludeBarChartHelpers",
+          "excludeListView",
+          "excludeListViewHelpers",
+          "excludeListViewSwipe",
+          "excludeListViewSwipeHelpers",
+          "excludeMaps",
+          "excludeMapsHelpers",
+          "excludePageTitle",
+          "excludeProgressBar",
+          "excludeProgressBarHelpers",
+          "excludeProgressCircle",
+          "excludeProgressCircleHelpers",
+          "excludePopUpMenu",
+          "excludeQRCode",
+          "excludeRangeSlider",
+          "excludeRangeSliderHelpers",
+          "excludeRating",
+          "excludeReferenceSelector",
+          "excludeSafeAreaView",
+          "excludeSlider",
+          "excludeSliderHelpers",
+          "excludeTabContainer",
+          "excludeTabContainerHelpers",
+          "excludeTextArea",
+          "excludeTextBox",
+          "excludeTextBoxHelpers",
+          "excludeToggleButtons",
+          "excludeTypography",
+          "excludeTypographyHelpers",
+          "excludeVideoPlayer",
+          "excludeWebView",
+          "excludeHelpers"
+        ],
+        "usage_pattern": {
+          "web": "$exclude-button: true;\n$exclude-button-helpers: true;",
+          "native": "export const excludeButtons = true;\nexport const excludeButtonsHelpers = true;",
+          "note": "Setting base to true automatically excludes helpers"
+        },
+        "source": "docs.mendix.com/howto/front-end/customize-styling-new (September 2025)"
+      },
+      {
+        "pattern": "Pluggable Widget TypeScript Patterns from Official Widgets - SP11+",
+        "description": "Real-world TypeScript patterns extracted from Mendix official web-widgets repository",
+        "version_compatibility": "Studio Pro 10.x, 11.x",
+        "imports_pattern": "import { ActionValue, DynamicValue, EditableValue, ListValue, ListAttributeValue, ListExpressionValue, ListWidgetValue, ReferenceValue, ReferenceSetValue, SelectionSingleValue, SelectionMultiValue } from 'mendix';",
+        "container_props_interface": {
+          "example": "export interface MyWidgetContainerProps {\n  name: string;\n  class: string;\n  style?: CSSProperties;\n  tabIndex?: number;\n  stringAttribute: EditableValue<string>;\n  datasource?: ListValue;\n  onClickAction?: ActionValue;\n}",
+          "common_props": ["name", "class", "style", "tabIndex", "id"]
+        },
+        "list_patterns": {
+          "ListValue": "Datasource that provides items - use .items, .status, .hasMoreItems, .loadMore()",
+          "ListAttributeValue": "Attribute accessor for list items - get value for each ObjectItem",
+          "ListExpressionValue": "Expression evaluated per list item",
+          "ListWidgetValue": "Widget content rendered per list item",
+          "ListActionValue": "Action executed per list item - use .get(item).execute()"
+        },
+        "action_execution_pattern": "// Always check canExecute before execute\nconst handleClick = () => {\n  if (props.onClick?.canExecute) {\n    props.onClick.execute();\n  }\n};",
+        "editable_value_pattern": "// EditableValue for attribute bindings\nconst displayValue = props.stringAttribute?.displayValue ?? '';\nconst isReadOnly = props.stringAttribute?.readOnly ?? false;\nconst validation = props.stringAttribute?.validation;",
+        "selection_pattern": {
+          "single": "SelectionSingleValue - one item selected at a time",
+          "multi": "SelectionMultiValue - multiple items can be selected",
+          "usage": "props.selection?.selection - get current selection\nprops.selection?.setSelection(items) - set selection"
+        },
+        "status_handling": "// Check status before using values\nif (props.datasource?.status === 'available') {\n  const items = props.datasource.items;\n}",
+        "source": "github.com/mendix/web-widgets December 2025"
+      },
+      {
+        "pattern": "Real Widget Examples - DataGrid, Gallery, Combobox Patterns",
+        "description": "Patterns extracted from Mendix official pluggable widgets",
+        "datagrid_column_pattern": {
+          "interface": "export interface ColumnsType {\n  showContentAs: 'attribute' | 'dynamicText' | 'customContent';\n  attribute?: ListAttributeValue<string | Big | boolean | Date>;\n  content?: ListWidgetValue;\n  dynamicText?: ListExpressionValue<string>;\n  header?: DynamicValue<string>;\n  sortable: boolean;\n  resizable: boolean;\n  draggable: boolean;\n  width: 'autoFill' | 'autoFit' | 'manual';\n  alignment: 'left' | 'center' | 'right';\n}",
+          "source": "datagrid-web/typings/DatagridProps.d.ts"
+        },
+        "gallery_item_helper_pattern": {
+          "interface": "export class ItemHelper {\n  constructor(\n    private classValue: ListExpressionValue<string> | undefined,\n    private contentValue: ListWidgetValue | undefined,\n    private clickValue: ListActionValue | undefined\n  ) {}\n\n  getClass(item: ObjectItem): string {\n    return this.classValue?.get(item)?.value ?? '';\n  }\n\n  renderContent(item: ObjectItem): ReactNode {\n    return this.contentValue?.get(item);\n  }\n}",
+          "source": "gallery-web/src/helpers/ItemHelper.tsx"
+        },
+        "combobox_selector_pattern": {
+          "interface": "export interface SingleSelector {\n  status: Status;\n  options: OptionsProvider;\n  caption: CaptionsProvider;\n  clearable: boolean;\n  currentId: string | null;\n  setValue(value: string | null): void;\n  readOnly: boolean;\n  validation?: string;\n}",
+          "datasource_provider": "BaseDatasourceOptionsProvider manages ListValue, filtering, lazy loading",
+          "source": "combobox-web/src/helpers/types.ts"
+        },
+        "source": "github.com/mendix/web-widgets December 2025"
+      },
+      {
+        "pattern": "Pluggable Widget Testing Utilities",
+        "description": "Test utilities for mocking Mendix types in widget tests",
+        "builders": {
+          "EditableValueBuilder": "Build mock EditableValue with .withValue(), .isReadOnly(), .isLoading()",
+          "ListValueBuilder": "Build mock ListValue with items",
+          "ReferenceValueBuilder": "Build mock ReferenceValue",
+          "SelectionSingleValueBuilder": "Build mock single selection",
+          "SelectionMultiValueBuilder": "Build mock multi selection"
+        },
+        "functions": {
+          "list(n)": "Create ListValue with n mock items",
+          "listAction()": "Create ListActionValue mock",
+          "listAttribute(getter)": "Create ListAttributeValue mock",
+          "listExpression(getter)": "Create ListExpressionValue mock",
+          "listWidget(renderer)": "Create ListWidgetValue mock",
+          "obj()": "Create single ObjectItem mock",
+          "objArray(n)": "Create array of ObjectItem mocks",
+          "actionValue()": "Create ActionValue mock"
+        },
+        "usage_example": "import { list, listAction, EditableValueBuilder } from '@mendix/widget-plugin-test-utils';\n\nconst mockDatasource = list(5);\nconst mockAction = listAction();\nconst mockEditable = new EditableValueBuilder<string>().withValue('test').build();",
+        "source": "github.com/mendix/web-widgets/packages/shared/widget-plugin-test-utils"
+      }
+    ]
+  }
+}

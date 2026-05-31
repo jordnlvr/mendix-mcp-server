@@ -1,0 +1,274 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-12-27T21:41:34.057Z",
+  "errorFixes": [
+    {
+      "id": "missing-react-import",
+      "errorPattern": "Cannot find name 'React'",
+      "errorKeywords": [
+        "React",
+        "cannot find",
+        "name"
+      ],
+      "fix": {
+        "type": "file-edit",
+        "file": "src/*.tsx",
+        "search": "",
+        "replace": "import * as React from 'react';\n",
+        "description": "Add missing React import"
+      },
+      "confidence": 0.95,
+      "successCount": 10,
+      "failureCount": 0,
+      "lastUsed": "2025-12-16T16:01:44.743Z",
+      "source": "builtin"
+    },
+    {
+      "id": "classname-type-error",
+      "errorPattern": "Type 'string | undefined' is not assignable",
+      "errorKeywords": [
+        "className",
+        "undefined",
+        "not assignable"
+      ],
+      "fix": {
+        "type": "file-edit",
+        "description": "Add nullish coalescing for className",
+        "search": "className={props.class}",
+        "replace": "className={props.class ?? \"\"}"
+      },
+      "confidence": 0.9,
+      "successCount": 5,
+      "failureCount": 1,
+      "lastUsed": "2025-12-16T16:01:44.743Z",
+      "source": "builtin"
+    },
+    {
+      "id": "missing-build-script",
+      "errorPattern": "missing script: build",
+      "errorKeywords": [
+        "missing",
+        "script",
+        "build"
+      ],
+      "fix": {
+        "type": "config-change",
+        "file": "package.json",
+        "description": "Add missing build scripts to package.json"
+      },
+      "confidence": 1,
+      "successCount": 26,
+      "failureCount": 0,
+      "lastUsed": "2025-12-27T21:41:34.057Z",
+      "source": "builtin"
+    },
+    {
+      "id": "strict-null-checks",
+      "errorPattern": "Object is possibly",
+      "errorKeywords": [
+        "possibly",
+        "undefined",
+        "null"
+      ],
+      "fix": {
+        "type": "manual",
+        "description": "Add null safety checks - use optional chaining (?.) or nullish coalescing (??)"
+      },
+      "confidence": 0.7,
+      "successCount": 3,
+      "failureCount": 2,
+      "lastUsed": "2025-12-16T16:01:44.743Z",
+      "source": "builtin"
+    }
+  ],
+  "widgetTemplates": [
+    {
+      "id": "data-display-basic",
+      "widgetType": "data-display",
+      "keywords": [
+        "display",
+        "show",
+        "view",
+        "text",
+        "label",
+        "value"
+      ],
+      "template": {
+        "structure": "export function {{WidgetName}}({ value, class: className }: {{WidgetName}}ContainerProps) {\n  return (\n    <div className={className ?? \"\"}>\n      {value?.displayValue ?? \"No value\"}\n    </div>\n  );\n}",
+        "imports": [
+          "import { createElement } from 'react';"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "EditableValue<string>",
+            "description": "The value to display"
+          }
+        ],
+        "mendixDataHandling": "Use value.displayValue for read-only, value.value for raw value"
+      },
+      "examples": [
+        "show a text value",
+        "display customer name",
+        "view the price"
+      ],
+      "successCount": 5,
+      "lastUsed": "2025-12-16T16:01:44.743Z"
+    },
+    {
+      "id": "form-input-basic",
+      "widgetType": "form-input",
+      "keywords": [
+        "input",
+        "edit",
+        "enter",
+        "type",
+        "form",
+        "field",
+        "textbox"
+      ],
+      "template": {
+        "structure": "export function {{WidgetName}}({ value, class: className }: {{WidgetName}}ContainerProps) {\n  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {\n    if (value?.status === ValueStatus.Available) {\n      value.setValue(e.target.value);\n    }\n  };\n  \n  return (\n    <input\n      className={className ?? \"\"}\n      value={value?.value ?? \"\"}\n      onChange={handleChange}\n      disabled={value?.readOnly}\n    />\n  );\n}",
+        "imports": [
+          "import { createElement } from 'react';",
+          "import { ValueStatus } from 'mendix';"
+        ],
+        "props": [
+          {
+            "name": "value",
+            "type": "EditableValue<string>",
+            "description": "The editable value"
+          }
+        ],
+        "mendixDataHandling": "Check ValueStatus.Available before setValue, respect readOnly property"
+      },
+      "examples": [
+        "create an input field",
+        "editable text box",
+        "form field for name"
+      ],
+      "successCount": 3,
+      "lastUsed": "2025-12-16T16:01:44.743Z"
+    },
+    {
+      "id": "learned-Display-1765901696331",
+      "widgetType": "Display",
+      "keywords": [
+        "fancy",
+        "button",
+        "widget",
+        "tooltip",
+        "hover",
+        "features",
+        "button",
+        "properties",
+        "all",
+        "standard"
+      ],
+      "template": {
+        "structure": "",
+        "imports": [],
+        "props": [],
+        "mendixDataHandling": "Learned from successful build"
+      },
+      "examples": [
+        "A fancy button widget with tooltip on hover. Features:\n\n**Button Properties:**\n- All standard button capabilities (click action, disabled state, etc.)\n- Can use existing Atlas button styles/classes\n- Custom class property for full styling override\n- Button text: configurable from data source (attribute) OR manual text entry\n\n**Gradient Background:**\n- Enable/disable gradient option\n- 2-3 color picker properties for gradient colors (color1, color2, optional color3)\n- Gradient angle property (0-360 degrees)\n- Gradient type (linear or radial)\n- Falls back to standard button style if gradient disabled\n\n**Tooltip:**\n- Tooltip text: configurable from data source (attribute) OR manual text entry\n- Shows on mouseover with smooth animation\n- Tooltip background color property (defaults to Atlas tooltip styling)\n- Tooltip text color property\n- Tooltip position (top, bottom, left, right)\n- Tooltip delay before showing\n\n**Actions:**\n- onClick action (same as standard button)\n- Optional onMouseEnter/onMouseLeave actions\n\n**Styling:**\n- Inherits from Atlas button styles\n- Custom class property for additional styling\n- Icon support (left or right of text)\n- Size variants (small, medium, large)"
+      ],
+      "successCount": 1,
+      "lastUsed": "2025-12-16T16:14:56.331Z"
+    },
+    {
+      "id": "learned-BlueMatrix Widgets-1765986443182",
+      "widgetType": "BlueMatrix Widgets",
+      "keywords": [
+        "smartcard",
+        "container",
+        "widget",
+        "customizable",
+        "header",
+        "section",
+        "configurable",
+        "background",
+        "color",
+        "title"
+      ],
+      "template": {
+        "structure": "",
+        "imports": [],
+        "props": [
+          {
+            "name": "content",
+            "type": "expression",
+            "description": "Content"
+          },
+          {
+            "name": "color",
+            "type": "string",
+            "description": "Color"
+          }
+        ],
+        "mendixDataHandling": "Learned from successful build"
+      },
+      "examples": [
+        "A SmartCard container widget with: \n- Customizable header section with configurable background color and title text\n- Optional footer section (can be toggled on/off)\n- Customizable colors for header, body, footer, and border\n- Padding and spacing controls (small/medium/large options for inner padding and margin)\n- A container/drop zone area in the middle body section where other widgets can be placed as children (pluggable widget container)\n- Border radius option\n- Shadow option (none/light/medium/heavy)\n- Title text styling options"
+      ],
+      "successCount": 1,
+      "lastUsed": "2025-12-17T15:47:23.182Z"
+    }
+  ],
+  "sdkApis": [
+    {
+      "id": "editable-value",
+      "apiName": "EditableValue<T>",
+      "correctUsage": "// Always check status before accessing value\nif (props.value?.status === ValueStatus.Available) {\n  const rawValue = props.value.value;\n  props.value.setValue(newValue);\n}\n// For display, use displayValue\nconst display = props.value?.displayValue ?? \"Loading...\";",
+      "commonMistakes": [
+        "Accessing .value without checking status",
+        "Not handling Loading state",
+        "Ignoring readOnly property"
+      ],
+      "mendixVersion": "9.0.0",
+      "examples": [
+        "EditableValue<string>",
+        "EditableValue<Big>",
+        "EditableValue<Date>"
+      ],
+      "source": "docs"
+    },
+    {
+      "id": "list-value",
+      "apiName": "ListValue",
+      "correctUsage": "// ListValue for data sources\nif (props.dataSource?.status === ValueStatus.Available) {\n  const items = props.dataSource.items ?? [];\n  items.forEach(item => {\n    // Access attributes via item\n    const name = props.nameAttr?.get(item)?.displayValue;\n  });\n}",
+      "commonMistakes": [
+        "Assuming items is always available",
+        "Not using .get(item) for ListAttributeValue",
+        "Forgetting null checks"
+      ],
+      "mendixVersion": "9.0.0",
+      "examples": [
+        "data grid",
+        "list view",
+        "repeater"
+      ],
+      "source": "docs"
+    }
+  ],
+  "bestPractices": [
+    {
+      "id": "null-safety",
+      "category": "typescript",
+      "title": "Always Use Null Safety",
+      "description": "Mendix widget props can be undefined during loading states",
+      "doThis": [
+        "Use optional chaining (?.)",
+        "Use nullish coalescing (??)",
+        "Check ValueStatus"
+      ],
+      "dontDoThis": [
+        "Assume props are always defined",
+        "Use non-null assertion (!) without checks"
+      ],
+      "codeExample": "// Good\nconst value = props.attr?.value ?? defaultValue;\n\n// Bad\nconst value = props.attr!.value;",
+      "source": "docs"
+    }
+  ]
+}

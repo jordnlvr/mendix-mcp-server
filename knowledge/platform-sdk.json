@@ -1,0 +1,890 @@
+{
+  "topic": "Mendix Platform SDK 5.2.0+",
+  "description": "Complete API reference for Mendix Platform SDK - manage Mendix projects, working copies, Team Server, deployments, and CI/CD automation. Platform SDK provides high-level project lifecycle management operations.",
+  "last_updated": "2025-12-01",
+  "mendix_versions": [
+    "SDK version 5.2.0+",
+    "Compatible with Studio Pro 10.24 and 11.x",
+    "Works with Mendix Cloud and Private Cloud"
+  ],
+  "official_docs": [
+    "https://docs.mendix.com/apidocs-mxsdk/apidocs/platform-sdk/",
+    "https://docs.mendix.com/apidocs-mxsdk/apidocs/deploy-api/",
+    "https://apidocs.rnd.mendix.com/platformsdk/latest/index.html",
+    "https://docs.mendix.com/howto/integration/use-the-platform-sdk/"
+  ],
+  "platform_sdk_concepts": [
+    {
+      "concept": "Mendix Platform",
+      "description": "Cloud platform hosting Mendix projects, Team Server, and deployment infrastructure",
+      "components": [
+        "Developer Portal",
+        "Team Server (Git-based for new projects)",
+        "Build Server",
+        "Cloud Foundry runtime"
+      ],
+      "access": "Via Platform SDK with Personal Access Token (PAT)"
+    },
+    {
+      "concept": "App (Project)",
+      "description": "Mendix application/project in the platform",
+      "properties": [
+        "name",
+        "appId",
+        "projectId",
+        "repositoryType",
+        "teamServer"
+      ],
+      "operations": [
+        "Create",
+        "Delete",
+        "List",
+        "Get details"
+      ]
+    },
+    {
+      "concept": "Team Server",
+      "description": "SVN-based version control for Mendix projects",
+      "features": [
+        "Branches",
+        "Revisions",
+        "Commits",
+        "Merge operations"
+      ],
+      "integration": "Integrated with Studio Pro, accessible via Platform SDK"
+    },
+    {
+      "concept": "Working Copy",
+      "description": "Temporary cloud-hosted copy of app for SDK manipulation",
+      "types": [
+        "Online working copy (for Model SDK)",
+        "Offline working copy (.mpk download)"
+      ],
+      "limitations": "One online working copy per app at a time"
+    },
+    {
+      "concept": "Deployment",
+      "description": "Deploy app to Mendix Cloud or Private Cloud environments",
+      "environments": [
+        "Development",
+        "Acceptance",
+        "Production"
+      ],
+      "methods": [
+        "Direct deploy",
+        "Deploy via Build API",
+        "CI/CD pipeline integration"
+      ]
+    }
+  ],
+  "key_apis": {
+    "authentication": {
+      "description": "Authenticate with Mendix Platform using Personal Access Token",
+      "methods": [
+        {
+          "method": "Personal Access Token (PAT)",
+          "code": "const client = new MendixPlatformClient({ mendixToken: process.env.MENDIX_TOKEN });",
+          "generation": "Developer Portal → Settings → Personal Access Tokens → Generate",
+          "scopes": [
+            "Read projects",
+            "Write projects",
+            "Deploy apps"
+          ],
+          "best_practice": "Store in environment variables, never hardcode"
+        }
+      ],
+      "security_notes": "PAT grants full access to all projects user can access. Rotate regularly. Use separate tokens for different automation tasks."
+    },
+    "project_management": {
+      "description": "Create, list, and manage Mendix projects",
+      "operations": [
+        {
+          "operation": "List all apps",
+          "code": "const apps = await client.platform().getApps();",
+          "returns": "Array of app objects with name, appId, projectId"
+        },
+        {
+          "operation": "Get specific app",
+          "code": "const app = client.platform().app(appId);",
+          "parameters": "appId from Developer Portal or getApps()",
+          "returns": "App object"
+        },
+        {
+          "operation": "Create new app",
+          "code": "const newApp = await client.platform().createNewApp('MyNewApp', { summary: 'Created via SDK' });",
+          "parameters": {
+            "name": "App name",
+            "options": "Optional: summary, image, positioning"
+          },
+          "returns": "App object for newly created app"
+        },
+        {
+          "operation": "Delete app",
+          "code": "await app.delete();",
+          "warning": "Permanent deletion - cannot be undone",
+          "best_practice": "Confirm before deletion, backup if needed"
+        }
+      ]
+    },
+    "working_copy_management": {
+      "description": "Manage online and offline working copies",
+      "operations": [
+        {
+          "operation": "Create online working copy",
+          "code": "const workingCopy = await client.platform().createOnlineWorkingCopy(app, { revision: -1 });",
+          "parameters": {
+            "app": "App object",
+            "revision": "-1 for latest, specific number for specific revision"
+          },
+          "returns": "OnlineWorkingCopy object (used by Model SDK)",
+          "limitations": "Only one online working copy per app at a time"
+        },
+        {
+          "operation": "Get working copy info",
+          "code": "const info = await workingCopy.metaData();",
+          "returns": "Metadata including teamServerVersion, modelSdkVersion"
+        },
+        {
+          "operation": "Commit changes",
+          "code": "await workingCopy.commit('main', { commitMessage: 'Automated changes' });",
+          "parameters": {
+            "branch": "Branch name (usually 'main')",
+            "commitMessage": "Description of changes"
+          }
+        },
+        {
+          "operation": "Close working copy",
+          "code": "await workingCopy.close();",
+          "note": "Always close when done to free resources",
+          "best_practice": "Use try-finally to ensure closure"
+        }
+      ]
+    },
+    "team_server": {
+      "description": "Interact with Team Server (SVN repository)",
+      "operations": [
+        {
+          "operation": "Get repository info",
+          "code": "const repoInfo = await app.getRepositoryInfo();",
+          "returns": "Repository type, URL, branches"
+        },
+        {
+          "operation": "List branches",
+          "code": "const branches = await app.getBranches();",
+          "returns": "Array of branch objects with name, creationDate"
+        },
+        {
+          "operation": "Create branch",
+          "code": "await app.createBranch('feature-branch', -1);",
+          "parameters": {
+            "branchName": "New branch name",
+            "sourceRevision": "-1 for latest"
+          }
+        },
+        {
+          "operation": "Get revision details",
+          "code": "const revision = await app.getRevision(123);",
+          "parameters": "Revision number",
+          "returns": "Revision object with author, date, message, changes"
+        }
+      ]
+    },
+    "deployment": {
+      "description": "Deploy apps to Mendix Cloud environments",
+      "operations": [
+        {
+          "operation": "Get environments",
+          "code": "const environments = await app.getEnvironments();",
+          "returns": "Array of environments (development, acceptance, production)"
+        },
+        {
+          "operation": "Create deployment package",
+          "code": "const buildJob = await app.createDeploymentPackage('main', -1, 'v1.0.0');",
+          "parameters": {
+            "branch": "Branch to build from",
+            "revision": "-1 for latest",
+            "version": "Version string"
+          },
+          "returns": "Build job ID"
+        },
+        {
+          "operation": "Deploy package",
+          "code": "await environment.deploy(packageId);",
+          "parameters": "Deployment package ID",
+          "note": "Deploys to specific environment"
+        },
+        {
+          "operation": "Start/Stop app",
+          "code": "await environment.start(); await environment.stop();",
+          "use_case": "Restart app after configuration changes"
+        }
+      ]
+    }
+  },
+  "best_practices": [
+    {
+      "practice": "Use Platform SDK for lifecycle, Model SDK for detailed changes",
+      "rationale": "Platform SDK handles high-level operations, Model SDK for model manipulation",
+      "example": "Platform SDK creates app, Model SDK adds entities and microflows",
+      "source": "SDK Architecture Best Practices"
+    },
+    {
+      "practice": "Always close working copies in finally blocks",
+      "rationale": "Prevents resource leaks and locks on Mendix Platform",
+      "example": "try { /* work */ } finally { await workingCopy.close(); }",
+      "source": "Platform SDK Documentation"
+    },
+    {
+      "practice": "Handle API rate limits gracefully",
+      "rationale": "Mendix Platform has rate limits to prevent abuse",
+      "example": "Implement exponential backoff on 429 responses",
+      "source": "API Best Practices"
+    },
+    {
+      "practice": "Use descriptive commit messages",
+      "rationale": "Helps team understand automated changes",
+      "example": "'Automated domain model documentation generation - added 15 entity descriptions'",
+      "source": "Team Collaboration"
+    },
+    {
+      "practice": "Validate operations before execution",
+      "rationale": "Platform operations can be expensive or irreversible",
+      "example": "Check app exists before attempting deployment",
+      "source": "Robustness Guidelines"
+    }
+  ],
+  "common_patterns": [
+    {
+      "pattern": "CI/CD Pipeline Integration",
+      "use_case": "Automate build, test, and deploy on code commits",
+      "implementation": "Git webhook → Trigger Platform SDK script → Create package → Deploy to acceptance → Run tests → Deploy to production",
+      "example": "Jenkins pipeline using Platform SDK to deploy on main branch commits",
+      "source": "DevOps automation"
+    },
+    {
+      "pattern": "Multi-Environment Management",
+      "use_case": "Promote releases through dev → acceptance → production",
+      "implementation": "Create deployment package → Deploy to dev → Test → Deploy to acceptance → Test → Deploy to production",
+      "example": "Automated promotion script with approval gates",
+      "source": "Release management"
+    },
+    {
+      "pattern": "Project Provisioning Automation",
+      "use_case": "Automatically create new Mendix projects from templates",
+      "implementation": "Platform SDK creates app → Model SDK loads template → Copies entities/microflows → Commits → New project ready",
+      "example": "Self-service portal for developers to create standardized apps",
+      "source": "Enterprise governance"
+    },
+    {
+      "pattern": "Backup and Disaster Recovery",
+      "use_case": "Automated backups of project state",
+      "implementation": "Scheduled script → Create offline working copy → Download .mpk → Store in secure backup location",
+      "example": "Nightly backup of all production projects",
+      "source": "Business continuity"
+    },
+    {
+      "pattern": "Cross-Project Dependency Management",
+      "use_case": "Track which apps use which modules",
+      "implementation": "Iterate all apps → Model SDK reads module references → Build dependency graph",
+      "example": "Impact analysis for shared module updates",
+      "source": "Architecture governance"
+    }
+  ],
+  "anti_patterns": [
+    {
+      "mistake": "Not handling working copy locks",
+      "why_bad": "Script fails if working copy already exists",
+      "alternative": "Check for existing working copy, wait or close before creating new",
+      "example": "Query working copy status before createOnlineWorkingCopy()"
+    },
+    {
+      "mistake": "Hardcoding app IDs or tokens",
+      "why_bad": "Security risk, not portable across environments",
+      "alternative": "Use environment variables for all credentials and IDs",
+      "example": "process.env.MENDIX_TOKEN, process.env.APP_ID"
+    },
+    {
+      "mistake": "Deploying without building first",
+      "why_bad": "Deploys stale package, doesn't include latest changes",
+      "alternative": "Always create new deployment package from latest revision before deploying",
+      "example": "createDeploymentPackage() → wait for build → deploy()"
+    },
+    {
+      "mistake": "Ignoring API errors",
+      "why_bad": "Silent failures, inconsistent state",
+      "alternative": "Explicit error handling, logging, retry logic",
+      "example": "try-catch all API calls, log errors, implement retries for transient failures"
+    }
+  ],
+  "expert_tips": [
+    {
+      "tip": "Platform SDK operations are asynchronous - always await",
+      "source": "SDK Documentation",
+      "context": "Most SDK methods return Promises",
+      "example": "await client.platform().getApps() not client.platform().getApps()"
+    },
+    {
+      "tip": "Use revision -1 for latest, specific numbers for reproducibility",
+      "source": "Version control best practices",
+      "context": "Revision -1 means latest, specific revision for exact state",
+      "example": "Production deploys use specific revision, dev uses -1"
+    },
+    {
+      "tip": "Build API is separate from Platform SDK for deployments",
+      "source": "Mendix API architecture",
+      "context": "Deploy API provides lower-level deployment control",
+      "example": "Platform SDK → high-level, Deploy API → detailed control"
+    },
+    {
+      "tip": "Working copy operations can take minutes - implement timeouts",
+      "source": "Production experience",
+      "context": "Large apps take time to create working copies",
+      "example": "Set 5-10 minute timeout for working copy creation"
+    }
+  ],
+  "real_world_examples": [
+    {
+      "scenario": "Automated deployment pipeline",
+      "solution": "GitHub Actions workflow triggers Platform SDK script on merge to main. Creates deployment package, deploys to acceptance environment, runs automated tests, deploys to production on success.",
+      "source": "Enterprise CI/CD implementation"
+    },
+    {
+      "scenario": "Multi-tenant app provisioning",
+      "solution": "Platform SDK creates new app per customer from template. Model SDK customizes branding and configuration. Deploys to dedicated environment. Fully automated onboarding.",
+      "source": "SaaS platform automation"
+    },
+    {
+      "scenario": "Compliance audit trail",
+      "solution": "Scheduled job uses Platform SDK to retrieve all revision history. Logs all changes with author, timestamp, commit message. Exports to compliance database.",
+      "source": "Regulated industry requirement"
+    },
+    {
+      "scenario": "Disaster recovery automation",
+      "solution": "Nightly script creates offline working copy of all production apps. Downloads .mpk files. Uploads to S3 for geo-redundant storage. 30-day retention policy.",
+      "source": "Business continuity plan"
+    }
+  ],
+  "code_examples": [
+    {
+      "title": "Complete CI/CD Deployment Script",
+      "description": "Build and deploy app to acceptance environment",
+      "code": "const { MendixPlatformClient } = require('mendixplatformsdk');\n\nasync function deployToAcceptance(appId, branchName = 'main') {\n  const client = new MendixPlatformClient({\n    mendixToken: process.env.MENDIX_TOKEN\n  });\n  \n  try {\n    // Get app\n    const app = client.platform().app(appId);\n    \n    // Create deployment package\n    console.log('Creating deployment package...');\n    const version = `v${Date.now()}`;\n    const buildJob = await app.createDeploymentPackage(branchName, -1, version);\n    \n    // Wait for build (polling)\n    let buildStatus = 'running';\n    while (buildStatus === 'running') {\n      await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10s\n      const job = await app.getBuildJob(buildJob.id);\n      buildStatus = job.status;\n      console.log(`Build status: ${buildStatus}`);\n    }\n    \n    if (buildStatus !== 'success') {\n      throw new Error(`Build failed with status: ${buildStatus}`);\n    }\n    \n    // Get acceptance environment\n    const environments = await app.getEnvironments();\n    const acceptance = environments.find(env => env.name === 'Acceptance');\n    \n    if (!acceptance) {\n      throw new Error('Acceptance environment not found');\n    }\n    \n    // Deploy\n    console.log('Deploying to Acceptance...');\n    await acceptance.deploy(buildJob.packageId);\n    \n    // Start app\n    console.log('Starting app...');\n    await acceptance.start();\n    \n    console.log('Deployment complete!');\n    return { version, packageId: buildJob.packageId };\n  } catch (error) {\n    console.error('Deployment failed:', error);\n    throw error;\n  }\n}\n\n// Usage\ndeployToAcceptance('app-id-here').then(console.log);",
+      "use_case": "Automated deployment in CI/CD pipeline"
+    },
+    {
+      "title": "Project Provisioning from Template",
+      "description": "Create new app from template project",
+      "code": "const { MendixPlatformClient } = require('mendixplatformsdk');\nconst { MendixModelSdk } = require('mendixmodelsdk');\n\nasync function provisionNewProject(projectName, templateAppId) {\n  const client = new MendixPlatformClient({\n    mendixToken: process.env.MENDIX_TOKEN\n  });\n  \n  try {\n    // Create new app\n    console.log(`Creating app: ${projectName}`);\n    const newApp = await client.platform().createNewApp(projectName, {\n      summary: 'Provisioned from template',\n      positioning: { x: 100, y: 100 }\n    });\n    \n    // Get template\n    const templateApp = client.platform().app(templateAppId);\n    \n    // Create working copy of template\n    console.log('Loading template...');\n    const templateWC = await client.platform().createOnlineWorkingCopy(\n      templateApp,\n      { revision: -1 }\n    );\n    \n    // Create working copy of new app\n    const newWC = await client.platform().createOnlineWorkingCopy(\n      newApp,\n      { revision: -1 }\n    );\n    \n    try {\n      // Open models\n      const templateModel = await templateWC.openModel();\n      const newModel = await newWC.openModel();\n      \n      // Copy domain models (simplified - real implementation more complex)\n      const templateDMs = templateModel.allDomainModels();\n      for (const dm of templateDMs) {\n        await dm.load();\n        // Copy entities, attributes, associations\n        // (Actual implementation requires deep cloning)\n      }\n      \n      // Commit changes\n      console.log('Committing new project...');\n      await newModel.commitToRepository('main', {\n        commitMessage: 'Initial project from template'\n      });\n      \n      console.log('Project provisioned successfully!');\n      return { appId: newApp.appId, name: projectName };\n    } finally {\n      await templateWC.close();\n      await newWC.close();\n    }\n  } catch (error) {\n    console.error('Provisioning failed:', error);\n    throw error;\n  }\n}\n\n// Usage\nprovisionNewProject('CustomerPortal', 'template-app-id').then(console.log);",
+      "use_case": "Self-service project creation, standardization"
+    },
+    {
+      "title": "Automated Backup Script",
+      "description": "Download .mpk backup of all projects",
+      "code": "const { MendixPlatformClient } = require('mendixplatformsdk');\nconst fs = require('fs').promises;\nconst path = require('path');\n\nasync function backupAllProjects(backupDir) {\n  const client = new MendixPlatformClient({\n    mendixToken: process.env.MENDIX_TOKEN\n  });\n  \n  try {\n    // Get all apps\n    const apps = await client.platform().getApps();\n    console.log(`Found ${apps.length} apps to backup`);\n    \n    // Create backup directory\n    await fs.mkdir(backupDir, { recursive: true });\n    \n    const results = [];\n    \n    for (const appInfo of apps) {\n      try {\n        console.log(`Backing up: ${appInfo.name}`);\n        const app = client.platform().app(appInfo.appId);\n        \n        // Create offline working copy (.mpk)\n        const workingCopy = await client.platform().createOfflineWorkingCopy(\n          app,\n          { revision: -1 }\n        );\n        \n        // Download\n        const mpkPath = path.join(backupDir, `${appInfo.name}_${Date.now()}.mpk`);\n        await workingCopy.download(mpkPath);\n        \n        console.log(`  Saved to: ${mpkPath}`);\n        results.push({ app: appInfo.name, path: mpkPath, status: 'success' });\n      } catch (error) {\n        console.error(`  Failed: ${error.message}`);\n        results.push({ app: appInfo.name, status: 'failed', error: error.message });\n      }\n    }\n    \n    return results;\n  } catch (error) {\n    console.error('Backup process failed:', error);\n    throw error;\n  }\n}\n\n// Usage\nbackupAllProjects('./backups').then(console.log);",
+      "use_case": "Disaster recovery, compliance, archival"
+    }
+  ],
+  "performance_notes": "Platform SDK operations involve network calls to Mendix Cloud - expect latency. Creating working copies can take 1-5 minutes for large apps. Building deployment packages takes 2-10 minutes. Implement polling with reasonable intervals (10-30 seconds). Use parallel operations where possible (e.g., backup multiple apps concurrently).",
+  "security_notes": "Personal Access Tokens grant full access - store securely, never commit to source control. Use environment variables. Implement token rotation. Audit all automated operations. Platform SDK operations are logged in Mendix Platform audit trail. Consider separate tokens for different automation purposes (build, deploy, backup).",
+  "testing_strategy": "Test automation scripts on non-production projects first. Use dedicated test apps. Implement dry-run mode (log operations without executing). Mock Platform SDK calls for unit tests. Integration tests require real Mendix Platform access. Monitor automation in production for failures.",
+  "integration_patterns": {
+    "github_actions": {
+      "description": "Integrate Platform SDK with GitHub Actions for CI/CD",
+      "workflow": "GitHub webhook → Actions runner → Platform SDK script → Deploy",
+      "example": "On push to main, create deployment package and deploy to acceptance",
+      "best_practice": "Store MENDIX_TOKEN in GitHub Secrets"
+    },
+    "jenkins": {
+      "description": "Jenkins pipeline with Platform SDK for enterprise CI/CD",
+      "workflow": "Jenkins detects commit → Execute Platform SDK script → Deploy → Run tests → Notify",
+      "example": "Multibranch pipeline deploying feature branches to dev environments",
+      "best_practice": "Use Jenkins credentials store for tokens"
+    },
+    "azure_devops": {
+      "description": "Azure Pipelines with Platform SDK for deployment automation",
+      "workflow": "Pipeline trigger → Build stage → Platform SDK deploy stage → Test stage",
+      "example": "YAML pipeline deploying to multiple environments with approvals",
+      "best_practice": "Use Azure Key Vault for token storage"
+    },
+    "gitlab_ci": {
+      "description": "GitLab CI/CD with Platform SDK",
+      "workflow": ".gitlab-ci.yml defines stages → Platform SDK scripts in deploy jobs",
+      "example": "Automated deployment to acceptance on merge to main",
+      "best_practice": "Use GitLab CI/CD variables for tokens (masked, protected)"
+    }
+  },
+  "api_versioning": {
+    "description": "Platform SDK versioning and compatibility",
+    "current_version": "5.2.0",
+    "breaking_changes": "Major version changes may have breaking API changes",
+    "best_practice": "Pin SDK version in package.json, test upgrades in non-production first",
+    "update_strategy": "Subscribe to Mendix SDK release notes, test compatibility before upgrading"
+  },
+  "categories": {
+    "microflow_creation": [
+      {
+        "pattern": "Loop Implementation with IterableList",
+        "description": "Correct way to create loops in microflows via Platform SDK",
+        "critical_warning": "DO NOT use deprecated loopVariableName property!",
+        "correct_implementation": {
+          "approach": "Use IterableList on loopSource property",
+          "code": "loopAction.loopSource = microflows.IterableList.create(model);\\nloopAction.loopSource.listVariableName = 'LoopVariableName';",
+          "explanation": "IterableList wraps the variable name and properly configures the loop"
+        },
+        "wrong_implementation": {
+          "approach": "Setting loopVariableName directly",
+          "code": "loopAction.loopVariableName = 'LoopVariableName'; // DEPRECATED - DO NOT USE",
+          "problem": "This property is deprecated and will cause errors"
+        },
+        "verified_in": "SmartHub documentation scripts - December 2025",
+        "source": "Platform SDK trial and error - Kelly Seale",
+        "_metadata": {
+          "id": "c0cee374-a65d-4ce5-97ff-c8f381e4d910",
+          "added_at": "2025-12-07T23:33:26.739Z",
+          "source": "SmartHub SDK scripts - December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-07T23:35:04.787Z"
+        }
+      },
+      {
+        "pattern": "Counting with AggregateListAction",
+        "description": "Correct way to count list items in microflows via Platform SDK",
+        "critical_warning": "There is NO length() function in Mendix expressions!",
+        "correct_implementation": {
+          "approach": "Use AggregateListAction with COUNT function",
+          "code": "const aggregateAction = microflows.AggregateListAction.createIn(actionActivity);\\naggregateAction.aggregateFunction = microflows.AggregateFunctionEnum.Count;\\naggregateAction.inputListVariableName = 'ListToCount';\\naggregateAction.outputVariableName = 'Count';",
+          "returns": "Integer variable with count"
+        },
+        "wrong_implementation": {
+          "approach": "Using length() in expressions",
+          "code": "length($List) // DOES NOT EXIST IN MENDIX",
+          "problem": "Mendix has no length() function - this will cause compile errors"
+        },
+        "alternative": "You can also use $List as the expression in a decision and check '!= empty' for existence checks",
+        "verified_in": "SmartHub seed microflows - December 2025",
+        "source": "Platform SDK trial and error - Kelly Seale",
+        "_metadata": {
+          "id": "48203fe9-56eb-4e47-a0fa-8ad0cf26be70",
+          "added_at": "2025-12-07T23:33:35.045Z",
+          "source": "SmartHub SDK scripts - December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-07T23:35:11.551Z"
+        }
+      },
+      {
+        "pattern": "Log Action Node Format",
+        "description": "Correct format for log node references in Platform SDK",
+        "critical_warning": "Log nodes require specific format with @ prefix and newline",
+        "correct_implementation": {
+          "format": "@ModuleName.LogNodeName\\n",
+          "code": "logAction.node = '@RequestHub.Log\\n';",
+          "explanation": "The @ prefix references the log node, the \\n is required for proper parsing"
+        },
+        "wrong_implementations": [
+          {
+            "code": "logAction.node = 'RequestHub.Log';",
+            "problem": "Missing @ prefix"
+          },
+          {
+            "code": "logAction.node = '@RequestHub.Log';",
+            "problem": "Missing newline"
+          },
+          {
+            "code": "logAction.node = 'Log';",
+            "problem": "Missing module prefix and @ symbol"
+          }
+        ],
+        "log_node_setup": "Create log node in module via Project → Add Other → Log Node",
+        "verified_in": "SmartHub seed microflows - December 2025",
+        "source": "Platform SDK trial and error - Kelly Seale",
+        "_metadata": {
+          "id": "b7dc2412-f83c-41f0-8b5f-d2e01f427470",
+          "added_at": "2025-12-07T23:33:42.815Z",
+          "source": "SmartHub SDK scripts - December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      },
+      {
+        "pattern": "Flow Deletion Order",
+        "description": "Critical order of operations when modifying microflows via SDK",
+        "critical_warning": "Delete flows BEFORE deleting activities!",
+        "correct_order": [
+          "1. Delete all flows (sequence flows, annotation flows)",
+          "2. Delete activities and other objects",
+          "3. Create new objects",
+          "4. Create new flows connecting objects"
+        ],
+        "why": "Flows reference activities. Deleting an activity while flows reference it causes orphaned references and errors.",
+        "code_pattern": "// Delete flows first\\nmicroflow.flows.forEach(flow => flow.delete());\\n// Then delete activities\\nmicroflow.objectCollection.objects.forEach(obj => {\\n  if (obj instanceof microflows.ActionActivity) obj.delete();\\n});",
+        "verified_in": "SmartHub microflow modifications - December 2025",
+        "source": "Platform SDK trial and error - Kelly Seale",
+        "_metadata": {
+          "id": "de745f8c-52a3-4d96-adf2-1a520c92784a",
+          "added_at": "2025-12-07T23:33:50.127Z",
+          "source": "SmartHub SDK scripts - December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67
+        }
+      },
+      {
+        "pattern": "Security Roles for Microflows",
+        "description": "Every microflow needs allowedModuleRoles for proper security",
+        "critical_warning": "Microflows without allowedModuleRoles may not be callable!",
+        "implementation": {
+          "step1": "Find the module's security object",
+          "step2": "Get or create module roles",
+          "step3": "Add roles to microflow.allowedModuleRoles",
+          "code": "// Get module security\\nconst moduleSecurity = module.moduleSecurity;\\nconst adminRole = moduleSecurity.moduleRoles.find(r => r.name === 'Administrator');\\n// Add to microflow\\nmicroflow.allowedModuleRoles.push(adminRole);"
+        },
+        "common_roles": [
+          "Administrator",
+          "User",
+          "Anonymous"
+        ],
+        "best_practice": "Add at least Administrator role to all microflows, add other roles based on who should access",
+        "verified_in": "SmartHub SDK scripts - December 2025",
+        "source": "Platform SDK documentation workflow - Kelly Seale",
+        "_metadata": {
+          "id": "25173b5d-63db-4319-880d-dd1b149f5f5d",
+          "added_at": "2025-12-07T23:33:57.758Z",
+          "source": "SmartHub SDK scripts - December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 2,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-10T01:04:09.917Z"
+        }
+      }
+    ],
+    "documentation": [
+      {
+        "pattern": "Batch Documentation Workflow",
+        "description": "Efficient workflow for documenting Mendix projects using Platform SDK",
+        "workflow_steps": [
+          "1. AI presents batch of 5 items from tracker with questions: What is this for? How does it work? Why does it exist?",
+          "2. User provides casual thoughts/descriptions - key details, relationships, purpose",
+          "3. AI improves to professional documentation - clear, explains 'why', consistent terminology",
+          "4. AI creates SDK script (apply-docs-batchN.js) to apply changes",
+          "5. Run script to commit documentation to Team Server",
+          "6. User pulls in Studio Pro (Ctrl+Shift+G → Update)",
+          "7. Update tracker to mark items done"
+        ],
+        "script_template": {
+          "structure": "DOCS_TO_APPLY array with qualifiedName and documentation for each item",
+          "connection": "MendixPlatformClient → getApp → createTemporaryWorkingCopy → openModel",
+          "apply": "Find element by qualifiedName → set documentation property",
+          "commit": "model.flushChanges() → workingCopy.commitToRepository('main', { commitMessage })"
+        },
+        "commit_format": "Commit Incl:\\n-- Updated [Item1] documentation\\n-- Updated [Item2] documentation\\nby Kai SDK",
+        "documentation_style": {
+          "voice": "Professional third-person",
+          "focus": "Explain WHY not just WHAT",
+          "terminology": "junction entity, reference data, hierarchy - be consistent",
+          "attribution": "NO signature in doc text - attribution in commit message only"
+        },
+        "tracker_location": "Mendix-SDK-Workspace/DOCUMENTATION-TRACKER.md",
+        "script_location": "Mendix-SDK-Workspace/platform-sdk/apply-docs-batchN.js",
+        "verified_in": "SmartHub documentation project - December 2025",
+        "source": "Kelly Seale + AI collaborative workflow",
+        "_metadata": {
+          "id": "bee794c1-2523-423e-bd4a-2335194bd199",
+          "added_at": "2025-12-07T23:34:19.428Z",
+          "source": "SmartHub documentation project - December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 1,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.67,
+          "last_used_at": "2025-12-09T18:25:18.628Z"
+        }
+      }
+    ],
+    "working_copy_patterns": [
+      {
+        "title": "Working Copy Lifecycle Pattern",
+        "description": "The fundamental pattern for all SDK operations - create working copy, open model, modify, flush, commit",
+        "lifecycle_steps": [
+          "1. Create client: new MendixPlatformClient()",
+          "2. Get app: client.getApp('app-id') or client.createNewApp('name', {repositoryType: 'git'})",
+          "3. Create working copy: app.createTemporaryWorkingCopy('main')",
+          "4. Open model: workingCopy.openModel()",
+          "5. Make changes to model",
+          "6. Flush changes: model.flushChanges()",
+          "7. Commit: workingCopy.commitToRepository('main', {commitMessage: 'msg'})"
+        ],
+        "code_example": "const client = new MendixPlatformClient();\nconst app = client.getApp('app-id-here');\nconst workingCopy = await app.createTemporaryWorkingCopy('main');\nconst model = await workingCopy.openModel();\n\n// ... make changes ...\n\nawait model.flushChanges();\nawait workingCopy.commitToRepository('main', { commitMessage: 'SDK changes' });",
+        "working_copy_limits": {
+          "auto_delete_hours": 24,
+          "max_files": 20000,
+          "max_app_size_mb": 250
+        },
+        "important_notes": [
+          "Use 'main' for Git-based apps, 'trunk' for SVN-based apps",
+          "Working copies are deleted after 24 hours",
+          "Always call flushChanges() before commitToRepository()"
+        ],
+        "_metadata": {
+          "id": "7e29a3f2-1826-4589-9d86-a49fd1316dc8",
+          "added_at": "2025-12-08T00:49:38.581Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/creating-your-first-script/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "platform_sdk_operations": [
+      {
+        "title": "Platform SDK App Operations",
+        "description": "Operations for creating, managing, and deploying Mendix apps",
+        "client_creation": "const client = new MendixPlatformClient();",
+        "app_operations": {
+          "get_existing_app": "const app = client.getApp('app-id-guid');",
+          "create_new_app": "const app = await client.createNewApp('AppName', { repositoryType: 'git' });",
+          "delete_app": "await app.delete();",
+          "get_app_info": "const info = await app.getInfo();"
+        },
+        "repository_operations": {
+          "create_branch": "await app.createBranch('feature-branch', 'main');",
+          "get_branches": "const branches = await app.getBranches();"
+        },
+        "working_copy_operations": {
+          "create_temp": "const wc = await app.createTemporaryWorkingCopy('main');",
+          "open_model": "const model = await wc.openModel();",
+          "commit": "await wc.commitToRepository('main', { commitMessage: 'msg' });"
+        },
+        "environment_operations": {
+          "get_environments": "const envs = await app.getEnvironments();",
+          "deploy": "See deployment API documentation"
+        },
+        "repository_types": {
+          "git": "Modern default, use 'main' branch",
+          "svn": "Legacy, use 'trunk' branch"
+        },
+        "app_id_format": "UUID format: cc22bea9-68d6-4f88-8123-fc358c2fe4b3",
+        "important_notes": [
+          "createNewApp() creates a real app in Mendix cloud",
+          "delete() permanently removes app - use with caution",
+          "Always specify repositoryType: 'git' for new apps"
+        ],
+        "_metadata": {
+          "id": "c8640ea0-dbcd-486a-a83b-b46c4afef08b",
+          "added_at": "2025-12-08T00:51:38.002Z",
+          "source": "docs.mendix.com/apidocs-mxsdk/mxsdk/sdk-use-cases/",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 0,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95
+        }
+      }
+    ],
+    "sdk-patterns": [
+      {
+        "topic": "Platform SDK & Model SDK Complete Patterns for Studio Pro 11+",
+        "version_compatibility": "Studio Pro 10.x, 11.x and beyond",
+        "last_updated": "2025-12-07",
+        "overview": "Complete patterns for using Mendix Platform SDK and Model SDK with TypeScript for automation, analysis, and model manipulation.",
+        "setup": {
+          "packages": {
+            "mendixplatformsdk": "Latest - Platform client for app/branch/working copy operations",
+            "mendixmodelsdk": "Latest - Model manipulation APIs",
+            "typescript": "5.x",
+            "node": "22.x LTS recommended"
+          },
+          "authentication": "Personal Access Token (PAT) via MENDIX_TOKEN environment variable",
+          "tsconfig": {
+            "target": "ES2020",
+            "module": "commonjs",
+            "strict": true,
+            "esModuleInterop": true
+          }
+        },
+        "connection_patterns": {
+          "basic_connection": "const client = new MendixPlatformClient();\nconst app = client.getApp('app-id');\nconst workingCopy = await app.createTemporaryWorkingCopy('main');\nconst model = await workingCopy.openModel();",
+          "existing_app_connection": "const app = client.getApp('cc22bea9-68d6-4f88-8123-fc358c2fe4b3');\nconst workingCopy = await app.createTemporaryWorkingCopy('main');",
+          "reuse_working_copy": "const workingCopy = await app.getOnlineWorkingCopy(workingCopyId); // Reuse existing, avoid creating new",
+          "commit_changes": "await model.flushChanges();\nawait workingCopy.commitToRepository('main', { commitMessage: 'SDK: Description' });"
+        },
+        "domain_model_patterns": {
+          "get_domain_model": "const dm = model.allDomainModels().filter(d => d.containerAsModule.name === 'ModuleName')[0];\nconst domainModel = await dm.load();",
+          "create_entity": "const entity = domainmodels.Entity.createIn(domainModel);\nentity.name = 'MyEntity';\nentity.documentation = 'Description here';",
+          "create_attribute": "const attr = domainmodels.Attribute.createIn(entity);\nattr.name = 'MyAttribute';\nattr.type = domainmodels.StringAttributeType.create(model);",
+          "create_association": "const assoc = domainmodels.Association.createIn(domainModel);\nassoc.name = 'Entity_OtherEntity';\nassoc.parent = parentEntity;\nassoc.child = childEntity;\nassoc.type = domainmodels.AssociationType.Reference;",
+          "attribute_types": {
+            "string": "domainmodels.StringAttributeType.create(model)",
+            "integer": "domainmodels.IntegerAttributeType.create(model)",
+            "long": "domainmodels.LongAttributeType.create(model)",
+            "decimal": "domainmodels.DecimalAttributeType.create(model)",
+            "boolean": "domainmodels.BooleanAttributeType.create(model)",
+            "datetime": "domainmodels.DateTimeAttributeType.create(model)",
+            "enum": "const enumType = domainmodels.EnumerationAttributeType.create(model);\nenumType.enumeration = myEnumeration;"
+          }
+        },
+        "microflow_patterns": {
+          "get_microflow": "const mfInterface = model.allMicroflows().filter(mf => mf.qualifiedName === 'Module.MicroflowName')[0];\nconst microflow = await mfInterface.load();",
+          "create_microflow": "const mf = microflows.Microflow.createIn(module);\nmf.name = 'ACT_MyAction';\nmf.allowedModuleRoles.push(moduleRole);",
+          "create_start_event": "const start = microflows.StartEvent.createIn(mf.objectCollection);\nstart.relativeMiddlePoint = { x: 100, y: 100 };",
+          "create_end_event": "const end = microflows.EndEvent.createIn(mf.objectCollection);\nend.relativeMiddlePoint = { x: 500, y: 100 };",
+          "create_activity": "const activity = microflows.ActionActivity.createIn(mf.objectCollection);\nactivity.relativeMiddlePoint = { x: 300, y: 100 };",
+          "create_sequence_flow": "const flow = microflows.SequenceFlow.createIn(mf);\nflow.origin = startEvent;\nflow.destination = activity;\nflow.originConnectionIndex = 0;\nflow.destinationConnectionIndex = 0;",
+          "aggregate_list_action": "const aggregate = microflows.AggregateListAction.create(model);\naggregate.aggregateFunction = microflows.AggregateFunctionEnum.Count;\naggregate.inputListVariableName = 'MyList';\naggregate.outputVariableName = 'Count';\nactivity.action = aggregate;",
+          "log_action": "// VERIFIED PATTERN - LogMessageAction requires specific createIn method\nconst activity = microflows.ActionActivity.createIn(mf.objectCollection);\nactivity.relativeMiddlePoint = { x: 300, y: 100 };\nconst logAction = microflows.LogMessageAction.createIn(activity);\nlogAction.level = microflows.LogLevel.Info;\nlogAction.node = '@ModuleName.LogNode\\n';\nconst template = microflows.StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction);\ntemplate.text = 'Log message here';",
+          "loop_pattern": "const loop = microflows.LoopedActivity.createIn(mf.objectCollection);\nloop.loopSource = microflows.IterableList.create(model);\nloop.loopSource.listVariableName = 'MyList';\nloop.iteratedListVariableName = 'CurrentItem';"
+        },
+        "documentation_patterns": {
+          "set_entity_documentation": "entity.documentation = 'Your documentation text';",
+          "set_microflow_documentation": "microflow.documentation = 'What this microflow does and why';",
+          "set_attribute_documentation": "attribute.documentation = 'Purpose of this attribute';",
+          "batch_documentation_script": "const DOCS_TO_APPLY = [\n  { qualifiedName: 'Module.Entity', documentation: 'Text' },\n  { qualifiedName: 'Module.Microflow', documentation: 'Text' }\n];\n\nfor (const doc of DOCS_TO_APPLY) {\n  // Find and apply documentation\n}"
+        },
+        "critical_gotchas": {
+          "delete_flows_before_activities": "When modifying microflows, delete SequenceFlows BEFORE deleting activities to avoid orphaned references",
+          "use_aggregate_not_length": "Use AggregateListAction with Count, NOT length() function which doesn't exist",
+          "flush_before_commit": "Always call model.flushChanges() before commitToRepository()",
+          "working_copy_24h_limit": "Working copies auto-delete after 24 hours - reuse when possible",
+          "allowed_module_roles": "Every microflow needs allowedModuleRoles set for security",
+          "log_node_format": "Log node format: '@ModuleName.LogNode\\n' - note the @ prefix and \\n suffix",
+          "iterable_list_not_variable_name": "Use IterableList on loopSource, not deprecated loopVariableName"
+        },
+        "analysis_patterns": {
+          "list_all_entities": "model.allDomainModels().forEach(async dm => {\n  const loaded = await dm.load();\n  loaded.entities.forEach(e => console.log(e.name));\n});",
+          "find_unused_microflows": "// Check which microflows have no references",
+          "export_model_structure": "Use mx.exe dump-mpr for local analysis without API calls"
+        },
+        "mx_exe_commands": {
+          "dump_model": "mx.exe dump-mpr --module-names=\"ModuleName\" \"path/to/app.mpr\"",
+          "check_project": "mx.exe check -w -d -p -b \"path/to/app.mpr\"",
+          "dump_specific_unit": "mx.exe dump-mpr --unit-type=DomainModel \"path/to/app.mpr\"",
+          "exclude_protected": "mx.exe dump-mpr --exclude-protected-modules \"path/to/app.mpr\""
+        },
+        "sources": [
+          "docs.mendix.com/apidocs-mxsdk/mxsdk/",
+          "docs.mendix.com/apidocs-mxsdk/mxsdk/creating-your-first-script/",
+          "github.com/mendix/sdk-demo",
+          "apidocs.rnd.mendix.com/modelsdk/latest/index.html"
+        ],
+        "_metadata": {
+          "id": "52161311-6a7c-45ec-b675-5f3e0d5e098c",
+          "added_at": "2025-12-08T05:46:12.028Z",
+          "source": "docs.mendix.com/apidocs-mxsdk, github.com/mendix/sdk-demo, expert research December 2025",
+          "added_by": "mendix-expert-mcp",
+          "version": 1,
+          "verified": true,
+          "mendix_version": null,
+          "usage_count": 7,
+          "access_count": 0,
+          "feedback": {
+            "positive": 0,
+            "negative": 0,
+            "total": 0
+          },
+          "quality_score": 0.95,
+          "last_used_at": "2025-12-10T12:27:52.383Z"
+        }
+      },
+      {
+        "title": "VERIFIED Complete Microflow Creation Pattern (Tested Dec 2025)",
+        "description": "Complete working pattern for creating a microflow with LogMessageAction - tested against real Mendix 11.5 app",
+        "tested_against": "CompanionTestApp3 (Mendix 11.5.0)",
+        "test_date": "2025-12-08",
+        "status": "VERIFIED_WORKING",
+        "complete_working_code": "const { MendixPlatformClient } = require('mendixplatformsdk');\nconst { microflows } = require('mendixmodelsdk');\n\nasync function createMicroflowWithLog(appId, moduleName, mfName, logMessage) {\n    const client = new MendixPlatformClient();\n    const app = client.getApp(appId);\n    const workingCopy = await app.createTemporaryWorkingCopy('main');\n    const model = await workingCopy.openModel();\n    \n    const module = model.allModules().find(m => m.name === moduleName);\n    \n    // Create microflow\n    const mf = microflows.Microflow.createIn(module);\n    mf.name = mfName;\n    \n    // CRITICAL: Use mf.objectCollection for events and activities\n    const start = microflows.StartEvent.createIn(mf.objectCollection);\n    start.relativeMiddlePoint = { x: 100, y: 100 };\n    \n    const activity = microflows.ActionActivity.createIn(mf.objectCollection);\n    activity.relativeMiddlePoint = { x: 300, y: 100 };\n    \n    const logAction = microflows.LogMessageAction.createIn(activity);\n    logAction.level = microflows.LogLevel.Info;\n    logAction.node = `@${moduleName}.Log\\n`;\n    \n    // CRITICAL: Use specific createIn method for StringTemplate\n    const template = microflows.StringTemplate.createInLogMessageActionUnderMessageTemplate(logAction);\n    template.text = logMessage;\n    \n    const end = microflows.EndEvent.createIn(mf.objectCollection);\n    end.relativeMiddlePoint = { x: 500, y: 100 };\n    \n    // Flows go on mf directly, not objectCollection\n    const flow1 = microflows.SequenceFlow.createIn(mf);\n    flow1.origin = start;\n    flow1.destination = activity;\n    \n    const flow2 = microflows.SequenceFlow.createIn(mf);\n    flow2.origin = activity;\n    flow2.destination = end;\n    \n    await model.flushChanges();\n    await workingCopy.commitToRepository('main', {\n        commitMessage: `Created ${mfName} via SDK`\n    });\n}",
+        "critical_learnings": [
+          "StartEvent.createIn(mf) FAILS - must use createIn(mf.objectCollection)",
+          "EndEvent.createIn(mf) FAILS - must use createIn(mf.objectCollection)",
+          "ActionActivity.createIn(mf) FAILS - must use createIn(mf.objectCollection)",
+          "StringTemplate.create(model) FAILS for LogMessageAction - use createInLogMessageActionUnderMessageTemplate()",
+          "SequenceFlow.createIn(mf) WORKS - flows go on microflow directly, NOT objectCollection",
+          "LogMessageAction.createIn(activity) WORKS - pass ActionActivity, not microflow"
+        ],
+        "_metadata": {
+          "id": "verified-microflow-2025-12-08",
+          "added_at": "2025-12-08T18:45:00.000Z",
+          "source": "Live testing against CompanionTestApp3 via SDK",
+          "added_by": "pattern-verification-process",
+          "version": 1,
+          "verified": true,
+          "mendix_version": "11.5.0",
+          "quality_score": 1,
+          "usage_count": 3,
+          "last_used_at": "2025-12-10T01:04:09.917Z"
+        }
+      }
+    ]
+  }
+}

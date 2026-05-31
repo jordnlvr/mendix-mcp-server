@@ -1,0 +1,84 @@
+{
+  "metadata": {
+    "category": "tutorials",
+    "lastHarvest": "2025-12-08T04:49:37.520Z",
+    "totalEntries": 6,
+    "source": "KnowledgeHarvester"
+  },
+  "entries": [
+    {
+      "id": "front_end_introduction",
+      "title": "Front End - Introduction",
+      "content": "Looking to create great user experiences and a user-friendly graphical user interface (GUI) for your app? You will find all the information you need here, from how to create pages to how to set up the navigation structure and implement best practices.",
+      "category": "tutorials",
+      "source": "https://docs.mendix.com/howto/front-end/",
+      "harvested": "2025-12-08T04:49:30.928Z",
+      "tags": [
+        "pages"
+      ]
+    },
+    {
+      "id": "front_end_documents_in_this_category",
+      "title": "Front End - Documents in This Category",
+      "content": "UI Design\n                    Presents a list of how-tos to guide you to create customized applications using Atlas UI.\n                \n            \n        \n            \n            \n                \n                    Implement Best Practices for UX Design\n                    Describes best practices written by a UX Designer for contributing to the app development process.\n                \n            \n        \n            \n            \n                \n                    Use Navigation Layouts\n                    Describes how to choose, design, and configure your navigation layouts.\n                \n            \n        \n            \n            \n                \n                    Configure Your Theme\n                    Describes how to configure the styling of your page in Studio Pro.\n                \n            \n        \n            \n            \n                \n                    Configure Selenium Support\n                    Describes Selenium best practices, including advice on naming conventions.\n                \n            \n        \n            \n            \n                \n                    Create Your First Two Overview and Detail Pages\n                    Describes how to create overview and detail pages, and how to configure navigation and security.\n                \n            \n        \n            \n            \n                \n                    Use Layouts and Snippets\n                    Describes how to create pages using layouts and snippets.\n                \n            \n        \n            \n            \n                \n                    Implement Classes\n                    Describes details on using class names for text colors, buttons, and other style elements.\n                \n            \n        \n            \n            \n                \n                    Create Custom Error Pages\n                    Describes how to create a custom error page for a more tailored user experience.\n                \n            \n        \n            \n            \n                \n                    Conversational AI Design Checklist\n                    Describes best practices for designing Conversational AI Bots.\n\n.feedback--footer {\n    margin-top: 3rem;\n    padding: 2rem;\n    border-top-width: 0.15rem;\n    border-top-style: solid;\n    border-top-color: #146FF4;\n    width: 100%;\n  }\n  .feedback-container {\n    margin-right: 2rem;\n  }\n  .feedback--answer {\n    display: inline-block;\n  }\n  .feedback--answer-no {\n    margin-left: 1em;\n  }\n  .feedback--response {\n    display: none;\n    margin-top: 1em;\n  }\n  .feedback--response__visible {\n    display: block;\n  }\n    .feedback--footer,\n    .get-started-container {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: space-between;\n    }\n    .get-started-container {\n      width:fit-content;\n    }\n    .get-started svg {\n      max-width: 100%;\n      max-height: 100%;\n    }\n\nFeedback\n    Was this page helpful?\n    Yes\n    No\n    \n      Glad to hear it! Thank you for your response.\n    \n    \n      Sorry to hear that. Please tell us how we can improve.\n\ndocument.querySelector('.feedback--link').href = document.querySelector('a.feedback-issue').href;\n  const yesButton = document.querySelector('.feedback--answer-yes');\n  const noButton = document.querySelector('.feedback--answer-no');\n  const yesResponse = document.querySelector('.feedback--response-yes');\n  const noResponse = document.querySelector('.feedback--response-no');\n  const disableButtons = () => {\n    yesButton.disabled = true;\n    noButton.disabled = true;\n  };\n  const sendFeedback = (value) => {\n    if (typeof ga !== 'function') return;\n    const args = {\n      command: 'send',\n      hitType: 'event',\n      category: 'Helpful',\n      action: 'click',\n      label: window.location.pathname,\n      value: value\n    };\n    ga(args.command, args.hitType, args.category, args.action, args.label, args.value);\n  };\n  yesButton.addEventListener('click', () => {\n    yesResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(1);\n  });\n  noButton.addEventListener('click', () => {\n    noResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(0);\n  });",
+      "category": "tutorials",
+      "source": "https://docs.mendix.com/howto/front-end/",
+      "harvested": "2025-12-08T04:49:30.929Z",
+      "tags": [
+        "pages",
+        "security",
+        "atlas-ui",
+        "theming"
+      ]
+    },
+    {
+      "id": "front_end_feedback",
+      "title": "Front End - Feedback",
+      "content": "Was this page helpful?\n\nGlad to hear it! Thank you for your response.\n\nSorry to hear that. Please tell us how we can improve.",
+      "category": "tutorials",
+      "source": "https://docs.mendix.com/howto/front-end/",
+      "harvested": "2025-12-08T04:49:30.929Z",
+      "tags": [
+        "pages"
+      ]
+    },
+    {
+      "id": "extensibility_introduction",
+      "title": "Extensibility - Introduction",
+      "content": "One of the strengths of Mendix is that it is easy to connect your Mendix application to other systems. The Mendix Marketplace is stocked with all kinds of connectors and adapters. You are also able to extend your app by using and creating widgets.\n\nIn a related matter, one of Studio Pro's strengths is is customizability. For more information on adding your first custom extension to Studio Pro, see Get Started with the Web Extensibility API or Get Started with the C# Extensibility API in our API documentation.",
+      "category": "tutorials",
+      "source": "https://docs.mendix.com/howto/extensibility/",
+      "harvested": "2025-12-08T04:49:36.506Z",
+      "tags": [
+        "widgets"
+      ]
+    },
+    {
+      "id": "extensibility_documents_in_this_category",
+      "title": "Extensibility - Documents in This Category",
+      "content": "Build a Pluggable Native Widget\n                    Describes how to build a native widget, configure it, and style it in a Mendix app.\n                \n            \n        \n            \n            \n                \n                    Update Pluggable Widgets Tools\n                    Follow this guide to update the Pluggable Widgets Tools package used by your pluggable widget to a newer version.\n                \n            \n        \n            \n            \n                \n                    Build Pluggable Web Widgets\n                    Describes how to use the new generation of custom-built Mendix widgets based on React.\n                \n            \n        \n            \n            \n                \n                    Build JavaScript Actions\n                    Presents a series of how-tos to build JavaScript actions step by step.\n                \n            \n        \n            \n            \n                \n                    Implement Best Practices for JavaScript Actions\n                    Describes how to create high-quality JavaScript actions, use common implementation patterns, design better APIs, and use JavaScript actions in nanoflows.\n                \n            \n        \n            \n            \n                \n                    Build Microflow Actions with Java\n                    Describes how to create custom microflow actions using Java.\n                \n            \n        \n            \n            \n                \n                    Use Mendix Data Storage APIs to Build Reusable Microflow Actions\n                    Describes how to create custom microflow actions using Data Storage APIs.\n\n.feedback--footer {\n    margin-top: 3rem;\n    padding: 2rem;\n    border-top-width: 0.15rem;\n    border-top-style: solid;\n    border-top-color: #146FF4;\n    width: 100%;\n  }\n  .feedback-container {\n    margin-right: 2rem;\n  }\n  .feedback--answer {\n    display: inline-block;\n  }\n  .feedback--answer-no {\n    margin-left: 1em;\n  }\n  .feedback--response {\n    display: none;\n    margin-top: 1em;\n  }\n  .feedback--response__visible {\n    display: block;\n  }\n    .feedback--footer,\n    .get-started-container {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: space-between;\n    }\n    .get-started-container {\n      width:fit-content;\n    }\n    .get-started svg {\n      max-width: 100%;\n      max-height: 100%;\n    }\n\nFeedback\n    Was this page helpful?\n    Yes\n    No\n    \n      Glad to hear it! Thank you for your response.\n    \n    \n      Sorry to hear that. Please tell us how we can improve.\n\ndocument.querySelector('.feedback--link').href = document.querySelector('a.feedback-issue').href;\n  const yesButton = document.querySelector('.feedback--answer-yes');\n  const noButton = document.querySelector('.feedback--answer-no');\n  const yesResponse = document.querySelector('.feedback--response-yes');\n  const noResponse = document.querySelector('.feedback--response-no');\n  const disableButtons = () => {\n    yesButton.disabled = true;\n    noButton.disabled = true;\n  };\n  const sendFeedback = (value) => {\n    if (typeof ga !== 'function') return;\n    const args = {\n      command: 'send',\n      hitType: 'event',\n      category: 'Helpful',\n      action: 'click',\n      label: window.location.pathname,\n      value: value\n    };\n    ga(args.command, args.hitType, args.category, args.action, args.label, args.value);\n  };\n  yesButton.addEventListener('click', () => {\n    yesResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(1);\n  });\n  noButton.addEventListener('click', () => {\n    noResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(0);\n  });",
+      "category": "tutorials",
+      "source": "https://docs.mendix.com/howto/extensibility/",
+      "harvested": "2025-12-08T04:49:36.506Z",
+      "tags": [
+        "microflows",
+        "nanoflows",
+        "pages",
+        "widgets",
+        "java",
+        "javascript"
+      ]
+    },
+    {
+      "id": "extensibility_feedback",
+      "title": "Extensibility - Feedback",
+      "content": "Was this page helpful?\n\nGlad to hear it! Thank you for your response.\n\nSorry to hear that. Please tell us how we can improve.",
+      "category": "tutorials",
+      "source": "https://docs.mendix.com/howto/extensibility/",
+      "harvested": "2025-12-08T04:49:36.506Z",
+      "tags": [
+        "pages"
+      ]
+    }
+  ]
+}

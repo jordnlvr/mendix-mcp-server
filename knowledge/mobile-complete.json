@@ -1,0 +1,178 @@
+{
+  "_metadata": {
+    "title": "Mendix Mobile Development - Complete Reference (Studio Pro 11)",
+    "description": "Comprehensive guide to Mendix mobile app development including native, PWA, and offline-first capabilities",
+    "version": "2025.1",
+    "lastUpdated": "2025-12-08",
+    "source": "docs.mendix.com/refguide/mobile/",
+    "mendixVersions": ["10.x", "11.x"],
+    "verified": true
+  },
+  "introduction": {
+    "overview": "Mendix supports various mobile app development styles (native, web, PWA) from a single platform with common mobile back-end services.",
+    "appTypes": {
+      "nativeMobile": "Distributed via app stores with improved native device capabilities and fast performance",
+      "progressiveWebApp": "Next evolution of web apps, accessed directly from browser without app store download",
+      "responsiveWeb": "Traditional web apps optimized for mobile browsers"
+    },
+    "navigationProfiles": "Create different channels (responsive, native phone) from a single model using navigation profiles that can be added/removed separately"
+  },
+  "mobileTechnologies": {
+    "nativeMobileApps": {
+      "distribution": "App stores (Apple App Store, Google Play)",
+      "technology": "React Native based",
+      "capabilities": [
+        "Full native device API access",
+        "Fast performance",
+        "Offline-first architecture",
+        "Push notifications",
+        "Deep links",
+        "Augmented reality"
+      ]
+    },
+    "progressiveWebApps": {
+      "distribution": "Direct browser access, installable",
+      "capabilities": [
+        "Offline capability via service workers",
+        "Home screen installation",
+        "Push notifications (limited)",
+        "Offline-first data sync"
+      ]
+    }
+  },
+  "mobileCapabilities": {
+    "deepLinks": {
+      "description": "Custom URL schemes (e.g., my-app://) for inter-app communication",
+      "usage": "Allow other apps to access pages and functionality"
+    },
+    "locationAndMaps": {
+      "description": "Access user location and display native maps",
+      "features": ["GPS location", "Native map widgets", "Geofencing"]
+    },
+    "pushNotifications": {
+      "description": "Server-triggered notifications even when app not running",
+      "requirements": ["Push notification module", "Firebase/APNs configuration"]
+    },
+    "localNotifications": {
+      "description": "Schedule notifications at specific times without server",
+      "usage": "Reminders, scheduled alerts"
+    },
+    "augmentedReality": {
+      "description": "Render 3D objects in physical environment via camera",
+      "technology": "ARKit (iOS) / ARCore (Android)"
+    },
+    "offlineFirst": {
+      "description": "Local database with sync mechanism",
+      "features": [
+        "Offline database on client",
+        "Automatic synchronization",
+        "Conflict resolution",
+        "Selective sync"
+      ]
+    }
+  },
+  "designingMobileUI": {
+    "considerations": [
+      "Users frequently change location",
+      "Small screen constraints",
+      "Short bursts of activity",
+      "Touch-first interaction"
+    ],
+    "nativeStyling": {
+      "technology": "React Native styling system",
+      "method": "JavaScript/JSON objects instead of CSS",
+      "approach": "Set class properties on widgets with JSON style definitions"
+    },
+    "webStyling": {
+      "technology": "Standard CSS",
+      "approach": "Atlas UI framework with SASS"
+    }
+  },
+  "buildingEfficientApps": {
+    "nativeStartup": {
+      "topic": "Optimizing native app startup time",
+      "documentation": "https://docs.mendix.com/refguide/mobile/building-efficient-mobile-apps/native-startup/"
+    },
+    "logging": {
+      "description": "Native apps send logs to Mendix Runtime",
+      "features": ["Default logs", "Custom logs", "Multiple log levels"],
+      "documentation": "https://docs.mendix.com/refguide/mobile/building-efficient-mobile-apps/logging/"
+    },
+    "offlineFirstData": {
+      "description": "Offline database with synchronization",
+      "documentation": "https://docs.mendix.com/refguide/mobile/building-efficient-mobile-apps/offlinefirst-data/"
+    }
+  },
+  "distributingApps": {
+    "webApps": {
+      "process": "Single step deployment to production environment"
+    },
+    "nativeMobileApps": {
+      "process": "Two steps: 1) Deploy server-side, 2) Build and distribute app",
+      "distribution": {
+        "appStore": "Build new version with Native Mobile Builder, release to stores",
+        "overTheAir": "Update app elements without releasing new store version"
+      },
+      "builder": "Native Mobile Builder tool"
+    },
+    "overTheAirUpdates": {
+      "description": "Update pages, nanoflows, JavaScript actions without store release",
+      "documentation": "https://docs.mendix.com/refguide/mobile/distributing-mobile-apps/overtheair-updates/"
+    }
+  },
+  "testingAndDebugging": {
+    "makeItNative": {
+      "description": "Testing app for viewing native apps during development",
+      "features": ["Live preview", "Remote JS debugging", "Device testing"]
+    },
+    "debugging": {
+      "nativeApps": "Enable Remote JS Debugging in Make It Native, debug with Chrome",
+      "webApps": "Standard browser developer console"
+    }
+  },
+  "gettingStarted": {
+    "steps": [
+      "Create native mobile Mendix app",
+      "Add native mobile navigation profile",
+      "Design pages with mobile widgets",
+      "Test with Make It Native app",
+      "Build and distribute"
+    ],
+    "quickStarts": "https://docs.mendix.com/quickstarts/",
+    "makeItNative": "https://docs.mendix.com/releasenotes/mobile/make-it-native-parent/"
+  },
+  "bestPractices": [
+    {
+      "practice": "Design for offline-first",
+      "rationale": "Mobile users may have intermittent connectivity"
+    },
+    {
+      "practice": "Optimize data sync",
+      "rationale": "Only sync necessary data to reduce bandwidth and improve performance"
+    },
+    {
+      "practice": "Consider startup time",
+      "rationale": "Fast startup critical for mobile user experience"
+    },
+    {
+      "practice": "Use native widgets appropriately",
+      "rationale": "Native widgets provide better performance and native feel"
+    },
+    {
+      "practice": "Test on real devices",
+      "rationale": "Simulators don't capture all real-world conditions"
+    },
+    {
+      "practice": "Plan OTA update strategy",
+      "rationale": "Reduce friction of app store updates for minor changes"
+    }
+  ],
+  "relatedDocumentation": [
+    "https://docs.mendix.com/refguide/mobile/getting-started-with-mobile/",
+    "https://docs.mendix.com/refguide/mobile/introduction-to-mobile-technologies/",
+    "https://docs.mendix.com/refguide/mobile/designing-mobile-user-interfaces/",
+    "https://docs.mendix.com/refguide/mobile/using-mobile-capabilities/",
+    "https://docs.mendix.com/refguide/mobile/distributing-mobile-apps/",
+    "https://docs.mendix.com/refguide/mobile/best-practices/"
+  ]
+}

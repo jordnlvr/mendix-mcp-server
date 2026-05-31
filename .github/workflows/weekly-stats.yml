@@ -1,0 +1,140 @@
+name: Knowledge Base Stats
+
+on:
+  schedule:
+    # Run every Sunday at midnight
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 📊 Generate weekly report
+        id: report
+        run: |
+          # Package is ESM ("type": "module"), so we use dynamic import() and
+          # destructure .default off each module namespace. The original
+          # workflow used require() (broken — returned the namespace object),
+          # called se.initialize() (doesn't exist — it's indexKnowledgeBase()),
+          # and read validation.summary.totalEntries (doesn't exist — real
+          # fields are entriesChecked / errors.length / warnings.length /
+          # byFile). All three issues fixed here. km.load() call added so
+          # knowledgeBase is populated before use.
+          node --input-type=module -e "
+          const [{ default: KM }, { default: SE }] = await Promise.all([
+            import('./src/core/KnowledgeManager.js'),
+            import('./src/core/SearchEngine.js'),
+          ]);
+
+          const km = new KM('./knowledge');
+          await km.load();
+
+          const se = new SE();
+          se.indexKnowledgeBase(km.knowledgeBase);
+
+          const validation = km.validateKnowledgeBase();
+          const stats = se.getStats();
+          const stale = km.getStaleEntries(90);
+
+          // Count entries per category by walking the raw knowledge base.
+          // The validation report doesn't carry category breakdowns, so we
+          // aggregate from km.knowledgeBase directly.
+          const byCategory = {};
+          for (const fileData of Object.values(km.knowledgeBase)) {
+            if (fileData.categories) {
+              for (const [catName, items] of Object.entries(fileData.categories)) {
+                let count = 0;
+                if (Array.isArray(items)) {
+                  count = items.length;
+                } else if (items && typeof items === 'object') {
+                  for (const sub of Object.values(items)) {
+                    if (Array.isArray(sub)) count += sub.length;
+                  }
+                }
+                byCategory[catName] = (byCategory[catName] || 0) + count;
+              }
+            }
+            if (Array.isArray(fileData.items)) {
+              byCategory._root = (byCategory._root || 0) + fileData.items.length;
+            }
+          }
+
+          const report = {
+            date: new Date().toISOString().split('T')[0],
+            entries: validation.entriesChecked,
+            errors: validation.errors.length,
+            warnings: validation.warnings.length,
+            uniqueTerms: stats.indexedTerms ?? 0,
+            staleCount: stale.count ?? 0,
+            byCategory,
+          };
+
+          console.log(JSON.stringify(report, null, 2));
+          " > weekly-report.json
+
+          echo "report=$(cat weekly-report.json | jq -c)" >> $GITHUB_OUTPUT
+
+      - name: 📝 Create issue with report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const report = ${{ steps.report.outputs.report }};
+            
+            const categoryList = Object.entries(report.byCategory)
+              .map(([k, v]) => `- **${k}**: ${v} entries`)
+              .join('\n');
+            
+            const body = `## 📊 Weekly Knowledge Base Report
+            
+            **Date**: ${report.date}
+            
+            ### Summary
+            
+            | Metric | Value |
+            |--------|-------|
+            | Total Entries | ${report.entries} |
+            | Validation Errors | ${report.errors} |
+            | Validation Warnings | ${report.warnings} |
+            | Unique Search Terms | ${report.uniqueTerms} |
+            | Stale Entries (90+ days) | ${report.staleCount} |
+            
+            ### Entries by Category
+            
+            ${categoryList}
+            
+            ### Actions Needed
+            
+            ${report.errors > 0 ? '⚠️ **Fix validation errors!**' : '✅ No validation errors'}
+            ${report.staleCount > 0 ? `📅 **${report.staleCount} entries need review** (older than 90 days)` : '✅ All entries are current'}
+            
+            ---
+            *Generated automatically by GitHub Actions*
+            `;
+            
+            // Only create issue if there are problems
+            if (report.errors > 0 || report.staleCount > 5) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `📊 Weekly Report: ${report.date}`,
+                body: body,
+                labels: ['automated', 'maintenance']
+              });
+            }

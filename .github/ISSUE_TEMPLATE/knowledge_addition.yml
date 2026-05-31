@@ -1,0 +1,64 @@
+name: Knowledge Addition
+description: Suggest new knowledge to add to the database
+title: "[Knowledge]: "
+labels: ["knowledge", "documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us expand the Mendix knowledge base! Share what you've learned.
+
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      description: What Mendix topic does this cover?
+      placeholder: "Microflow error handling"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Which knowledge file should this go in?
+      options:
+        - best-practices
+        - model-sdk
+        - platform-sdk
+        - studio-pro
+        - troubleshooting
+        - performance-guide
+        - security-guide
+        - advanced-patterns
+        - New category needed
+    validations:
+      required: true
+
+  - type: textarea
+    id: content
+    attributes:
+      label: Knowledge Content
+      description: The information you want to add. Include code examples if applicable.
+      placeholder: |
+        When working with [topic], you should...
+        
+        ```javascript
+        // Example code
+        ```
+    validations:
+      required: true
+
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: Where did you learn this? (official docs, experience, community, etc.)
+      placeholder: "https://docs.mendix.com/..."
+
+  - type: textarea
+    id: keywords
+    attributes:
+      label: Search Keywords
+      description: What would someone search to find this?
+      placeholder: "error handling, try catch, microflow, exception"

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "mendix-expert": {
+      "command": "C:/Program Files/nodejs/node.exe",
+      "args": ["D:/Users/kelly.seale/VSCode-Dream-Workspace/mendix-mcp-server/src/cloud-proxy.js"]
+    }
+  }
+}

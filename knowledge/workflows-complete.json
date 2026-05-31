@@ -1,0 +1,232 @@
+{
+  "_metadata": {
+    "title": "Mendix Workflows - Complete Reference (Studio Pro 11)",
+    "description": "Comprehensive guide to Mendix Workflows including elements, activities, engine, and best practices",
+    "version": "2025.1",
+    "lastUpdated": "2025-12-08",
+    "source": "docs.mendix.com/refguide/workflows/",
+    "mendixVersions": ["10.x", "11.x"],
+    "verified": true
+  },
+  "introduction": {
+    "overview": "Workflow is a visual language in Mendix Studio Pro that allows you to build extendable business processes. It is fully integrated with other visual editors including the microflow editor and page editor.",
+    "keyBenefits": [
+      "Compliance management - ensures adherence to regulations with clear audit trails",
+      "Performance improvement - identifies bottlenecks, reduces task completion time",
+      "Risk reduction - prevents overdue penalties, anticipates bottlenecks",
+      "Visual process design - drag and drop workflow elements",
+      "Full integration with microflows, nanoflows, and pages"
+    ],
+    "variables": {
+      "$WorkflowContext": "Instance of the business-related entity that travels through the workflow",
+      "$WorkflowInstance": "Instance of currently running workflow (System.Workflow)"
+    }
+  },
+  "whenToUseWorkflows": {
+    "idealCriteria": [
+      "Process is well-defined and documented",
+      "Tasks are repeatable and performed regularly",
+      "High frequency of execution",
+      "Multiple participants involved",
+      "Combination of human and automated tasks",
+      "Process is stable with minimal variations",
+      "Series of interconnected steps/activities",
+      "Longer duration (hours to months)"
+    ],
+    "avoidWorkflowsWhen": [
+      "Most criteria above are NOT met",
+      "High degree of collaboration with no clear path",
+      "Dynamic or unpredictable work",
+      "Individuals need freedom to decide next actions",
+      "Process is outcome-driven rather than step-driven"
+    ]
+  },
+  "workflowElements": {
+    "parameters": {
+      "WorkflowContext": {
+        "description": "Business-related data that travels through the workflow",
+        "usage": "Configure in workflow properties to pass context entity"
+      }
+    },
+    "generalElements": {
+      "startEvent": {
+        "description": "Starting point of a workflow",
+        "triggers": [
+          "Call workflow on-click event on pages",
+          "Call workflow activity in microflows"
+        ]
+      },
+      "endEvent": {
+        "description": "Ends the path of the workflow"
+      },
+      "decision": {
+        "description": "Makes a choice based on a condition, follows exactly one outgoing path",
+        "usage": "Use expressions to evaluate conditions"
+      },
+      "parallelSplit": {
+        "description": "Adds two parallel paths to your workflow",
+        "usage": "Execute multiple activities simultaneously"
+      },
+      "jump": {
+        "description": "Jump to other activities in the workflow",
+        "usage": "Non-linear workflow navigation"
+      },
+      "waitForNotification": {
+        "description": "Suspends workflow execution until notified",
+        "usage": "Wait for external events or manual triggers"
+      },
+      "annotation": {
+        "description": "Add comments to workflows or individual activities",
+        "usage": "Documentation and team communication"
+      }
+    },
+    "userTasks": {
+      "userTask": {
+        "description": "Assign a task to a user or group using filters or microflows",
+        "features": [
+          "Configurable task name and description with variables",
+          "User assignment via filters or microflows",
+          "Multiple outcomes possible",
+          "Task page configuration"
+        ]
+      },
+      "multiUserTask": {
+        "description": "Assign same task to multiple users with aggregated outcomes",
+        "features": [
+          "Each user performs the same task",
+          "Outcomes aggregated based on completion condition",
+          "Voting/consensus patterns supported"
+        ]
+      }
+    },
+    "events": {
+      "timer": {
+        "description": "Configure duration or specific date/time in workflow",
+        "types": ["Standalone activity on path", "Boundary Event on another activity"],
+        "usage": "Deadlines, reminders, scheduled actions"
+      }
+    },
+    "systemActions": {
+      "callMicroflow": {
+        "description": "Calls a selected microflow from workflow",
+        "usage": "Execute business logic, integrations, data processing"
+      },
+      "callWorkflow": {
+        "description": "Calls another workflow (sub-workflow)",
+        "usage": "Modular workflow design, reusable processes"
+      }
+    }
+  },
+  "workflowActivitiesInMicroflows": {
+    "description": "Workflow-related activities available in microflows",
+    "activities": {
+      "applyJumpToOption": {
+        "description": "Continue workflow from selected activity",
+        "usage": "Admin interventions, error recovery"
+      },
+      "callWorkflow": {
+        "description": "Start a workflow from microflow",
+        "returns": "System.Workflow instance"
+      },
+      "changeWorkflowState": {
+        "description": "Control workflow instances",
+        "operations": ["Abort", "Continue", "Pause", "Restart", "Resume"]
+      },
+      "completeUserTask": {
+        "description": "Programmatically complete a user task with specified outcome",
+        "usage": "Automated task completion, system decisions"
+      },
+      "generateJumpToOptions": {
+        "description": "Get list of possible activities to jump to",
+        "usage": "Dynamic workflow navigation UI"
+      },
+      "retrieveWorkflowActivityRecords": {
+        "description": "Get System.WorkflowActivityRecord objects",
+        "sorting": "By activity start time"
+      },
+      "retrieveWorkflowContext": {
+        "description": "Get the workflow context entity"
+      },
+      "retrieveWorkflows": {
+        "description": "Get System.Workflow objects for a context",
+        "usage": "Find related workflow instances"
+      },
+      "showUserTaskPage": {
+        "description": "Open configured user task page"
+      },
+      "showWorkflowAdminPage": {
+        "description": "Open workflow overview/admin page"
+      },
+      "lockWorkflow": {
+        "description": "Lock workflow for exclusive access"
+      },
+      "unlockWorkflow": {
+        "description": "Release workflow lock"
+      },
+      "notifyWorkflow": {
+        "description": "Resume workflow waiting on Wait for notification"
+      }
+    }
+  },
+  "workflowCommons": {
+    "description": "Marketplace module with preconfigured workflow components",
+    "includes": [
+      "Page templates for task pages",
+      "Dashboard pages",
+      "Admin pages",
+      "Common microflows"
+    ],
+    "availability": ["Marketplace download", "App templates with workflow"]
+  },
+  "useCases": [
+    {
+      "name": "Supply Chain Management",
+      "description": "Manage supply chain changes in regulated industries with validation at each stage"
+    },
+    {
+      "name": "BPM Migration",
+      "description": "Transition from dedicated BPM platforms to Mendix for cost reduction and faster time-to-value"
+    },
+    {
+      "name": "Maintenance Plan Approval",
+      "description": "Structured review and approval for maintenance plan changes"
+    },
+    {
+      "name": "Product Launch Support",
+      "description": "End-to-end business processes for new product launches with legal/financial review"
+    },
+    {
+      "name": "Customer Onboarding",
+      "description": "Automated onboarding across multiple systems with human intervention for exceptions"
+    }
+  ],
+  "bestPractices": [
+    {
+      "practice": "Keep workflows focused on business processes",
+      "rationale": "Use microflows for technical implementations, workflows for business logic"
+    },
+    {
+      "practice": "Use Workflow Commons module",
+      "rationale": "Saves development time with preconfigured pages and templates"
+    },
+    {
+      "practice": "Design for stability",
+      "rationale": "Workflows work best for stable, well-defined processes"
+    },
+    {
+      "practice": "Consider sub-workflows",
+      "rationale": "Break complex processes into modular, reusable workflows"
+    },
+    {
+      "practice": "Implement proper security",
+      "rationale": "Configure workflow security to control who can execute and complete tasks"
+    }
+  ],
+  "relatedDocumentation": [
+    "https://docs.mendix.com/refguide/perform-workflow-basic-functions/",
+    "https://docs.mendix.com/refguide/workflow-how-to-configure/",
+    "https://docs.mendix.com/refguide/workflow-security/",
+    "https://docs.mendix.com/refguide/workflow-engine/",
+    "https://docs.mendix.com/appstore/modules/workflow-commons/"
+  ]
+}

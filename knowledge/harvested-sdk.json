@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "category": "sdk",
+    "lastHarvest": "2025-12-08T04:49:47.304Z",
+    "totalEntries": 7,
+    "source": "KnowledgeHarvester"
+  },
+  "entries": [
+    {
+      "id": "sdk_documentation_introduction",
+      "title": "SDK Documentation - Introduction",
+      "content": "The Mendix SDK documentation is divided into the sections described below.\n\nFor how-to details on Mendix Platform SDK versions below 5.0, see Old SDK Versions (Below 5.0).\nFor details on the releases of the Mendix SDKs, check the Mendix Platform SDK Release Notes and the Mendix Model SDK Release Notes.\n\n$(document).ready(() => {\n  $('.alert-text').each((index, element) => { \n      if ($(element).find('p, ul, ol').length) { \n          $(element).closest('.alert').addClass('has-line-breaks'); \n      }\n  });\n});",
+      "category": "sdk",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+      "harvested": "2025-12-08T04:49:47.302Z",
+      "tags": [
+        "sdk"
+      ]
+    },
+    {
+      "id": "sdk_documentation_sdk_introduction",
+      "title": "SDK Documentation - SDK Introduction",
+      "content": "The Mendix SDKs consist of Mendix Platform SDK and Mendix Model SDK. Before diving right into the details of SDKs, you can start with the SDK Introduction.",
+      "category": "sdk",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+      "harvested": "2025-12-08T04:49:47.302Z",
+      "tags": [
+        "sdk"
+      ]
+    },
+    {
+      "id": "sdk_documentation_sdk_use_cases",
+      "title": "SDK Documentation - SDK Use Cases",
+      "content": "The Use Case Examples provide examples from the four basic categories of actions performed with the Mendix SDK: analyzing, exporting, modifying and importing.",
+      "category": "sdk",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+      "harvested": "2025-12-08T04:49:47.302Z",
+      "tags": [
+        "sdk"
+      ]
+    },
+    {
+      "id": "sdk_documentation_sdk_faq_and_troubleshooting",
+      "title": "SDK Documentation - SDK FAQ and Troubleshooting",
+      "content": "This document provides the FAQs and troubleshooting information for common error messages.\n\nIf you need help with the SDKs, check whether your question is answered in the SDK FAQ. Otherwise, ask your question in the Mendix Community.",
+      "category": "sdk",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+      "harvested": "2025-12-08T04:49:47.302Z",
+      "tags": [
+        "sdk"
+      ]
+    },
+    {
+      "id": "sdk_documentation_sdk_reference_guide",
+      "title": "SDK Documentation - SDK Reference Guide",
+      "content": "Browse the reference documentation below about the Mendix Metamodel:\n\nMendix Metamodel – explains the basic components of the Mendix Metamodel as well as the domain model, microflows, pages, and apps in the Mendix Metamodel\nJavaScript & TypeScript Resources – summarizes TypeScript and provides links to useful resources for learning more",
+      "category": "sdk",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+      "harvested": "2025-12-08T04:49:47.302Z",
+      "tags": [
+        "microflows",
+        "domain-model",
+        "pages",
+        "java",
+        "javascript",
+        "sdk"
+      ]
+    },
+    {
+      "id": "sdk_documentation_sdk_how_tos",
+      "title": "SDK Documentation - SDK How-tos",
+      "content": "Follow these step-by-step guides to learn everything you need about using the SDK:\n\nSet Up Your Development Environment – leads you through the process of setting up everything you need to start working with the Mendix Platform SDK\nSet Up Your Personal Access Token – guides you in the process of creating and saving your personal access token, which is required to authenticate your script\nCreate Your First Script – teaches you how to write a script that will use the Mendix Platform SDK\nUse Mendix Platform SDK – guides you on how to use the Platform SDK to create, open, and delete Mendix apps as well as how to make changes to your app\nCreate the Domain Model – guides you in the process of creating a more extensive domain model\nManipulate Existing Models – teaches you how to change things in the model, close the server connection, and find and load units and elements\nGenerate Code from the Model – explains how to write code to alter your model\n\n.feedback--footer {\n    margin-top: 3rem;\n    padding: 2rem;\n    border-top-width: 0.15rem;\n    border-top-style: solid;\n    border-top-color: #146FF4;\n    width: 100%;\n  }\n  .feedback-container {\n    margin-right: 2rem;\n  }\n  .feedback--answer {\n    display: inline-block;\n  }\n  .feedback--answer-no {\n    margin-left: 1em;\n  }\n  .feedback--response {\n    display: none;\n    margin-top: 1em;\n  }\n  .feedback--response__visible {\n    display: block;\n  }\n    .feedback--footer,\n    .get-started-container {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: space-between;\n    }\n    .get-started-container {\n      width:fit-content;\n    }\n    .get-started svg {\n      max-width: 100%;\n      max-height: 100%;\n    }\n\nFeedback\n    Was this page helpful?\n    Yes\n    No\n    \n      Glad to hear it! Thank you for your response.\n    \n    \n      Sorry to hear that. Please tell us how we can improve.\n\ndocument.querySelector('.feedback--link').href = document.querySelector('a.feedback-issue').href;\n  const yesButton = document.querySelector('.feedback--answer-yes');\n  const noButton = document.querySelector('.feedback--answer-no');\n  const yesResponse = document.querySelector('.feedback--response-yes');\n  const noResponse = document.querySelector('.feedback--response-no');\n  const disableButtons = () => {\n    yesButton.disabled = true;\n    noButton.disabled = true;\n  };\n  const sendFeedback = (value) => {\n    if (typeof ga !== 'function') return;\n    const args = {\n      command: 'send',\n      hitType: 'event',\n      category: 'Helpful',\n      action: 'click',\n      label: window.location.pathname,\n      value: value\n    };\n    ga(args.command, args.hitType, args.category, args.action, args.label, args.value);\n  };\n  yesButton.addEventListener('click', () => {\n    yesResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(1);\n  });\n  noButton.addEventListener('click', () => {\n    noResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(0);\n  });",
+      "category": "sdk",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+      "harvested": "2025-12-08T04:49:47.302Z",
+      "tags": [
+        "domain-model",
+        "pages",
+        "sdk"
+      ]
+    },
+    {
+      "id": "sdk_documentation_feedback",
+      "title": "SDK Documentation - Feedback",
+      "content": "Was this page helpful?\n\nGlad to hear it! Thank you for your response.\n\nSorry to hear that. Please tell us how we can improve.",
+      "category": "sdk",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+      "harvested": "2025-12-08T04:49:47.302Z",
+      "tags": [
+        "pages"
+      ]
+    }
+  ]
+}

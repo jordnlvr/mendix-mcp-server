@@ -1,0 +1,293 @@
+{
+  "metadata": {
+    "category": "getting-started",
+    "lastUpdated": "2025-12-08",
+    "verifiedWith": "Mendix 11.5.0, mendixplatformsdk, mendix@11.5.0",
+    "source": "Live verification testing - December 2025",
+    "totalEntries": 4
+  },
+  "entries": [
+    {
+      "id": "sdk_environment_setup",
+      "title": "Platform/Model SDK Environment Setup",
+      "category": "setup",
+      "description": "Complete step-by-step guide to set up SDK development environment",
+      "verified": true,
+      "content": {
+        "overview": "The Mendix Platform SDK and Model SDK allow programmatic access to Mendix apps. Use this for automation, bulk changes, documentation generation, CI/CD, and more.",
+        "prerequisites": [
+          "Node.js 18+ installed",
+          "npm or yarn package manager",
+          "Mendix account with API access",
+          "Personal Access Token (PAT) from https://sprintr.home.mendix.com/link/settings"
+        ],
+        "step_by_step": {
+          "step_1_create_project": {
+            "title": "Create Project Folder",
+            "commands": ["mkdir my-mendix-sdk-project", "cd my-mendix-sdk-project", "npm init -y"]
+          },
+          "step_2_install_packages": {
+            "title": "Install SDK Packages",
+            "command": "npm install mendixplatformsdk mendixmodelsdk",
+            "explanation": "mendixplatformsdk handles connection/authentication, mendixmodelsdk provides the model API"
+          },
+          "step_3_set_token": {
+            "title": "Set Environment Variable",
+            "windows_powershell": "$env:MENDIX_TOKEN = 'your-pat-token-here'",
+            "windows_cmd": "set MENDIX_TOKEN=your-pat-token-here",
+            "mac_linux": "export MENDIX_TOKEN='your-pat-token-here'",
+            "permanent": "Add to your shell profile (.bashrc, .zshrc) or Windows Environment Variables"
+          },
+          "step_4_get_app_id": {
+            "title": "Find Your App ID",
+            "instructions": [
+              "1. Open your app in Mendix Developer Portal (https://sprintr.home.mendix.com)",
+              "2. Click Settings > General",
+              "3. Copy the App ID (UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)"
+            ]
+          },
+          "step_5_create_script": {
+            "title": "Create Your First Script",
+            "filename": "connect.js",
+            "code": "const { MendixPlatformClient } = require('mendixplatformsdk');\n\nasync function main() {\n    // Connect to Mendix Platform\n    const client = new MendixPlatformClient();\n    \n    // Get your app by ID\n    const app = client.getApp('YOUR-APP-ID-HERE');\n    \n    // Create a temporary working copy from main branch\n    const workingCopy = await app.createTemporaryWorkingCopy('main');\n    console.log('Working copy created:', workingCopy.id);\n    \n    // Open the model for reading/writing\n    const model = await workingCopy.openModel();\n    \n    // List all modules\n    const modules = model.allModules();\n    console.log('Modules:', modules.map(m => m.name));\n    \n    // List all domain models\n    const domainModels = model.allDomainModels();\n    console.log('Domain models:', domainModels.length);\n    \n    // IMPORTANT: Close without committing for read-only operations\n    // Or commit changes:\n    // await model.flushChanges();\n    // await workingCopy.commitToRepository('main', { commitMessage: 'SDK changes' });\n}\n\nmain().catch(console.error);"
+          },
+          "step_6_run": {
+            "title": "Run Your Script",
+            "command": "node connect.js"
+          }
+        },
+        "common_patterns": {
+          "read_only": "Don't call flushChanges() or commitToRepository() - working copy is discarded",
+          "make_changes": "Call model.flushChanges() then workingCopy.commitToRepository()",
+          "find_module": "const module = model.findModuleByQualifiedName('ModuleName');",
+          "load_domain_model": "const dm = await domainModel.load(); // Returns entities, associations, etc."
+        },
+        "critical_notes": [
+          "model.allEntities() does NOT exist - use domainModel.load().entities",
+          "workingCopy.id is a PROPERTY not a method (no parentheses)",
+          "Always call model.flushChanges() before commitToRepository()",
+          "PAT must have 'mx:modelrepository:repo:write' scope for commits"
+        ]
+      }
+    },
+    {
+      "id": "widget_environment_setup",
+      "title": "Pluggable Widget Development Setup",
+      "category": "setup",
+      "description": "Complete step-by-step guide to create pluggable widgets",
+      "verified": true,
+      "content": {
+        "overview": "Pluggable widgets are custom React components that integrate with Mendix apps. They use TypeScript and provide rich configuration options in Studio Pro.",
+        "prerequisites": [
+          "Node.js 18+ installed",
+          "npm or yarn package manager",
+          "Mendix Studio Pro 10.x or 11.x installed",
+          "Basic React and TypeScript knowledge"
+        ],
+        "step_by_step": {
+          "step_1_install_generator": {
+            "title": "Install Mendix Widget Generator",
+            "command": "npm install -g yo @mendix/generator-widget",
+            "explanation": "Yeoman generator creates widget scaffolding with all required files"
+          },
+          "step_2_create_widget": {
+            "title": "Generate New Widget",
+            "commands": ["mkdir my-widgets", "cd my-widgets", "yo @mendix/widget MyAwesomeWidget"],
+            "prompts": {
+              "widget_name": "Enter widget name (PascalCase)",
+              "description": "Short description",
+              "organization": "Your company/org name",
+              "copyright": "Copyright holder",
+              "license": "MIT or Apache-2.0",
+              "version": "1.0.0",
+              "author": "Your name",
+              "project_path": "Path to Mendix project for testing (optional)",
+              "programming_language": "TypeScript (recommended)",
+              "widget_type": "For web (recommended) or For native mobile",
+              "widget_template": "Empty widget, Full widget, or Chart widget",
+              "unit_tests": "Yes (recommended)",
+              "end_to_end_tests": "Optional"
+            }
+          },
+          "step_3_project_structure": {
+            "title": "Understand Project Structure",
+            "structure": {
+              "src/MyWidget.tsx": "Main widget component",
+              "src/MyWidget.xml": "Widget definition (properties, capabilities)",
+              "src/MyWidget.editorConfig.ts": "Studio Pro preview configuration",
+              "src/MyWidget.editorPreview.tsx": "Preview component for Studio Pro",
+              "typings/MyWidgetProps.d.ts": "Auto-generated TypeScript types",
+              "package.json": "Dependencies and scripts"
+            }
+          },
+          "step_4_development": {
+            "title": "Development Workflow",
+            "commands": {
+              "start": "npm start - Builds widget and watches for changes",
+              "build": "npm run build - Production build",
+              "lint": "npm run lint - Check code quality",
+              "test": "npm test - Run unit tests"
+            },
+            "hot_reload": "Widget is rebuilt automatically and copied to your Mendix project's widgets folder"
+          },
+          "step_5_test_in_studio_pro": {
+            "title": "Test in Studio Pro",
+            "steps": [
+              "1. Open your Mendix project in Studio Pro",
+              "2. Press F4 to synchronize (picks up new widget)",
+              "3. Find widget in Toolbox under your category",
+              "4. Drag widget onto a page",
+              "5. Configure properties in widget panel",
+              "6. Run locally (F5) to test"
+            ]
+          }
+        },
+        "key_concepts": {
+          "EditableValue<T>": "Two-way binding to entity attributes - use for input widgets",
+          "DynamicValue<T>": "One-way binding for display - expressions, calculated values",
+          "ActionValue": "Execute microflows, nanoflows, or other actions",
+          "ListValue": "Access list of objects from data source",
+          "ListAttributeValue<T>": "Get attribute values for items in a list",
+          "useDebounce": "Hook to debounce rapid value changes"
+        },
+        "common_patterns": {
+          "check_status": "if (props.attribute?.status === 'available') { /* safe to use */ }",
+          "execute_action": "if (props.onClickAction?.canExecute) { props.onClickAction.execute(); }",
+          "handle_loading": "if (props.dataSource?.status !== 'available') return <Loading />;"
+        }
+      }
+    },
+    {
+      "id": "extension_environment_setup",
+      "title": "Studio Pro Extension Development Setup",
+      "category": "setup",
+      "description": "Guide to creating Studio Pro extensions (C# or Web)",
+      "verified": true,
+      "content": {
+        "overview": "Studio Pro Extensions let you add custom functionality to the Mendix Studio Pro IDE itself. There are two types: C# extensions (deep integration) and Web extensions (custom editor panes).",
+        "extension_types": {
+          "csharp_extension": {
+            "use_for": "Menu items, context menus, document analysis, model manipulation",
+            "technology": ".NET 6+, C#",
+            "integration": "Deep integration with Studio Pro internals"
+          },
+          "web_extension": {
+            "use_for": "Custom editor panes, visualizations, dashboards",
+            "technology": "React, TypeScript, Web technologies",
+            "integration": "Runs in embedded browser, communicates via API"
+          }
+        },
+        "csharp_setup": {
+          "prerequisites": [
+            "Visual Studio 2022 or VS Code with C# extension",
+            ".NET 6.0 SDK or later",
+            "Mendix Studio Pro 10.12+ or 11.x"
+          ],
+          "step_1": {
+            "title": "Create Class Library Project",
+            "commands": ["dotnet new classlib -n MyStudioExtension", "cd MyStudioExtension"]
+          },
+          "step_2": {
+            "title": "Add Mendix Extension NuGet Package",
+            "command": "dotnet add package Mendix.StudioPro.ExtensionsAPI"
+          },
+          "step_3": {
+            "title": "Create Extension Class",
+            "code": "using Mendix.StudioPro.ExtensionsAPI;\nusing Mendix.StudioPro.ExtensionsAPI.UI.Menu;\n\n[Extension]\npublic class MyExtension : ExtensionBase\n{\n    public override void Initialize(IExtensionHost host)\n    {\n        host.MenuManager.AddMenuItem(\n            MenuLocations.MainMenu.Tools,\n            new MenuItemConfiguration\n            {\n                Caption = \"My Custom Tool\",\n                OnClick = () => host.DialogService.ShowMessage(\"Hello from extension!\")\n            });\n    }\n}"
+          },
+          "step_4": {
+            "title": "Build and Install",
+            "steps": [
+              "1. Build: dotnet build -c Release",
+              "2. Copy DLL to: %LocalAppData%\\Mendix\\<version>\\Extensions\\",
+              "3. Restart Studio Pro"
+            ]
+          }
+        },
+        "web_setup": {
+          "prerequisites": [
+            "Node.js 18+",
+            "React and TypeScript knowledge",
+            "Mendix Studio Pro 10.18+ or 11.x"
+          ],
+          "step_1": {
+            "title": "Create React Project",
+            "commands": [
+              "npx create-react-app my-web-extension --template typescript",
+              "cd my-web-extension"
+            ]
+          },
+          "step_2": {
+            "title": "Install Mendix Web Extension SDK",
+            "command": "npm install @mendix/web-extensibility-api"
+          },
+          "step_3": {
+            "title": "Configure Extension",
+            "create_file": "web-extension.json",
+            "content": "{\n  \"name\": \"my-web-extension\",\n  \"version\": \"1.0.0\",\n  \"extensionType\": \"WebExtension\",\n  \"entryPoint\": \"build/index.html\"\n}"
+          }
+        },
+        "documentation_links": [
+          "https://docs.mendix.com/apidocs-mxsdk/apidocs/extensibility-api/",
+          "https://docs.mendix.com/apidocs-mxsdk/apidocs/extensibility-api-howtos/"
+        ]
+      }
+    },
+    {
+      "id": "mx_exe_local_analysis",
+      "title": "Local MPR Analysis with mx.exe",
+      "category": "setup",
+      "description": "Use mx.exe for offline, local analysis of .mpr files without API calls",
+      "verified": true,
+      "content": {
+        "overview": "mx.exe is a command-line tool bundled with Studio Pro that can analyze .mpr files locally without needing API tokens or internet connection. Great for CI/CD, local scripts, and quick analysis.",
+        "location": {
+          "windows": "C:\\Program Files\\Mendix\\<version>\\modeler\\mx.exe",
+          "custom_install": "D:\\Program Files\\Mendix\\<version>\\modeler\\mx.exe"
+        },
+        "common_commands": {
+          "dump_mpr": {
+            "description": "Export model as JSON for analysis",
+            "command": "mx.exe dump-mpr \"path\\to\\app.mpr\"",
+            "options": {
+              "--module-names": "Filter to specific modules: --module-names=\"Module1,Module2\"",
+              "--unit-type": "Filter by type: --unit-type=\"Microflows\"",
+              "--exclude-protected-modules": "Skip marketplace modules"
+            },
+            "example": "mx.exe dump-mpr --module-names=\"MyModule\" --unit-type=\"DomainModels\" \"D:\\Projects\\MyApp.mpr\""
+          },
+          "check": {
+            "description": "Run consistency checks (like F5 in Studio Pro)",
+            "command": "mx.exe check \"path\\to\\app.mpr\"",
+            "flags": {
+              "-w": "Show warnings",
+              "-d": "Show deprecations",
+              "-p": "Show performance recommendations",
+              "-b": "Show best practice violations"
+            },
+            "example": "mx.exe check -w -d -p -b \"D:\\Projects\\MyApp.mpr\""
+          },
+          "create_project": {
+            "description": "Create new Mendix project from command line",
+            "command": "mx.exe create-project --name=\"MyApp\" --output-dir=\"D:\\Projects\""
+          },
+          "show_version": {
+            "description": "Show mx.exe version",
+            "command": "mx.exe --version"
+          }
+        },
+        "powershell_wrapper": {
+          "description": "PowerShell function to simplify mx.exe usage",
+          "code": "function Invoke-MxDump {\n    param(\n        [string]$MprPath,\n        [string[]]$Modules,\n        [string]$UnitType\n    )\n    $mxPath = \"D:\\Program Files\\Mendix\\11.5.0\\modeler\\mx.exe\"\n    $args = @('dump-mpr')\n    if ($Modules) { $args += \"--module-names=$($Modules -join ',')\" }\n    if ($UnitType) { $args += \"--unit-type=$UnitType\" }\n    $args += \"`\"$MprPath`\"\"\n    & $mxPath $args\n}"
+        },
+        "use_cases": [
+          "CI/CD pipeline model validation",
+          "Pre-commit hooks for model checks",
+          "Documentation generation from model",
+          "Automated code review",
+          "Model comparison between versions"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,618 @@
+{
+  "topic": "Mendix Studio Pro Extensibility API",
+  "version": "1.0.0",
+  "last_updated": "2024-12-09",
+  "research_depth": "140+ resources catalogued",
+  "description": "Complete reference for Studio Pro Extensibility API - enables LOCAL model access without Platform SDK cloud requirements",
+
+  "critical_insight": {
+    "summary": "Two distinct ways to access Mendix models exist with completely different purposes",
+    "platform_sdk": {
+      "access_type": "CLOUD-based (API)",
+      "authentication": "Requires PAT/API key",
+      "how_it_works": "Creates 'working copies' on Mendix servers",
+      "can_run_standalone": true,
+      "languages": ["TypeScript", "JavaScript"],
+      "modifications": "Commit to Team Server",
+      "status": "Production"
+    },
+    "extensibility_api": {
+      "access_type": "LOCAL (within Studio Pro)",
+      "authentication": "NO authentication needed",
+      "how_it_works": "Direct IModel access via CurrentApp",
+      "can_run_standalone": false,
+      "languages": ["C#", "TypeScript (Web)"],
+      "modifications": "Direct to local .mpr file",
+      "status": "BETA (Studio Pro 11+)"
+    }
+  },
+
+  "packages": {
+    "nuget": [
+      {
+        "name": "Mendix.StudioPro.ExtensionsAPI",
+        "version": "11.5.0",
+        "framework": ".NET 8.0",
+        "downloads": 9491,
+        "url": "https://www.nuget.org/packages/Mendix.StudioPro.ExtensionsAPI",
+        "description": "C# Extensibility API for Studio Pro extensions"
+      }
+    ],
+    "npm": [
+      {
+        "name": "@mendix/extensions-api",
+        "version": "0.4.0-mendix.11.5.0",
+        "description": "Web Extensibility API (TypeScript)",
+        "relevance": 10
+      },
+      {
+        "name": "mendixmodelsdk",
+        "version": "4.105.0",
+        "description": "Mendix Model SDK - programmatic model manipulation",
+        "relevance": 10
+      },
+      {
+        "name": "mendixplatformsdk",
+        "version": "5.2.0",
+        "description": "Mendix Platform SDK - app/branch/working copy operations",
+        "relevance": 10
+      },
+      {
+        "name": "mendix",
+        "version": "11.5.0",
+        "description": "Pluggable Widgets Client API",
+        "relevance": 10
+      },
+      {
+        "name": "@mendix/pluggable-widgets-tools",
+        "description": "Build tools for pluggable widgets",
+        "relevance": 10
+      },
+      {
+        "name": "@mendix/generator-widget",
+        "description": "Yeoman generator for scaffolding widgets",
+        "relevance": 9
+      },
+      {
+        "name": "@mendix/create-extension",
+        "description": "Extension generator for Studio Pro",
+        "relevance": 9
+      }
+    ]
+  },
+
+  "github_repositories": [
+    {
+      "name": "mendix/ExtensionAPI-Samples",
+      "url": "https://github.com/mendix/ExtensionAPI-Samples",
+      "description": "Official C# extension samples: menus, dockable panes, context menus, microflows, modal WebView dialogs",
+      "samples": [
+        "tutorial_basics - Hello World extension",
+        "tutorial_menus - Menu extension examples",
+        "tutorial_dockablePanes - Dockable pane with WebView",
+        "tutorial_contextMenus - Entity and document context menus",
+        "tutorial_microflows - Create and manipulate microflows",
+        "tutorial_modalWebviewDialogs - Modal WebView dialog example"
+      ],
+      "relevance": 10
+    },
+    {
+      "name": "mendix/web-widgets",
+      "url": "https://github.com/mendix/web-widgets",
+      "description": "50+ pluggable web widgets monorepo",
+      "relevance": 10
+    },
+    {
+      "name": "mendix/native-widgets",
+      "url": "https://github.com/mendix/native-widgets",
+      "description": "40+ native mobile widgets",
+      "relevance": 10
+    },
+    {
+      "name": "mendix/docs",
+      "url": "https://github.com/mendix/docs",
+      "description": "Official Mendix documentation source",
+      "relevance": 8
+    }
+  ],
+
+  "documentation": {
+    "main_pages": [
+      {
+        "title": "Extensibility API Overview",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/extensibility-api/",
+        "relevance": 10
+      },
+      {
+        "title": "Extensibility API 11",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/extensibility-api-11/",
+        "relevance": 10
+      },
+      {
+        "title": "C# Extensibility API 11",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/",
+        "relevance": 10
+      },
+      {
+        "title": "Web Extensibility API 11",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/web-extensibility-api-11/",
+        "relevance": 10
+      },
+      {
+        "title": "Pluggable Widgets API",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/pluggable-widgets/",
+        "relevance": 10
+      },
+      {
+        "title": "SDK Documentation",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/",
+        "relevance": 10
+      },
+      {
+        "title": "Mendix Metamodel",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/mxsdk/mendix-metamodel/",
+        "relevance": 10
+      }
+    ],
+    "csharp_howtos": [
+      {
+        "title": "Getting Started (C#)",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/getting-started/",
+        "relevance": 10
+      },
+      {
+        "title": "Create Menu Extension",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/create-menu-extension/",
+        "relevance": 10
+      },
+      {
+        "title": "Create Dockable Pane",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/create-dockable-pane/",
+        "relevance": 10
+      },
+      {
+        "title": "Create Context Menu",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/create-context-menu/",
+        "relevance": 9
+      },
+      {
+        "title": "Create Modal WebView",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/create-modal-webview/",
+        "relevance": 9
+      },
+      {
+        "title": "Create Microflows",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/create-microflows/",
+        "relevance": 10
+      },
+      {
+        "title": "Model API (C#)",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/csharp-extensibility-api-11/model-api/",
+        "relevance": 10
+      },
+      {
+        "title": "Untyped Model Access",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/untyped-model-access-api-10/",
+        "relevance": 8
+      }
+    ],
+    "web_howtos": [
+      {
+        "title": "Getting Started (Web)",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/web-extensibility-api-11/getting-started/",
+        "relevance": 10
+      },
+      {
+        "title": "Dockable Pane API",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/web-extensibility-api-11/dockable-pane-api/",
+        "relevance": 9
+      },
+      {
+        "title": "Model API (Web)",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/web-extensibility-api-11/model-api/",
+        "relevance": 9
+      },
+      {
+        "title": "Menu API",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/web-extensibility-api-11/menu-api/",
+        "relevance": 9
+      },
+      {
+        "title": "Dialog API",
+        "url": "https://docs.mendix.com/apidocs-mxsdk/apidocs/web-extensibility-api-11/dialog-api/",
+        "relevance": 9
+      }
+    ],
+    "api_references": [
+      {
+        "title": "Model SDK API Reference",
+        "url": "https://apidocs.rnd.mendix.com/modelsdk/latest/index.html",
+        "relevance": 10
+      },
+      {
+        "title": "Platform SDK API Reference",
+        "url": "https://apidocs.rnd.mendix.com/platformsdk/latest/index.html",
+        "relevance": 10
+      },
+      {
+        "title": "Extensions API Reference",
+        "url": "https://apidocs.rnd.mendix.com/11/extensions-api/index.html",
+        "relevance": 10
+      },
+      {
+        "title": "C# API Reference (GitHub)",
+        "url": "https://github.com/mendix/ExtensionAPI-Samples/tree/main/API%20Reference",
+        "relevance": 10
+      }
+    ],
+    "release_notes": [
+      {
+        "title": "C# Extensibility API Release Notes",
+        "url": "https://docs.mendix.com/releasenotes/studio-pro/csharp-extensibility-api/",
+        "relevance": 9
+      },
+      {
+        "title": "Web Extensibility API Release Notes",
+        "url": "https://docs.mendix.com/releasenotes/studio-pro/web-extensibility-api/",
+        "relevance": 9
+      },
+      {
+        "title": "Model SDK Release Notes",
+        "url": "https://docs.mendix.com/releasenotes/sdk/model-sdk/",
+        "relevance": 9
+      }
+    ]
+  },
+
+  "csharp_api": {
+    "core_interfaces": [
+      {
+        "name": "IModel",
+        "description": "Root model access via CurrentApp property",
+        "methods": [
+          "Root",
+          "Create<T>",
+          "Copy<T>",
+          "StartTransaction",
+          "ToQualifiedName<T>",
+          "TryGetAbstractUnitById"
+        ],
+        "usage": "CurrentApp.Root.GetModules()"
+      },
+      {
+        "name": "ITransaction",
+        "description": "Transaction wrapper for model changes",
+        "methods": ["Commit", "Rollback"],
+        "usage": "using (var tx = CurrentApp.StartTransaction('...')) { ... tx.Commit(); }"
+      },
+      {
+        "name": "IProject",
+        "description": "App/project representation",
+        "methods": ["GetModules", "GetDocuments", "AddModule", "Name", "DirectoryPath"]
+      },
+      {
+        "name": "IModule",
+        "description": "Module representation",
+        "properties": ["Name", "DomainModel", "FromAppStore"],
+        "methods": ["GetFolders", "GetDocuments"]
+      },
+      {
+        "name": "IDomainModel",
+        "description": "Domain model within a module",
+        "methods": ["GetEntities", "AddEntity", "InsertEntity", "RemoveEntity"],
+        "properties": ["Documentation"]
+      },
+      {
+        "name": "IEntity",
+        "description": "Entity in domain model",
+        "properties": ["Name", "Documentation", "QualifiedName"],
+        "methods": ["GetAttributes", "GetAssociations"]
+      },
+      {
+        "name": "IMicroflow",
+        "description": "Microflow representation",
+        "properties": ["Name", "ReturnType", "ReturnVariableName", "QualifiedName"]
+      }
+    ],
+    "services": [
+      {
+        "name": "IMicroflowService",
+        "methods": ["CreateMicroflow", "Initialize", "GetAllMicroflowActivities", "GetParameters"]
+      },
+      {
+        "name": "IMicroflowActivitiesService",
+        "description": "Create microflow activities",
+        "methods": [
+          "CreateDatabaseRetrieveSourceActivity",
+          "CreateFilterListByAttributeActivity",
+          "CreateFindByAssociationActivity"
+        ]
+      },
+      {
+        "name": "IMicroflowExpressionService",
+        "methods": ["CreateFromString"]
+      },
+      {
+        "name": "IDomainModelService",
+        "methods": ["GetAssociations"]
+      },
+      {
+        "name": "IPageGenerationService",
+        "methods": ["GenerateOverviewPages"]
+      },
+      {
+        "name": "IUntypedModelAccessService",
+        "description": "Advanced untyped model traversal",
+        "methods": ["GetUntypedModel"]
+      },
+      {
+        "name": "IDialogService",
+        "methods": ["ShowDialog", "CloseDialog"]
+      },
+      {
+        "name": "IMessageBoxService",
+        "methods": ["ShowInformation", "ShowWarning", "ShowError"]
+      },
+      {
+        "name": "INotificationPopupService",
+        "description": "Toast notifications"
+      },
+      {
+        "name": "IDockingWindowService",
+        "methods": ["OpenTab", "ActivateDockablePane"]
+      },
+      {
+        "name": "IAppService",
+        "methods": [
+          "CheckVersionCompatible",
+          "TryImportApp",
+          "TryImportModule",
+          "SynchronizeWithFileSystem"
+        ]
+      },
+      {
+        "name": "IRuntimeService",
+        "methods": ["ExecutePreviewAction"]
+      },
+      {
+        "name": "IConfigurationService",
+        "properties": ["Configuration"]
+      },
+      {
+        "name": "IBackgroundJobService",
+        "methods": ["Run"]
+      }
+    ],
+    "extension_bases": [
+      {
+        "name": "ExtensionBase",
+        "description": "Base for all extensions",
+        "properties": ["Configuration"]
+      },
+      {
+        "name": "UIExtensionBase",
+        "description": "Base for UI extensions",
+        "properties": ["CurrentApp", "WebServerBaseUrl"],
+        "methods": ["Subscribe", "Unsubscribe"]
+      },
+      {
+        "name": "MenuExtension",
+        "description": "For adding menu items",
+        "methods": ["GetMenus"]
+      },
+      {
+        "name": "DockablePaneExtension",
+        "description": "For dockable panes",
+        "properties": ["Id"],
+        "methods": ["Open"]
+      },
+      {
+        "name": "ContextMenuExtension<T>",
+        "description": "For context menus",
+        "methods": ["GetContextMenus"]
+      },
+      {
+        "name": "WebServerExtension",
+        "description": "For HTTP endpoints",
+        "methods": ["InitializeWebServer"]
+      },
+      {
+        "name": "ConsistencyCheckExtension<T>",
+        "description": "For consistency checks"
+      }
+    ],
+    "ui_components": [
+      {
+        "name": "MenuViewModel",
+        "description": "Menu item model"
+      },
+      {
+        "name": "WebViewDockablePaneViewModel",
+        "description": "Dockable pane with WebView"
+      },
+      {
+        "name": "WebViewModalDialogViewModel",
+        "description": "Modal dialog with WebView"
+      },
+      {
+        "name": "WebViewTabViewModel",
+        "description": "Tab with WebView"
+      },
+      {
+        "name": "IWebView",
+        "description": "Web view interface",
+        "properties": ["Address"],
+        "methods": ["PostMessage", "Reload"],
+        "events": ["MessageReceived"]
+      }
+    ]
+  },
+
+  "code_patterns": {
+    "create_entity": {
+      "description": "Create a new entity in a module's domain model",
+      "code": "using (var transaction = CurrentApp.StartTransaction(\"create entity\"))\n{\n    var entity = CurrentApp.Create<IEntity>();\n    entity.Name = \"MyNewEntity\";\n    \n    var module = CurrentApp.Root.GetModules().First(m => m.Name == \"MyModule\");\n    module.DomainModel.AddEntity(entity);\n    \n    transaction.Commit();\n}"
+    },
+    "create_microflow": {
+      "description": "Create a microflow with parameters",
+      "code": "var returnExpression = microflowExpressionService.CreateFromString(\"$param1 + $param2\");\nvar returnValue = new MicroflowReturnValue(DataType.Decimal, returnExpression);\n\nvar microflow = microflowService.CreateMicroflow(\n    currentApp, \n    module, \n    \"AddNumbers\",\n    returnValue,\n    (\"param1\", DataType.Decimal),\n    (\"param2\", DataType.Decimal));\n\ntransaction.Commit();"
+    },
+    "read_modules": {
+      "description": "Get all modules in the app",
+      "code": "var modules = CurrentApp.Root.GetModules();\nforeach (var module in modules)\n{\n    Console.WriteLine($\"Module: {module.Name}\");\n}"
+    },
+    "read_entities": {
+      "description": "Get all entities in a module",
+      "code": "var module = CurrentApp.Root.GetModules().Single(m => m.Name == \"MyModule\");\nvar entities = module.DomainModel.GetEntities();\nforeach (var entity in entities)\n{\n    Console.WriteLine($\"Entity: {entity.Name}\");\n}"
+    },
+    "menu_extension": {
+      "description": "Basic menu extension",
+      "code": "[Export(typeof(MenuExtension))]\nclass MyMenuExtension : MenuExtension\n{\n    public override IEnumerable<MenuViewModel> GetMenus()\n    {\n        yield return new MenuViewModel(\"My Action\", () =>\n        {\n            if (CurrentApp == null) return;\n            // Do something with CurrentApp\n        });\n    }\n}"
+    },
+    "webserver_extension": {
+      "description": "HTTP endpoint extension",
+      "code": "[Export(typeof(WebServerExtension))]\npublic class MyApiServer : WebServerExtension\n{\n    public override void InitializeWebServer(IWebServerBuilder builder)\n    {\n        builder.MapGet(\"/health\", async (context) =>\n        {\n            context.Response.ContentType = \"application/json\";\n            await context.Response.WriteAsync(\"{\\\"status\\\": \\\"ok\\\"}\");\n        });\n    }\n}"
+    }
+  },
+
+  "extension_setup": {
+    "requirements": [".NET 8.0 SDK", "Studio Pro 11.5.0+", "--enable-extension-development flag"],
+    "project_structure": {
+      "files": ["MyExtension.csproj", "MyMenuExtension.cs", "manifest.json"],
+      "csproj_template": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <TargetFramework>net8.0-windows</TargetFramework>\n    <ImplicitUsings>enable</ImplicitUsings>\n    <Nullable>enable</Nullable>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageReference Include=\"Mendix.StudioPro.ExtensionsAPI\" Version=\"11.5.0\" />\n    <PackageReference Include=\"System.ComponentModel.Composition\" Version=\"8.0.0\" />\n  </ItemGroup>\n</Project>"
+    }
+  },
+
+  "VERIFIED_WORKING_PATTERNS": {
+    "verified_date": "2024-12-09",
+    "tested_on": "Studio Pro 11.5.0",
+
+    "CRITICAL_manifest_format": {
+      "description": "The manifest.json format is NOT the schema-based format - it's a simple mx_extensions array",
+      "WRONG_format": "{ \"$schema\": \"...\", \"name\": \"...\", \"version\": \"...\" }",
+      "CORRECT_format": "{ \"mx_extensions\": [\"YourExtension.dll\"] }",
+      "example": {
+        "mx_extensions": ["SmartHubExtension.dll"]
+      },
+      "note": "Look at built-in extensions for reference: D:\\Program Files\\Mendix\\{version}\\modeler\\Extensions\\*\\manifest.json"
+    },
+
+    "CRITICAL_folder_structure": {
+      "description": "Extensions must be UNPACKED FOLDERS, not .mxext zip files",
+      "WRONG": "{project}/extensions/MyExtension.mxext",
+      "CORRECT": "{project}/extensions/MyExtension/manifest.json + *.dll",
+      "required_files": [
+        "manifest.json - Contains { \"mx_extensions\": [\"YourExtension.dll\"] }",
+        "YourExtension.dll - Compiled extension",
+        "YourExtension.deps.json - Dependencies",
+        "YourExtension.pdb - Debug symbols (optional)"
+      ]
+    },
+
+    "CRITICAL_enable_extensions": {
+      "description": "Extension Development must be enabled in Studio Pro",
+      "method_1_preference": {
+        "steps": [
+          "1. Open Studio Pro",
+          "2. Edit → Preferences → Advanced tab",
+          "3. Enable 'Extension Development mode'",
+          "4. Restart Studio Pro"
+        ],
+        "note": "This is the recommended method for Studio Pro 11+"
+      },
+      "method_2_command_line": {
+        "command": "studioPro.exe --enable-extension-development \"path\\to\\app.mpr\"",
+        "note": "Older method, still works but preference setting is cleaner"
+      }
+    },
+
+    "step_by_step_guide": [
+      "1. Create .csproj with TargetFramework net8.0-windows",
+      "2. Add NuGet: Mendix.StudioPro.ExtensionsAPI 11.5.0",
+      "3. Add NuGet: System.ComponentModel.Composition 8.0.0",
+      "4. Create extension classes with [Export(typeof(MenuExtension))] etc.",
+      "5. Build: dotnet build -c Release",
+      "6. Create manifest.json: { \"mx_extensions\": [\"YourExtension.dll\"] }",
+      "7. Copy to {project}/extensions/YourExtension/ folder (UNPACKED)",
+      "8. Enable Extension Development in Studio Pro Preferences → Advanced",
+      "9. Restart Studio Pro and open project",
+      "10. Check Extensions menu for your extension"
+    ],
+
+    "api_type_corrections": {
+      "description": "Correct types discovered via NuGet XML documentation analysis",
+      "MenuViewModel": {
+        "correct": "MenuViewModel(string caption, Action callback)",
+        "wrong": "MenuItemViewModel does not exist"
+      },
+      "HandleWebRequestAsync": {
+        "correct": "HandleWebRequestAsync(IHttpRequest request, IHttpResponse response, CancellationToken ct)",
+        "wrong": "2-parameter version does not exist"
+      },
+      "INotificationPopupService": {
+        "correct": "ShowNotification(string title, string message, object? icon, TimeSpan timeout)",
+        "wrong": "ShowSuccess() does not exist"
+      },
+      "IWebServer": {
+        "correct": "webServer.AddRoute(HttpVerb.Get, \"/path\", handler)",
+        "wrong": "IWebServerBuilder.MapGet() does not exist"
+      }
+    },
+
+    "installation_locations": {
+      "app_level": "{project_folder}/extensions/{ExtensionName}/",
+      "global_level": "D:\\Program Files\\Mendix\\{version}\\modeler\\Extensions\\{ExtensionName}/",
+      "note": "App-level is recommended for project-specific extensions"
+    }
+  },
+
+  "version_compatibility": {
+    "model_sdk": {
+      "version": "4.105.0",
+      "supports_metamodel": "up to 11.5.0"
+    },
+    "platform_sdk": {
+      "version": "5.2.0",
+      "nodejs": "22"
+    },
+    "csharp_extensibility": {
+      "beta_since": "10.12.0",
+      "current": "11.5.0"
+    },
+    "web_extensibility": {
+      "beta_since": "10.21.0",
+      "current": "11.5.0"
+    }
+  },
+
+  "model_sdk_namespaces": [
+    "domainmodels - Entities, attributes, associations",
+    "microflows - Microflow activities, flows",
+    "pages - Page widgets, layouts",
+    "projects - Project, modules, folders",
+    "security - Security configuration",
+    "nanoflows - Nanoflow elements",
+    "workflows - Workflow elements",
+    "rest - REST services",
+    "webservices - Web services",
+    "customwidgets - Custom widget definitions",
+    "javaactions - Java actions",
+    "javascriptactions - JavaScript actions"
+  ],
+
+  "use_cases": {
+    "platform_sdk_best_for": [
+      "Batch operations on multiple apps",
+      "CI/CD pipelines",
+      "Automated code generation scripts",
+      "Operations requiring cloud/Team Server access"
+    ],
+    "extensibility_api_best_for": [
+      "Offline work, no internet",
+      "Real-time integration with Studio Pro",
+      "Add custom UI to Studio Pro",
+      "Interactive development tools",
+      "Local model modifications without cloud"
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "metadata": {
+    "category": "api",
+    "lastHarvest": "2025-12-08T04:49:46.310Z",
+    "totalEntries": 4,
+    "source": "KnowledgeHarvester"
+  },
+  "entries": [
+    {
+      "id": "api_documentation_introduction",
+      "title": "API Documentation - Introduction",
+      "content": "The API documentation is divided into the sections described below.\n\nFor more information, see API (Application Programming Interface) in the Technology Glossary.",
+      "category": "api",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/apidocs/",
+      "harvested": "2025-12-08T04:49:46.308Z",
+      "tags": []
+    },
+    {
+      "id": "api_documentation_authentication",
+      "title": "API Documentation - Authentication",
+      "content": "Mendix APIs are secured by either API keys or personal access tokens (PATs). Both mechanisms allow clients such as a CI/CD pipeline to consume the platform APIs on behalf of the platform user who created the token. In the document for each API, you can find information about which authentication mechanism that API uses.\n\nThe benefit of a PAT compared to an API key is that the platform user can restrict the scope of delegated access to specific APIs by selecting those scopes during PAT generation.\n\nThe same privilege restrictions apply as for the user who created an API key or PAT. If the user has been deactivated, then the API keys and PATs that they created can no longer be used.\n\n$(document).ready(() => {\n  $('.alert-text').each((index, element) => { \n      if ($(element).find('p, ul, ol').length) { \n          $(element).closest('.alert').addClass('has-line-breaks'); \n      }\n  });\n});",
+      "category": "api",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/apidocs/",
+      "harvested": "2025-12-08T04:49:46.308Z",
+      "tags": [
+        "rest-api"
+      ]
+    },
+    {
+      "id": "api_documentation_documents_in_this_category",
+      "title": "API Documentation - Documents in this Category",
+      "content": "APIs for Studio Pro 11\n                    Provides the documentation of APIs for Studio Pro 11, including Extensibility API and Mendix Runtime API.\n                \n            \n        \n            \n            \n                \n                    APIs for Studio Pro 10\n                    Provides the documentation of APIs for Studio Pro 10, including Extensibility API and Mendix Runtime API.\n                \n            \n        \n            \n            \n                \n                    APIs for Studio Pro 9\n                    Provides the documentation of APIs for Studio Pro 9, such as Mendix Runtime API.\n                \n            \n        \n            \n            \n                \n                    APIs for Studio Pro 8\n                    Provides the documentation of APIs for Studio Pro 8, such as Mendix Runtime API.\n                \n            \n        \n            \n            \n                \n                    APIs for Frontend\n                    Provides the documentation of APIs for frontend, including Client API, Design Properties API, and Pluggable Widgets API.\n                \n            \n        \n            \n            \n                \n                    APIs for Apps\n                    Provides the documentation of APIs for Apps, including App Repository API, Epics API, Feedback API, Projects API, and Team Server API.\n                \n            \n        \n            \n            \n                \n                    APIs for Deployment\n                    Provides the documentation of APIs for Deployment, including Backups API, Build API, Deploy API, Mendix on Kubernetes Build API, Mendix on Kubernetes Deploy API, Mendix Pipelines API, and Webhooks API.\n                \n            \n        \n            \n            \n                \n                    APIs for Governance\n                    Provides the documentation of APIs for governance, including User Identifiers API and User Management API.\n                \n            \n        \n            \n            \n                \n                    APIs for Private Mendix Platform\n                    Presents an overview of the Private Mendix Platform API documentation, such as Group, User, Marketplace, and Project.\n                \n            \n        \n            \n            \n                \n                    Content API\n                    The Content API accesses both public and company-specific Marketplace content information.\n                \n            \n        \n            \n            \n                \n                    Catalog APIs\n                    The Catalog APIs register data sources from other business applications.\n\n.feedback--footer {\n    margin-top: 3rem;\n    padding: 2rem;\n    border-top-width: 0.15rem;\n    border-top-style: solid;\n    border-top-color: #146FF4;\n    width: 100%;\n  }\n  .feedback-container {\n    margin-right: 2rem;\n  }\n  .feedback--answer {\n    display: inline-block;\n  }\n  .feedback--answer-no {\n    margin-left: 1em;\n  }\n  .feedback--response {\n    display: none;\n    margin-top: 1em;\n  }\n  .feedback--response__visible {\n    display: block;\n  }\n    .feedback--footer,\n    .get-started-container {\n      display: flex;\n      flex-wrap: wrap;\n      justify-content: space-between;\n    }\n    .get-started-container {\n      width:fit-content;\n    }\n    .get-started svg {\n      max-width: 100%;\n      max-height: 100%;\n    }\n\nFeedback\n    Was this page helpful?\n    Yes\n    No\n    \n      Glad to hear it! Thank you for your response.\n    \n    \n      Sorry to hear that. Please tell us how we can improve.\n\ndocument.querySelector('.feedback--link').href = document.querySelector('a.feedback-issue').href;\n  const yesButton = document.querySelector('.feedback--answer-yes');\n  const noButton = document.querySelector('.feedback--answer-no');\n  const yesResponse = document.querySelector('.feedback--response-yes');\n  const noResponse = document.querySelector('.feedback--response-no');\n  const disableButtons = () => {\n    yesButton.disabled = true;\n    noButton.disabled = true;\n  };\n  const sendFeedback = (value) => {\n    if (typeof ga !== 'function') return;\n    const args = {\n      command: 'send',\n      hitType: 'event',\n      category: 'Helpful',\n      action: 'click',\n      label: window.location.pathname,\n      value: value\n    };\n    ga(args.command, args.hitType, args.category, args.action, args.label, args.value);\n  };\n  yesButton.addEventListener('click', () => {\n    yesResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(1);\n  });\n  noButton.addEventListener('click', () => {\n    noResponse.classList.add('feedback--response__visible');\n    disableButtons();\n    sendFeedback(0);\n  });",
+      "category": "api",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/apidocs/",
+      "harvested": "2025-12-08T04:49:46.308Z",
+      "tags": [
+        "pages",
+        "widgets"
+      ]
+    },
+    {
+      "id": "api_documentation_feedback",
+      "title": "API Documentation - Feedback",
+      "content": "Was this page helpful?\n\nGlad to hear it! Thank you for your response.\n\nSorry to hear that. Please tell us how we can improve.",
+      "category": "api",
+      "source": "https://docs.mendix.com/apidocs-mxsdk/apidocs/",
+      "harvested": "2025-12-08T04:49:46.309Z",
+      "tags": [
+        "pages"
+      ]
+    }
+  ]
+}

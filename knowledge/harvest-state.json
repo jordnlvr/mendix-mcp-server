@@ -1,12 +1,12 @@
 {
-  "lastHarvest": "2026-07-27T04:21:34.187Z",
+  "lastHarvest": "2026-08-03T04:18:36.544Z",
   "lastHarvestResults": {
     "newEntries": 0,
     "updatedEntries": 17,
     "errors": 0,
     "pagesScanned": 69
   },
-  "totalHarvests": 33,
+  "totalHarvests": 34,
   "nextScheduledHarvest": null,
   "isRunning": true
 }

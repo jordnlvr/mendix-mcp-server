@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/jordnlvr-mendix-mcp-server-badge.png)](https://mseep.ai/app/jordnlvr-mendix-mcp-server)
+
 <p align="center">
   <a href="https://www.npmjs.com/package/@jordnlvr/mendix-mcp-server"><img src="https://img.shields.io/npm/v/@jordnlvr/mendix-mcp-server.svg?style=flat-square" alt="npm version"></a>
   <a href="https://www.npmjs.com/package/@jordnlvr/mendix-mcp-server"><img src="https://img.shields.io/npm/dm/@jordnlvr/mendix-mcp-server.svg?style=flat-square" alt="npm downloads"></a>

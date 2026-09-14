@@ -1,349 +1,5 @@
 [
   {
-    "timestamp": "2026-02-16T03:56:54.061Z",
-    "stats": {
-      "pagesScanned": 69,
-      "entriesAdded": 0,
-      "entriesUpdated": 0,
-      "errors": 3,
-      "lastHarvest": "2026-02-16T03:56:40.438Z"
-    },
-    "log": [
-      {
-        "time": "2026-02-16T03:56:40.438Z",
-        "message": "🌾 Starting Knowledge Harvest..."
-      },
-      {
-        "time": "2026-02-16T03:56:40.438Z",
-        "message": "   Sources: releaseNotes, studioProGuide"
-      },
-      {
-        "time": "2026-02-16T03:56:40.438Z",
-        "message": "\n📖 Harvesting: Studio Pro Release Notes..."
-      },
-      {
-        "time": "2026-02-16T03:56:41.816Z",
-        "message": "      Found 0 version entries"
-      },
-      {
-        "time": "2026-02-16T03:56:43.309Z",
-        "message": "      Found 0 version entries"
-      },
-      {
-        "time": "2026-02-16T03:56:44.310Z",
-        "message": "   ✅ Harvested 0 entries from Studio Pro Release Notes"
-      },
-      {
-        "time": "2026-02-16T03:56:44.310Z",
-        "message": "\n📖 Harvesting: Studio Pro Guide..."
-      },
-      {
-        "time": "2026-02-16T03:56:46.399Z",
-        "message": "      Extracted 12 sections from Workflows"
-      },
-      {
-        "time": "2026-02-16T03:56:49.394Z",
-        "message": "      Extracted 3 sections from Data Containers"
-      },
-      {
-        "time": "2026-02-16T03:56:51.648Z",
-        "message": "   ✅ Harvested 15 entries from Studio Pro Guide"
-      },
-      {
-        "time": "2026-02-16T03:56:51.648Z",
-        "message": "\n🎯 Harvesting Priority Topics..."
-      },
-      {
-        "time": "2026-02-16T03:56:51.649Z",
-        "message": "   🔍 Searching: \"page variables\""
-      },
-      {
-        "time": "2026-02-16T03:56:51.816Z",
-        "message": "   🔍 Searching: \"workflows 2.0\""
-      },
-      {
-        "time": "2026-02-16T03:56:51.857Z",
-        "message": "   🔍 Searching: \"workflow activities\""
-      },
-      {
-        "time": "2026-02-16T03:56:51.893Z",
-        "message": "   🔍 Searching: \"multi user task\""
-      },
-      {
-        "time": "2026-02-16T03:56:51.927Z",
-        "message": "   🔍 Searching: \"external entity\""
-      },
-      {
-        "time": "2026-02-16T03:56:51.960Z",
-        "message": "   🔍 Searching: \"maia ai assistant\""
-      },
-      {
-        "time": "2026-02-16T03:56:51.990Z",
-        "message": "   🔍 Searching: \"maia logic recommendations\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.029Z",
-        "message": "   🔍 Searching: \"maia microflow generation\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.068Z",
-        "message": "   🔍 Searching: \"maia page generation\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.108Z",
-        "message": "   🔍 Searching: \"mendix assist\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.147Z",
-        "message": "   🔍 Searching: \"ai bot\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.184Z",
-        "message": "   🔍 Searching: \"atlas ui 3\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.228Z",
-        "message": "   🔍 Searching: \"design tokens\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.264Z",
-        "message": "   🔍 Searching: \"design tokens css variables\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.303Z",
-        "message": "   🔍 Searching: \"custom themes sass\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.340Z",
-        "message": "   🔍 Searching: \"design system\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.375Z",
-        "message": "   🔍 Searching: \"atlas core\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.409Z",
-        "message": "   🔍 Searching: \"styling modeler\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.445Z",
-        "message": "   🔍 Searching: \"brand customization\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.483Z",
-        "message": "   🔍 Searching: \"native mobile\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.519Z",
-        "message": "   🔍 Searching: \"make it native app\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.556Z",
-        "message": "   🔍 Searching: \"native navigation\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.592Z",
-        "message": "   🔍 Searching: \"native widgets\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.626Z",
-        "message": "   🔍 Searching: \"offline first\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.661Z",
-        "message": "   🔍 Searching: \"react native\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.693Z",
-        "message": "   🔍 Searching: \"native styling\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.727Z",
-        "message": "   🔍 Searching: \"progressive web app pwa\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.760Z",
-        "message": "   🔍 Searching: \"installable web app\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.796Z",
-        "message": "   🔍 Searching: \"service worker\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.829Z",
-        "message": "   🔍 Searching: \"offline web\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.863Z",
-        "message": "   🔍 Searching: \"pluggable widgets api\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.898Z",
-        "message": "   🔍 Searching: \"widget development\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.933Z",
-        "message": "   🔍 Searching: \"react widgets\""
-      },
-      {
-        "time": "2026-02-16T03:56:52.966Z",
-        "message": "   🔍 Searching: \"widget properties\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.001Z",
-        "message": "   🔍 Searching: \"widget actions\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.031Z",
-        "message": "   🔍 Searching: \"widget events\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.064Z",
-        "message": "   🔍 Searching: \"studio pro extensions\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.098Z",
-        "message": "   🔍 Searching: \"extension points\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.129Z",
-        "message": "   🔍 Searching: \"platform sdk\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.163Z",
-        "message": "   🔍 Searching: \"model sdk\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.197Z",
-        "message": "   🔍 Searching: \"mendixmodelsdk\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.233Z",
-        "message": "   🔍 Searching: \"mendixplatformsdk\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.273Z",
-        "message": "   🔍 Searching: \"sdk typescript\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.309Z",
-        "message": "   🔍 Searching: \"rest api published\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.348Z",
-        "message": "   🔍 Searching: \"rest api consumed\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.382Z",
-        "message": "   🔍 Searching: \"odata services\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.416Z",
-        "message": "   🔍 Searching: \"graphql\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.453Z",
-        "message": "   🔍 Searching: \"message queue\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.483Z",
-        "message": "   🔍 Searching: \"kafka\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.520Z",
-        "message": "   🔍 Searching: \"event broker\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.550Z",
-        "message": "   🔍 Searching: \"performance best practices\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.589Z",
-        "message": "   🔍 Searching: \"security best practices\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.618Z",
-        "message": "   🔍 Searching: \"microflow best practices\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.652Z",
-        "message": "   🔍 Searching: \"domain model best practices\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.685Z",
-        "message": "   🔍 Searching: \"testing best practices\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.719Z",
-        "message": "   🔍 Searching: \"deployment best practices\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.752Z",
-        "message": "   🔍 Searching: \"data hub\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.782Z",
-        "message": "   🔍 Searching: \"data catalog\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.819Z",
-        "message": "   🔍 Searching: \"external data\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.854Z",
-        "message": "   🔍 Searching: \"user roles\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.884Z",
-        "message": "   🔍 Searching: \"access rules\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.917Z",
-        "message": "   🔍 Searching: \"xpath constraints\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.950Z",
-        "message": "   🔍 Searching: \"module roles\""
-      },
-      {
-        "time": "2026-02-16T03:56:53.986Z",
-        "message": "   🔍 Searching: \"authentication sso\""
-      },
-      {
-        "time": "2026-02-16T03:56:54.020Z",
-        "message": "   🔍 Searching: \"saml oidc\""
-      },
-      {
-        "time": "2026-02-16T03:56:54.056Z",
-        "message": "\n══════════════════════════════════════════════════"
-      },
-      {
-        "time": "2026-02-16T03:56:54.056Z",
-        "message": "📊 Harvest Complete!"
-      },
-      {
-        "time": "2026-02-16T03:56:54.056Z",
-        "message": "   Pages scanned: 69"
-      },
-      {
-        "time": "2026-02-16T03:56:54.056Z",
-        "message": "   New entries: 0"
-      },
-      {
-        "time": "2026-02-16T03:56:54.056Z",
-        "message": "   Updated entries: 15"
-      },
-      {
-        "time": "2026-02-16T03:56:54.056Z",
-        "message": "   Errors: 3"
-      },
-      {
-        "time": "2026-02-16T03:56:54.056Z",
-        "message": "══════════════════════════════════════════════════"
-      }
-    ]
-  },
-  {
     "timestamp": "2026-02-23T03:55:37.847Z",
     "stats": {
       "pagesScanned": 69,
@@ -10315,6 +9971,350 @@
       },
       {
         "time": "2026-09-07T03:24:23.247Z",
+        "message": "══════════════════════════════════════════════════"
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-09-14T03:25:15.609Z",
+    "stats": {
+      "pagesScanned": 69,
+      "entriesAdded": 0,
+      "entriesUpdated": 0,
+      "errors": 3,
+      "lastHarvest": "2026-09-14T03:25:04.172Z"
+    },
+    "log": [
+      {
+        "time": "2026-09-14T03:25:04.171Z",
+        "message": "🌾 Starting Knowledge Harvest..."
+      },
+      {
+        "time": "2026-09-14T03:25:04.172Z",
+        "message": "   Sources: releaseNotes, studioProGuide"
+      },
+      {
+        "time": "2026-09-14T03:25:04.172Z",
+        "message": "\n📖 Harvesting: Studio Pro Release Notes..."
+      },
+      {
+        "time": "2026-09-14T03:25:04.685Z",
+        "message": "      Found 0 version entries"
+      },
+      {
+        "time": "2026-09-14T03:25:06.054Z",
+        "message": "      Found 0 version entries"
+      },
+      {
+        "time": "2026-09-14T03:25:07.056Z",
+        "message": "   ✅ Harvested 0 entries from Studio Pro Release Notes"
+      },
+      {
+        "time": "2026-09-14T03:25:07.056Z",
+        "message": "\n📖 Harvesting: Studio Pro Guide..."
+      },
+      {
+        "time": "2026-09-14T03:25:08.967Z",
+        "message": "      Extracted 13 sections from Workflows"
+      },
+      {
+        "time": "2026-09-14T03:25:11.715Z",
+        "message": "      Extracted 4 sections from Data Containers"
+      },
+      {
+        "time": "2026-09-14T03:25:13.890Z",
+        "message": "   ✅ Harvested 17 entries from Studio Pro Guide"
+      },
+      {
+        "time": "2026-09-14T03:25:13.890Z",
+        "message": "\n🎯 Harvesting Priority Topics..."
+      },
+      {
+        "time": "2026-09-14T03:25:13.890Z",
+        "message": "   🔍 Searching: \"page variables\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.138Z",
+        "message": "   🔍 Searching: \"workflows 2.0\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.161Z",
+        "message": "   🔍 Searching: \"workflow activities\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.188Z",
+        "message": "   🔍 Searching: \"multi user task\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.210Z",
+        "message": "   🔍 Searching: \"external entity\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.231Z",
+        "message": "   🔍 Searching: \"maia ai assistant\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.265Z",
+        "message": "   🔍 Searching: \"maia logic recommendations\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.292Z",
+        "message": "   🔍 Searching: \"maia microflow generation\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.316Z",
+        "message": "   🔍 Searching: \"maia page generation\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.339Z",
+        "message": "   🔍 Searching: \"mendix assist\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.359Z",
+        "message": "   🔍 Searching: \"ai bot\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.382Z",
+        "message": "   🔍 Searching: \"atlas ui 3\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.401Z",
+        "message": "   🔍 Searching: \"design tokens\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.431Z",
+        "message": "   🔍 Searching: \"design tokens css variables\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.460Z",
+        "message": "   🔍 Searching: \"custom themes sass\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.479Z",
+        "message": "   🔍 Searching: \"design system\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.501Z",
+        "message": "   🔍 Searching: \"atlas core\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.529Z",
+        "message": "   🔍 Searching: \"styling modeler\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.564Z",
+        "message": "   🔍 Searching: \"brand customization\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.583Z",
+        "message": "   🔍 Searching: \"native mobile\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.611Z",
+        "message": "   🔍 Searching: \"make it native app\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.644Z",
+        "message": "   🔍 Searching: \"native navigation\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.668Z",
+        "message": "   🔍 Searching: \"native widgets\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.705Z",
+        "message": "   🔍 Searching: \"offline first\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.724Z",
+        "message": "   🔍 Searching: \"react native\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.747Z",
+        "message": "   🔍 Searching: \"native styling\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.765Z",
+        "message": "   🔍 Searching: \"progressive web app pwa\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.785Z",
+        "message": "   🔍 Searching: \"installable web app\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.805Z",
+        "message": "   🔍 Searching: \"service worker\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.825Z",
+        "message": "   🔍 Searching: \"offline web\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.845Z",
+        "message": "   🔍 Searching: \"pluggable widgets api\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.867Z",
+        "message": "   🔍 Searching: \"widget development\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.889Z",
+        "message": "   🔍 Searching: \"react widgets\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.906Z",
+        "message": "   🔍 Searching: \"widget properties\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.928Z",
+        "message": "   🔍 Searching: \"widget actions\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.950Z",
+        "message": "   🔍 Searching: \"widget events\""
+      },
+      {
+        "time": "2026-09-14T03:25:14.975Z",
+        "message": "   🔍 Searching: \"studio pro extensions\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.004Z",
+        "message": "   🔍 Searching: \"extension points\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.024Z",
+        "message": "   🔍 Searching: \"platform sdk\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.043Z",
+        "message": "   🔍 Searching: \"model sdk\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.065Z",
+        "message": "   🔍 Searching: \"mendixmodelsdk\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.086Z",
+        "message": "   🔍 Searching: \"mendixplatformsdk\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.105Z",
+        "message": "   🔍 Searching: \"sdk typescript\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.125Z",
+        "message": "   🔍 Searching: \"rest api published\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.144Z",
+        "message": "   🔍 Searching: \"rest api consumed\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.165Z",
+        "message": "   🔍 Searching: \"odata services\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.184Z",
+        "message": "   🔍 Searching: \"graphql\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.207Z",
+        "message": "   🔍 Searching: \"message queue\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.228Z",
+        "message": "   🔍 Searching: \"kafka\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.257Z",
+        "message": "   🔍 Searching: \"event broker\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.277Z",
+        "message": "   🔍 Searching: \"performance best practices\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.298Z",
+        "message": "   🔍 Searching: \"security best practices\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.324Z",
+        "message": "   🔍 Searching: \"microflow best practices\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.344Z",
+        "message": "   🔍 Searching: \"domain model best practices\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.366Z",
+        "message": "   🔍 Searching: \"testing best practices\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.384Z",
+        "message": "   🔍 Searching: \"deployment best practices\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.409Z",
+        "message": "   🔍 Searching: \"data hub\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.429Z",
+        "message": "   🔍 Searching: \"data catalog\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.450Z",
+        "message": "   🔍 Searching: \"external data\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.484Z",
+        "message": "   🔍 Searching: \"user roles\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.503Z",
+        "message": "   🔍 Searching: \"access rules\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.524Z",
+        "message": "   🔍 Searching: \"xpath constraints\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.544Z",
+        "message": "   🔍 Searching: \"module roles\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.564Z",
+        "message": "   🔍 Searching: \"authentication sso\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.587Z",
+        "message": "   🔍 Searching: \"saml oidc\""
+      },
+      {
+        "time": "2026-09-14T03:25:15.606Z",
+        "message": "\n══════════════════════════════════════════════════"
+      },
+      {
+        "time": "2026-09-14T03:25:15.606Z",
+        "message": "📊 Harvest Complete!"
+      },
+      {
+        "time": "2026-09-14T03:25:15.606Z",
+        "message": "   Pages scanned: 69"
+      },
+      {
+        "time": "2026-09-14T03:25:15.606Z",
+        "message": "   New entries: 0"
+      },
+      {
+        "time": "2026-09-14T03:25:15.606Z",
+        "message": "   Updated entries: 17"
+      },
+      {
+        "time": "2026-09-14T03:25:15.606Z",
+        "message": "   Errors: 3"
+      },
+      {
+        "time": "2026-09-14T03:25:15.606Z",
         "message": "══════════════════════════════════════════════════"
       }
     ]
